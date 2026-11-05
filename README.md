@@ -6,9 +6,13 @@ Méthode progressive d'apprentissage du Texas Hold'em No-Limit en 6 niveaux, du 
 
 | Fichier | Description |
 | --- | --- |
-| [`doc/initiation-poker-tutoriel.pdf`](doc/initiation-poker-tutoriel.pdf) | Le tutoriel complet : règles, stratégie, probabilités, exercices, tests de passage, ressources, glossaire (21 pages) |
+| [`doc/initiation-poker-tutoriel.pdf`](doc/initiation-poker-tutoriel.pdf) | Le tutoriel complet : règles, stratégie, probabilités, exercices, tests de passage, ressources, glossaire (28 pages) |
 | [`doc/carnet-progression-poker.pdf`](doc/carnet-progression-poker.pdf) | Carnet de progression individuel, formulaire PDF à remplir (10 pages) |
 | [`doc/architecture.md`](doc/architecture.md) | Proposition d'architecture d'une application en ligne multi-joueurs qui implémente la méthode |
+| [`tests/niveau-1/`](tests/niveau-1/) | Test interactif de passage du niveau 1 (HTML, CSS, JavaScript) ; voir son [README](tests/niveau-1/README.md) |
+| `assets/poker-qr/` | Cartes vectorielles (SVG) utilisées par les illustrations et les tests |
+| [`bin/serve.sh`](bin/serve.sh) | Lance un serveur local et affiche les URLs des tests de passage (`bin/serve.sh [port]`, `HOST=0.0.0.0` pour le réseau local) |
+| `tools/make_figs.py` | Génère les illustrations de `doc/figures/` à partir des cartes |
 
 ## Les 6 niveaux
 
