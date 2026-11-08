@@ -175,6 +175,45 @@ body {
 .num-field { display: grid; grid-template-columns: 1fr 120px auto; align-items: center; gap: 10px; margin-bottom: 12px; }
 .unit { color: var(--quiet); }
 
+/* onglets */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 20px; }
+.tab {
+  font: inherit; font-weight: 600; background: none; border: 0; border-bottom: 3px solid transparent;
+  color: var(--quiet); padding: 8px 14px; min-height: 44px; margin-bottom: -1px; cursor: pointer;
+}
+.tab[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.tab:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* exercices d'entraînement */
+.settings { display: flex; flex-wrap: wrap; gap: 12px 20px; margin: 16px 0 8px; }
+.setting { display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; font-weight: 600; color: var(--quiet); }
+.setting select { min-width: 200px; }
+.counter { font-weight: 600; margin: 8px 0 0; }
+.announce { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 16px; }
+.announce .form-message { flex-basis: 100%; }
+.feedback { border-radius: 8px; padding: 10px 12px; border-left: 4px solid var(--line); background: var(--bg); }
+.feedback.ok { border-left-color: var(--good); background: var(--good-soft); }
+.feedback.ko { border-left-color: var(--bad); background: var(--bad-soft); }
+.feedback p { margin: 4px 0; }
+.practice-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.series-end { font-weight: 700; margin: 12px 0 0; }
+.timer { font-size: 1.3rem; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; min-height: 44px; display: flex; align-items: center; }
+.timer.late { color: var(--bad); }
+.card.dim { opacity: 0.3; }
+.card.empty { display: inline-block; background: transparent; border: 2px dashed rgba(255, 255, 255, 0.45); box-shadow: none; }
+.split-hand { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px; }
+.board-label.quiet { color: var(--quiet); }
+
+/* table de l'exercice d'annonces */
+.seats { list-style: none; padding: 0; margin: 0 0 14px; display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); }
+.seat { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: var(--bg); }
+.seat.winner { border-color: var(--good); background: var(--good-soft); }
+.seat-name { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-weight: 600; margin-bottom: 6px; }
+.seat-empty { color: var(--quiet); font-size: 0.85rem; min-height: 40px; display: flex; align-items: center; }
+.seat-hand { color: var(--quiet); font-size: 0.85rem; margin-top: 4px; }
+.badge { font-size: 0.72rem; font-weight: 700; padding: 1px 7px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+.badge.dealer { background: var(--ink); color: var(--surface); }
+
 /* résultat */
 .result { border-radius: var(--radius); padding: 16px; margin: 16px 0; border: 1px solid var(--line); }
 .result.ok { background: var(--good-soft); }
@@ -205,4 +244,6 @@ body {
   .num-field { grid-template-columns: 1fr 100px; }
   .num-field .unit { display: none; }
   .btn.primary { width: 100%; }
+  .setting, .setting select { width: 100%; min-width: 0; }
+  .announce .btn { width: 100%; }
 }

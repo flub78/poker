@@ -1,11 +1,11 @@
 // Test 3 : trouver les nuts (C1.4).
-// 20 tableaux de 5 cartes ; pour chacun, choisir parmi 4 mains celle qui fait les nuts.
+// 10 tableaux de 5 cartes ; pour chacun, choisir parmi 4 mains celle qui fait les nuts.
 import { h } from '../dom.js';
 import { deck, shuffle, cardRow, short } from '../cards.js';
 import { evaluate, compare, describe, scoreKey } from '../evaluator.js';
 
-const BOARDS = 20;
-const PASS = 18;
+const BOARDS = 10;
+const PASS = 9;
 
 function makeBoard(rand) {
   for (;;) {

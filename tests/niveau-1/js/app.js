@@ -7,8 +7,12 @@ import deroulement from './exercises/deroulement.js';
 import classement from './exercises/classement.js';
 import nuts from './exercises/nuts.js';
 import potAnnexe from './exercises/pot-annexe.js';
+import annonces from './practice/annonces.js';
+import meilleureMain from './practice/meilleure-main.js';
+import nommerNuts from './practice/nommer-nuts.js';
 
 const EXERCISES = [deroulement, classement, nuts, potAnnexe];
+const PRACTICES = [annonces, meilleureMain, nommerNuts];
 const main = document.getElementById('app');
 
 const STATE_LABEL = {
@@ -30,10 +34,28 @@ function statusLine(st) {
   return 'Pas encore de tentative';
 }
 
+// ---------- onglets ----------
+
+function tabs(active) {
+  const tab = (id, text, view) => h('button', {
+    type: 'button', class: 'tab', role: 'tab', id: `tab-${id}`,
+    'aria-selected': active === id ? 'true' : 'false',
+    onclick: () => { if (active !== id) view(); },
+  }, text);
+  return h('div', { class: 'tabs', role: 'tablist', 'aria-label': 'Rubriques' },
+    tab('tests', 'Tests', dashboard),
+    tab('exercices', 'Exercices', exercisesHome));
+}
+
+function setHash(hash) {
+  if (location.hash !== hash) history.replaceState(null, '', hash || location.pathname + location.search);
+}
+
 // ---------- tableau de bord ----------
 
 function dashboard() {
   clear(main);
+  setHash('');
   const statuses = EXERCISES.map((ex) => store.status(ex.id));
   const done = statuses.filter((s) => s.state === 'validated').length;
   const levelOk = done === EXERCISES.length;
@@ -44,6 +66,7 @@ function dashboard() {
   });
 
   main.append(
+    tabs('tests'),
     h('section', { class: 'intro' },
       h('p', {}, 'Ce test vérifie les 4 compétences du niveau 1. Chaque test est validé après ',
         h('strong', {}, `deux réussites à au moins ${CONFIG.minDaysBetween} jours d'écart`),
@@ -72,6 +95,57 @@ function dashboard() {
         h('input', { type: 'file', accept: 'application/json', onchange: importData })),
       h('button', { type: 'button', class: 'btn danger', onclick: resetData }, 'Effacer mes résultats')),
   );
+}
+
+// ---------- exercices d'entraînement ----------
+
+function exercisesHome() {
+  clear(main);
+  setHash('#exercices');
+  main.append(
+    tabs('exercices'),
+    h('section', { class: 'intro' },
+      h('p', {}, 'Entraînez-vous autant que vous voulez avant de passer les tests. ',
+        'La correction est immédiate et ', h('strong', {}, 'rien n\'est enregistré'), '.')),
+    h('ul', { class: 'test-list' }, PRACTICES.map((px) => h('li', { class: 'test-card' },
+      h('div', { class: 'test-head' }, h('span', { class: 'test-code' }, `Compétences ${px.competences}`)),
+      h('h2', {}, px.title),
+      h('p', { class: 'meta' }, px.summary),
+      h('button', { type: 'button', class: 'btn', onclick: () => practice(px) }, 'S\'entraîner')))),
+  );
+}
+
+function practice(px, settings = Object.fromEntries(px.settings.map((s) => [s.id, s.default]))) {
+  clear(main);
+  window.scrollTo(0, 0);
+  let done = 0;
+  let good = 0;
+  const counter = h('p', { class: 'counter', 'aria-live': 'polite' });
+  const update = () => {
+    counter.textContent = done
+      ? `Depuis le début : ${good} réussite${good > 1 ? 's' : ''} sur ${done}.`
+      : 'Aucune réponse pour l\'instant.';
+  };
+  update();
+
+  const body = h('div', { class: 'exercise-body' });
+  main.append(
+    h('div', { class: 'exercise-head' },
+      h('button', { type: 'button', class: 'link-btn', onclick: exercisesHome }, '← Exercices'),
+      h('h2', {}, px.title),
+      h('p', { class: 'meta' }, `Compétences ${px.competences} · ${px.summary}`)),
+    h('div', { class: 'settings' }, px.settings.map((s) => h('label', { class: 'setting' }, s.label,
+      h('select', { onchange: (e) => practice(px, { ...settings, [s.id]: e.target.value }) },
+        s.options.map((o) => h('option', { value: o.value, selected: settings[s.id] === o.value }, o.label)))))),
+    counter,
+    body,
+  );
+  const instance = px.create(rng(newSeed()), settings, (ok) => {
+    done++;
+    if (ok) good++;
+    update();
+  });
+  instance.render(body);
 }
 
 // ---------- passage d'un test ----------
@@ -174,4 +248,5 @@ function resetData() {
   }
 }
 
-dashboard();
+if (location.hash === '#exercices') exercisesHome();
+else dashboard();
