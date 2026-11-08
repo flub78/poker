@@ -108,7 +108,7 @@ save(hstack(cols, gap=64), "fig-classement.png")
 # 3. Les nuts (C1.4)
 save(hstack([
     group("Tableau", ["KH", "QH", "7H", "4C", "2S"]),
-    group("Les nuts", ["AH", "1B"], sub="As de cœur + n'importe quelle carte"),
+    group("Les nuts", ["AH", "JH"], sub="As et valet de cœur : couleur A K Q J 7"),
 ]), "fig-nuts.png")
 
 # 4. Assorties, dépareillées, connectées (C2.2)
