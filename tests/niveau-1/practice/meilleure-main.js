@@ -1,9 +1,9 @@
 // Exercice : trouver la meilleure combinaison dans 7 cartes tirées au hasard (C1.3).
 // Objectif du tutoriel : la nommer en moins de 10 secondes.
-import { h } from '../dom.js';
+import { h } from '../../js/dom.js';
 
 const lcFirst = (s) => s.charAt(0).toLowerCase() + s.slice(1);
-import { deck, shuffle, cardImg, cardRow, sameCard } from '../cards.js';
+import { deck, shuffle, cardImg, cardRow, sameCard } from '../../js/cards.js';
 import { CLASSES, classOf, className, describe } from '../evaluator.js';
 import { bestFive } from '../analysis.js';
 

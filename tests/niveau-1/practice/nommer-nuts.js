@@ -1,9 +1,9 @@
 // Exercice : nommer les nuts d'un tableau de 5 cartes (C1.4).
 // Le tutoriel propose une série de 20 tableaux.
-import { h } from '../dom.js';
+import { h } from '../../js/dom.js';
 
 const lcFirst = (s) => s.charAt(0).toLowerCase() + s.slice(1);
-import { deck, shuffle, cardRow } from '../cards.js';
+import { deck, shuffle, cardRow } from '../../js/cards.js';
 import { CLASSES, classOf, className, describe } from '../evaluator.js';
 import { nutsOf } from '../analysis.js';
 

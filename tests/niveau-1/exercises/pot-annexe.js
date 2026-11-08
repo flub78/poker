@@ -1,7 +1,7 @@
 // Test 4 : pot annexe à 3 joueurs (C1.2).
 // Un joueur est à tapis ; calculer les pots et ce que reçoit chacun à l'abattage.
-import { h } from '../dom.js';
-import { pick, shuffle } from '../cards.js';
+import { h } from '../../js/dom.js';
+import { pick, shuffle } from '../../js/cards.js';
 
 const NAMES = ['Alice', 'Bruno', 'Chloé', 'David', 'Emma', 'Farid', 'Gaëlle', 'Hugo'];
 

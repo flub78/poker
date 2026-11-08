@@ -62,6 +62,27 @@ body {
 .site-footer { color: var(--quiet); font-size: 0.85rem; padding: 32px 0; }
 .site-footer p { margin: 4px 0; }
 
+/* navigation entre niveaux */
+.level-nav { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+.level-nav-title { display: none; font-size: 0.85rem; opacity: 0.85; }
+.level-nav ul { list-style: none; display: flex; flex-direction: row; flex-wrap: nowrap; gap: 6px; margin: 0; padding: 0; }
+.level-nav li { display: block; margin: 0; }
+.level-link {
+  display: inline-flex; align-items: center; gap: 0.3em; min-height: 36px; padding: 0 12px; border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.45); color: var(--felt-ink); text-decoration: none;
+  font-size: 0.9rem; font-weight: 600;
+}
+a.level-link:hover { background: rgba(255, 255, 255, 0.12); }
+a.level-link:focus-visible { outline: 3px solid var(--felt-ink); outline-offset: 2px; }
+.level-link.current { background: var(--felt-ink); color: var(--felt); border-color: var(--felt-ink); }
+.level-link.soon { opacity: 0.5; border-style: dashed; }
+@media print { .level-nav { display: none; } }
+@media (max-width: 560px) {
+  .level-nav-title { display: inline; }
+  .level-nav .long { display: none; }
+  .level-link { min-width: 36px; justify-content: center; padding: 0 8px; }
+}
+
 /* ---------- boutons ---------- */
 
 .btn {

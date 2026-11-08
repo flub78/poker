@@ -1,5 +1,5 @@
 // Outils d'analyse partagés par les exercices : meilleure main de 5 cartes, nuts d'un tableau.
-import { deck, sameCard } from './cards.js';
+import { deck, sameCard } from '../js/cards.js';
 import { evaluate, compare } from './evaluator.js';
 
 // Toutes les façons de choisir k éléments dans arr.

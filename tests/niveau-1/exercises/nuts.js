@@ -1,7 +1,7 @@
 // Test 3 : trouver les nuts (C1.4).
 // 10 tableaux de 5 cartes ; pour chacun, choisir parmi 4 mains celle qui fait les nuts.
-import { h } from '../dom.js';
-import { deck, shuffle, cardRow, short } from '../cards.js';
+import { h } from '../../js/dom.js';
+import { deck, shuffle, cardRow, short } from '../../js/cards.js';
 import { evaluate, compare, describe, scoreKey } from '../evaluator.js';
 
 const BOARDS = 10;

@@ -6,13 +6,15 @@ Méthode progressive d'apprentissage du Texas Hold'em No-Limit en 6 niveaux, du 
 
 | Fichier | Description |
 | --- | --- |
-| [`doc/initiation-poker-tutoriel.pdf`](doc/initiation-poker-tutoriel.pdf) | Le tutoriel complet : règles, stratégie, probabilités, exercices, tests de passage, ressources, glossaire (33 pages) |
+| [`doc/initiation-poker-tutoriel.pdf`](doc/initiation-poker-tutoriel.pdf) | Le tutoriel complet : règles, stratégie, probabilités, exercices, tests de passage, ressources, glossaire, avec table des matières (40 pages) |
 | [`doc/carnet-progression-poker.pdf`](doc/carnet-progression-poker.pdf) | Carnet de progression individuel, formulaire PDF à remplir (10 pages) |
 | [`doc/architecture.md`](doc/architecture.md) | Proposition d'architecture d'une application en ligne multi-joueurs qui implémente la méthode |
-| [`tests/niveau-1/`](tests/niveau-1/) | Test interactif de passage du niveau 1 (HTML, CSS, JavaScript) ; voir son [README](tests/niveau-1/README.md) |
-| `assets/poker-qr/` | Cartes vectorielles (SVG) utilisées par les illustrations et les tests |
-| [`bin/serve.sh`](bin/serve.sh) | Lance un serveur local et affiche les URLs des tests de passage (`bin/serve.sh [port]`, `HOST=0.0.0.0` pour le réseau local) |
+| [`tests/`](tests/) | Application d'entraînement : une seule page (`tests/index.html`), un onglet par niveau, avec exercices et tests de passage. Dossier autonome, à déployer tel quel ; voir son [README](tests/README.md) |
+| [`tests/niveau-1/`](tests/niveau-1/), [`tests/niveau-2/`](tests/niveau-2/) | Contenu des niveaux 1 et 2 ; voir leurs README ([1](tests/niveau-1/README.md), [2](tests/niveau-2/README.md)) |
+| `tests/cartes/` | Cartes vectorielles poker-qr (SVG) utilisées par l'application et par les illustrations |
+| [`bin/serve.sh`](bin/serve.sh) | Lance un serveur local et affiche l'adresse de l'application et de chaque niveau (`bin/serve.sh [port]`, `HOST=0.0.0.0` pour le réseau local) |
 | `tools/make_figs.py` | Génère les illustrations de `doc/figures/` à partir des cartes |
+| `tools/mise_en_page_pdf.py` | Met en page le PDF exporté du Claude Doc : sauts de page avant les grandes parties, table des matières cliquable en page 2, signets (dépend de PyMuPDF : `tools/requirements.txt`) |
 
 ## Les 6 niveaux
 

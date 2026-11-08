@@ -1,10 +1,10 @@
 // Exercice : annoncer les étapes pendant la distribution (C1.1, C1.2).
 // Le donneur distribue une main complète. Avant chaque étape, le joueur l'annonce
 // et, selon les options, dit qui pose la petite blind, qui parle en premier et qui gagne.
-import { h } from '../dom.js';
+import { h } from '../../js/dom.js';
 
 const lcFirst = (s) => s.charAt(0).toLowerCase() + s.slice(1);
-import { deck, shuffle, cardRow, cardImg } from '../cards.js';
+import { deck, shuffle, cardRow, cardImg } from '../../js/cards.js';
 import { evaluate, compare, describe } from '../evaluator.js';
 
 const STEPS = [

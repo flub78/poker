@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Lance un serveur HTTP statique à la racine du dépôt et affiche
-# les URLs des tests de passage de chaque niveau (tests/niveau-*).
+# l'adresse de l'application (tests/index.html) et de chaque niveau.
 #
 # Usage : bin/serve.sh [port]
 #   PORT=8000  port d'écoute (ou 1er argument)
@@ -45,20 +45,21 @@ fi
 
 echo "Serveur : $ROOT"
 echo
-echo "Tests de passage :"
+echo "Application (un seul index.html, un onglet par niveau) :"
+for h in "${hosts[@]}"; do
+    printf '  http://%s:%s/tests/\n' "$h" "$PORT"
+done
+echo
+echo "Accès direct :"
 found=0
 for dir in "$ROOT"/tests/niveau-*/; do
-    [[ -f "$dir/index.html" ]] || continue
+    [[ -f "$dir/niveau.js" ]] || continue
     found=1
     name="$(basename "$dir")"
-    label="Niveau ${name#niveau-}"
-    for h in "${hosts[@]}"; do
-        printf '  %-10s http://%s:%s/tests/%s/\n' "$label" "$h" "$PORT" "$name"
-        label=""
-    done
+    printf '  %-10s http://%s:%s/tests/#%s\n' "Niveau ${name#niveau-}" "${hosts[0]}" "$PORT" "$name"
 done
 if [[ $found -eq 0 ]]; then
-    echo "  (aucun test trouvé dans tests/niveau-*)"
+    echo "  (aucun niveau trouvé dans tests/niveau-*)"
 fi
 echo
 echo "Ctrl+C pour arrêter."

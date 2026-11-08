@@ -1,7 +1,7 @@
 // Test 1 : déroulement d'une main (C1.1, C1.2).
 // Remettre les étapes dans l'ordre, puis répondre à 5 questions tirées d'une banque.
-import { h } from '../dom.js';
-import { shuffle } from '../cards.js';
+import { h } from '../../js/dom.js';
+import { shuffle } from '../../js/cards.js';
 
 const STEPS = [
   'Blinds : la petite et la grosse blind sont posées',

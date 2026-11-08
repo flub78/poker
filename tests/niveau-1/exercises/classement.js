@@ -1,7 +1,7 @@
 // Test 2 : classement des mains (C1.3).
 // 10 mains, une de chaque combinaison, à nommer sans erreur.
-import { h } from '../dom.js';
-import { card, SUITS, shuffle, pick, int, cardRow } from '../cards.js';
+import { h } from '../../js/dom.js';
+import { card, SUITS, shuffle, pick, int, cardRow } from '../../js/cards.js';
 import { evaluate, classOf, CLASSES, className } from '../evaluator.js';
 
 const distinctRanks = (n, rand, exclude = []) => {
