@@ -24,7 +24,7 @@ Les cases à cocher sont dans l'onglet Tests, rubrique « À vérifier à la tab
 ## Règles de réponse
 
 - **Raison de miser.** Valeur : top paire avec un kicker dame ou mieux, overpair, deux paires, brelan. Bluff : tirage couleur ou quinte bilatérale sans paire au flop ou au turn (semi-bluff), ou rien à la river. Aucune raison : deuxième ou troisième paire, petite paire servie sous la carte haute (piège des mains moyennes). Les tableaux sont « secs » (ni appariés, ni trois cartes d'une couleur, ni trois rangs dans une fenêtre de cinq) pour que la réponse ne soit pas discutable ; une main moyenne n'a jamais de tirage.
-- **Textures.** Sec : arc-en-ciel, As ou roi en tête, cartes éloignées d'au moins 4 rangs. Humide : deux cartes d'une couleur, trois rangs dans une fenêtre de cinq, valet ou moins. Apparié. Monotone. **Taille de c-bet** : petite (1/3) sur sec, grosse (2/3) sur humide, comme le dit le cours ; **petite aussi sur apparié et monotone, choix de l'application** : le cours ne donne pas de taille pour ces deux textures (voir la suggestion S-014).
+- **Textures.** Sec : arc-en-ciel, As ou roi en tête, cartes éloignées d'au moins 4 rangs. Humide : deux cartes d'une couleur, trois rangs dans une fenêtre de cinq, valet ou moins. Apparié. Monotone. **Taille de c-bet** (C4.3) : petite (1/3) sur sec, apparié et monotone ; grosse (2/3) sur humide.
 - **SPR.** Tapis effectif (le plus petit) ÷ pot. Engager tout le tapis : SPR sous 3, top paire ou mieux ; de 3 à 8, deux paires ou mieux ; au-dessus de 8, brelan ou mieux (« très grosse main »). Les SPR trop proches de 3 ou de 8 ne sont pas tirés.
 
 ## Organisation du code

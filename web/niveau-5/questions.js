@@ -83,7 +83,7 @@ export function rangeQuestion() {
 
 // ---------- C5.4 : profils adverses ----------
 
-// Repères de l'application (le cours ne donne pas de seuils) : serré VPIP < 25 %, large VPIP > 35 % ;
+// Repères du cours (C5.4) : serré VPIP < 25 %, large VPIP > 35 % ;
 // passif AF < 1,5, agressif AF > 2,5. Les statistiques générées restent loin de ces seuils.
 export const PROFILES = {
   rock: { label: 'Serré-passif (rock)', exploit: 'Voler ses blinds ; se coucher quand il relance', vpip: [8, 15], pfr: [3, 8], af: [0.4, 1.2] },
@@ -91,7 +91,7 @@ export const PROFILES = {
   tag: { label: 'Serré-agressif (TAG)', exploit: 'Jouer serré contre lui, chercher d\'autres tables', vpip: [16, 23], pfr: [13, 19], af: [2.8, 4.0] },
   maniac: { label: 'Large-agressif (maniaque)', exploit: 'Le laisser bluffer, payer plus large avec des mains moyennes', vpip: [45, 70], pfr: [30, 50], af: [3.5, 6.0] },
 };
-export const REPERES = 'Repères de l\'application : serré = VPIP sous 25 %, large = VPIP au-dessus de 35 % ; passif = AF sous 1,5, agressif = AF au-dessus de 2,5.';
+export const REPERES = 'Repères du cours (C5.4) : serré = VPIP sous 25 %, large = VPIP au-dessus de 35 % ; passif = AF sous 1,5, agressif = AF au-dessus de 2,5.';
 
 export function profileQuestion() {
   return {

@@ -1,6 +1,6 @@
 # Suggestions d'amélioration
 
-Mis à jour le 2026-11-09 (réalisation de S-001, S-003 à S-009, S-012 option A, S-013). Fiches classées par section ; index trié par rapport
+Mis à jour le 2026-11-09 (réalisation de S-001, S-003 à S-010, S-012 option A, S-013, S-014). Fiches classées par section ; index trié par rapport
 bénéfice/coût. Statuts : proposée · acceptée · en cours · faite · reportée · refusée.
 Règles de tenue et commandes : voir [`strategie_suggestions.md`](../strategie_suggestions.md).
 
@@ -11,9 +11,9 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 | ID | Section | Suggestion | Bénéfice | Coût | Rapport | Statut |
 |---|---|---|---|---|---|---|
 | S-012 | Architecture | Garder les progrès d'un appareil à l'autre : code de transfert (A), puis petit serveur PHP + fichiers JSON (B) | élevé | S puis M | élevé | A faite, B proposée |
-| S-014 | Tutoriel | Écrire dans le cours trois règles que l'application a dû fixer (c-bet sur flop apparié ou monotone, seuils des profils, catégories de range) | moyen | S | élevé | proposée |
+| S-014 | Tutoriel | Écrire dans le cours trois règles que l'application a dû fixer (c-bet sur flop apparié ou monotone, seuils des profils, catégories de range) | moyen | S | élevé | faite |
 | S-013 | Par fonctionnalité | Quiz préflop du niveau 2 en 2 séries de 10 (règle des 10 questions par série) | moyen | S | élevé | faite |
-| S-010 | Tutoriel | Corriger l'écart de VPIP du test du niveau 2 (18–26 % ou 12–20 %) | moyen | S | élevé | proposée |
+| S-010 | Tutoriel | Corriger l'écart de VPIP du test du niveau 2 (18–26 % ou 12–20 %) | moyen | S | élevé | faite |
 | S-011 | Tutoriel | Ajouter C3.7 à la grille d'auto-évaluation | faible | S | élevé | proposée |
 | S-002 | Système | Remplacer le carnet PDF par la progression enregistrée dans l'application | élevé | M | moyen | proposée |
 | S-001 | Système | Remplacer le PDF du tutoriel par une version imprimable du site | élevé | S | élevé | faite |
@@ -230,7 +230,7 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 ### 5.2 Contenu du tutoriel
 
 ### S-014 · Écrire dans le cours les règles que l'application a dû fixer
-- **Statut** : proposée · **Date** : 2026-11-09 · **Origine** : réalisation des niveaux 4 et 5
+- **Statut** : faite · **Date** : 2026-11-09 · **Origine** : réalisation des niveaux 4 et 5
 - **Constat** : pour corriger sans ambiguïté, l'application applique trois règles que le cours ne
   donne pas :
   1. taille de c-bet sur flop **apparié** et **monotone** : petite (1/3) dans l'application ; le
@@ -245,10 +245,13 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 - **Coûts** : S. Trois paragraphes ou lignes de tableau dans le doc.
 - **Rapport** : élevé.
 - **Premier pas** : valider ou corriger les trois règles (question de contenu).
-- **Décision** :
+- **Décision** : 2026-11-09, acceptée. Ajouts dans le doc : en C4.3, c-bet petite sur flops
+  appariés et monotones ; en C5.1, les trois catégories de range à la river ; en C5.4, les repères
+  chiffrés des profils. L'application renvoie désormais à ces passages du cours. Cours et PDF
+  republiés.
 
 ### S-010 · Corriger l'écart de VPIP du test du niveau 2
-- **Statut** : proposée · **Date** : 2026-11-09 · **Origine** : réalisation de S-003
+- **Statut** : faite · **Date** : 2026-11-09 · **Origine** : réalisation de S-003
 - **Constat** : le doc donne deux seuils pour le même test. L'escalier du mode d'emploi (repris de
   l'ancien widget) dit « VPIP 18 à 26 % sur 500 mains » ; le test de passage du niveau 2 dit
   « entre 12 et 20 % », comme l'application (`web/niveau-2/niveau.js`, `testsNote`).
@@ -257,7 +260,9 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 - **Coûts** : S. Une cellule du doc (ou la note de l'application).
 - **Rapport** : élevé.
 - **Premier pas** : décider du seuil (question de contenu, pas de code).
-- **Décision** :
+- **Décision** : 2026-11-09, acceptée. Seuil retenu : **12 à 20 %**, celui du test de passage du
+  niveau 2 et de l'application ; l'escalier du mode d'emploi (18 à 26 %, repris de l'ancien
+  graphique) est corrigé dans le doc. Cours et PDF republiés.
 
 ### S-011 · Ajouter C3.7 à la grille d'auto-évaluation
 - **Statut** : proposée · **Date** : 2026-11-09 · **Origine** : réalisation de S-006
