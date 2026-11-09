@@ -142,6 +142,13 @@ a.level-link:focus-visible { outline: 3px solid var(--felt-ink); outline-offset:
 
 .tools { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
 
+/* critères à cocher (shell.js : manual) */
+.manual { margin-top: 24px; }
+.manual h2 { font-size: 1.15rem; margin: 0 0 4px; }
+.manual-list { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 8px; }
+.manual-item { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
+.manual-item input { width: 20px; height: 20px; margin-top: 2px; flex: none; accent-color: var(--accent); }
+
 /* ---------- épreuve ---------- */
 
 .exercise-head h2 { margin: 6px 0 2px; font-size: 1.35rem; }
@@ -272,6 +279,35 @@ a.level-link:focus-visible { outline: 3px solid var(--felt-ink); outline-offset:
   .announce .btn { width: 100%; }
 }
 
+/* ---------- séries de questions (js/serie.js) ---------- */
+
+.question { font-weight: 600; margin: 12px 0 0; }
+.num-ask { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
+.num-ask .form-message { flex-basis: 100%; }
+.num-field-inline { display: inline-flex; align-items: center; gap: 8px; }
+.num-input {
+  font: inherit; font-size: 1.1rem; width: 7em; min-height: 44px; padding: 0 10px; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+}
+.choice-ask { display: flex; flex-wrap: wrap; gap: 10px; }
+.choice-btn { min-width: 9em; }
+.multi-ask { display: grid; gap: 12px; width: 100%; }
+.range-hands { display: flex; flex-wrap: wrap; gap: 12px 20px; margin-top: 8px; }
+.stats { font-size: 1.15rem; margin: 6px 0; }
+.multi-group { display: grid; gap: 6px; }
+.multi-label { font-size: 0.9rem; font-weight: 600; color: var(--quiet); }
+.toggle-btn[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.bad { color: var(--bad); }
+
+@media (max-width: 560px) {
+  .choice-btn { flex: 1 1 40%; min-width: 0; }
+  .num-ask .btn { width: 100%; }
+}
+
+/* séries d'un test (shell.js : ex.series) */
+.serie-badge { display: inline-block; margin: 4px 0 0; padding: 2px 12px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: 0.9rem; }
+.serie-badge .meta { font-weight: 400; }
+
 /* ---------- profil (js/profil.js) ---------- */
 
 .level-nav .profile-link { margin-left: auto; }
@@ -286,6 +322,14 @@ a.level-link:focus-visible { outline: 3px solid var(--felt-ink); outline-offset:
 .transfer-receive.ok { border-color: var(--good); background: var(--good-soft); }
 .transfer-receive.ko { border-color: var(--bad); background: var(--bad-soft); }
 .transfer-receive ul { margin: 4px 0 12px; }
+
+/* rappel des compétences du niveau (onglet Exercices) */
+.level-competences { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 16px; margin: 0 0 20px; }
+.level-competences p { margin: 0 0 8px; }
+.level-competences ul { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 4px 20px; }
+.level-competences a { color: var(--ink); text-decoration: none; }
+.level-competences a:hover { color: var(--accent); text-decoration: underline; }
+.comp-code { color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; }
 
 /* ---------- cours (js/cours.js) ---------- */
 

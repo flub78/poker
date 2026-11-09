@@ -5,8 +5,11 @@
 // startApp({
 //   level: 2,                          numéro du niveau
 //   storageKey: 'poker.niveau2.v1',    clé localStorage du niveau
-//   tests: [...],                      épreuves (modules { id, code, title, competences, rule, create })
+//   tests: [...],                      épreuves (modules { id, code, title, competences, rule, create,
+//                                        series?, pass? } : plusieurs séries, score additionné jugé sur pass)
 //   practices: [...],                  exercices (modules { id, title, competences, summary, settings, create })
+//   manual: [{ id, text }],            critères vérifiés à la table (moyennes, durées, volume de jeu) :
+//                                        cases à cocher, enregistrées avec leur date
 //   extraTabs: [{ id, label, render(main) }],   onglets en plus, après « Exercices »
 //   testsNote: nœud ou texte affiché sous l'introduction des tests (facultatif)
 //   css: 'style.css'                   feuille de style du niveau (facultatif, lue par app.js)
@@ -15,7 +18,7 @@ import { h, clear, formatDate } from './dom.js';
 import { rng, newSeed } from './cards.js';
 import { CONFIG } from './config.js';
 import { createStore } from './storage.js';
-import { reviewLinks } from './cours.js';
+import { reviewLinks, levelCompetences, competenceNames } from './cours.js';
 
 const STATE_LABEL = {
   none: 'Non tenté',
@@ -38,7 +41,7 @@ function statusLine(st) {
 
 const plural = (n, word) => `${n} ${word}${n > 1 ? 's' : ''}`;
 
-export function startApp({ level, storageKey, tests, practices, extraTabs = [], testsNote = null }, startTab = 'tests') {
+export function startApp({ level, storageKey, tests, practices, manual = [], extraTabs = [], testsNote = null }, startTab = 'tests') {
   const store = createStore(storageKey);
   const base = `#niveau-${level}`;
   const main = document.getElementById('app');
@@ -81,14 +84,19 @@ export function startApp({ level, storageKey, tests, practices, extraTabs = [], 
     setHash(base);
     const statuses = tests.map((ex) => store.status(ex.id));
     const done = statuses.filter((s) => s.state === 'validated').length;
-    const levelOk = done === tests.length;
+    const checked = manual.filter((m) => store.manualDate(m.id)).length;
+    const levelOk = done === tests.length && checked === manual.length;
+    const progress = [
+      tests.length ? `${plural(done, 'test')} validé${done > 1 ? 's' : ''} sur ${tests.length}` : null,
+      manual.length ? `${plural(checked, 'critère')} coché${checked > 1 ? 's' : ''} sur ${manual.length}` : null,
+    ].filter(Boolean).join(' · ');
 
     main.append(
       tabs('tests'),
       h('section', { class: 'intro' },
-        h('p', {}, `Ces tests vérifient les compétences du niveau ${level}. Chaque test est validé après `,
+        tests.length ? h('p', {}, `Ces tests vérifient les compétences du niveau ${level}. Chaque test est validé après `,
           h('strong', {}, `deux réussites à au moins ${CONFIG.minDaysBetween} jours d'écart`),
-          '. Les questions changent à chaque essai.'),
+          '. Les questions changent à chaque essai.') : null,
         testsNote ? h('p', {}, testsNote) : null,
         // Prénom, sauvegarde, transfert, effacement : page Profil (bouton à droite des niveaux).
         h('p', { class: 'meta' }, store.getPlayer() ? `Joueur : ${store.getPlayer()} · ` : '',
@@ -96,9 +104,8 @@ export function startApp({ level, storageKey, tests, practices, extraTabs = [], 
           ' (sauvegarde, changement d\'appareil)')),
       h('section', { class: `level-status ${levelOk ? 'ok' : ''}` },
         levelOk
-          ? h('p', {}, h('strong', {}, `Tests du niveau ${level} validés.`), ` Reportez la date dans votre carnet.`)
-          : h('p', {}, h('strong', {}, `${plural(done, 'test')} validé${done > 1 ? 's' : ''} sur ${tests.length}.`),
-            ` Le niveau est validé quand les ${tests.length} le sont.`)),
+          ? h('p', {}, h('strong', {}, `Niveau ${level} validé.`), ` Reportez la date dans votre carnet.`)
+          : h('p', {}, h('strong', {}, `${progress}.`), ' Le niveau est validé quand tout l\'est.')),
       h('ul', { class: 'test-list' }, tests.map((ex, i) => {
         const st = statuses[i];
         return h('li', { class: 'test-card' },
@@ -112,7 +119,23 @@ export function startApp({ level, storageKey, tests, practices, extraTabs = [], 
           h('button', { type: 'button', class: 'btn', onclick: () => run(ex) },
             st.state === 'none' ? 'Commencer' : 'Refaire le test'));
       })),
+      ...(manual.length ? [manualSection()] : []),   // append (natif) écrirait « null » en texte
     );
+  }
+
+  // Critères du cours qui portent sur le jeu réel : le joueur les coche lui-même.
+  function manualSection() {
+    return h('section', { class: 'block manual' },
+      h('h2', {}, 'À vérifier à la table'),
+      h('p', { class: 'meta' }, 'Ces critères portent sur votre jeu réel (résultats, durée, volume de mains) : ',
+        'l\'application ne peut pas les mesurer. Cochez-les quand ils sont remplis.'),
+      h('ul', { class: 'manual-list' }, manual.map((m) => {
+        const date = store.manualDate(m.id);
+        return h('li', {},
+          h('label', { class: 'manual-item' },
+            h('input', { type: 'checkbox', checked: Boolean(date), onchange: (e) => { store.setManual(m.id, e.target.checked); dashboard(); } }),
+            h('span', {}, m.text, date ? h('span', { class: 'meta' }, ` · coché le ${formatDate(date)}`) : null)));
+      })));
   }
 
   // ---------- exercices d'entraînement ----------
@@ -125,8 +148,9 @@ export function startApp({ level, storageKey, tests, practices, extraTabs = [], 
       h('section', { class: 'intro' },
         h('p', {}, 'Entraînez-vous autant que vous voulez avant de passer les tests. ',
           'La correction est immédiate et ', h('strong', {}, 'rien n\'est enregistré'), '.')),
+      ...[levelCompetences(level)].filter(Boolean),
       h('ul', { class: 'test-list' }, practices.map((px) => h('li', { class: 'test-card' },
-        h('div', { class: 'test-head' }, h('span', { class: 'test-code' }, `Compétences ${px.competences}`)),
+        h('div', { class: 'test-head' }, h('span', { class: 'test-code' }, competenceNames(px.competences) || `Compétences ${px.competences}`)),
         h('h2', {}, px.title),
         h('p', { class: 'meta' }, px.summary),
         reviewLinks(px.competences),
@@ -152,7 +176,7 @@ export function startApp({ level, storageKey, tests, practices, extraTabs = [], 
       h('div', { class: 'exercise-head' },
         h('button', { type: 'button', class: 'link-btn', onclick: exercisesHome }, '← Exercices'),
         h('h2', {}, px.title),
-        h('p', { class: 'meta' }, `Compétences ${px.competences} · ${px.summary}`),
+        h('p', { class: 'meta' }, `${competenceNames(px.competences) || `Compétences ${px.competences}`} · ${px.summary}`),
         reviewLinks(px.competences)),
       h('div', { class: 'settings' }, px.settings.map((s) => h('label', { class: 'setting' }, s.label,
         h('select', { onchange: (e) => practice(px, { ...settings, [s.id]: e.target.value }) },
@@ -170,38 +194,55 @@ export function startApp({ level, storageKey, tests, practices, extraTabs = [], 
 
   // ---------- passage d'un test ----------
 
+  // Un test peut se passer en plusieurs séries (ex.series, défaut 1) de 10 questions au plus,
+  // chacune avec des données différentes ; le score est alors additionné et jugé sur ex.pass.
+  // Une seule graine pour toutes les séries : la tentative reste reproductible.
   function run(ex) {
     const seed = newSeed();
-    const instance = ex.create(rng(seed));
+    const rand = rng(seed);
+    const count = ex.series || 1;
+    const done = [];
     const started = Date.now();
-    clear(main);
-    window.scrollTo(0, 0);
 
-    const message = h('p', { class: 'form-message', role: 'alert' });
-    const body = h('div', { class: 'exercise-body' });
-
-    main.append(
-      h('div', { class: 'exercise-head' },
-        h('button', { type: 'button', class: 'link-btn', onclick: () => { if (confirm('Abandonner ce test ? Il ne sera pas enregistré.')) dashboard(); } }, '← Retour'),
-        h('h2', {}, `${ex.code} · ${ex.title}`),
-        h('p', { class: 'meta' }, `Réussite : ${ex.rule}`)),
-      body,
-      h('div', { class: 'submit-bar' },
-        message,
-        h('button', {
-          type: 'button', class: 'btn primary',
-          onclick: () => {
-            const missing = instance.missing();
-            if (missing) { message.textContent = missing; return; }
-            finish(ex, instance, seed, started);
-          },
-        }, 'Valider mes réponses')),
-    );
-    instance.render(body);
+    function serie(k) {
+      const instance = ex.create(rand, { serie: k, series: count });
+      clear(main);
+      window.scrollTo(0, 0);
+      const message = h('p', { class: 'form-message', role: 'alert' });
+      const body = h('div', { class: 'exercise-body' });
+      const last = k === count;
+      main.append(
+        h('div', { class: 'exercise-head' },
+          h('button', { type: 'button', class: 'link-btn', onclick: () => { if (confirm('Abandonner ce test ? Il ne sera pas enregistré.')) dashboard(); } }, '← Retour'),
+          h('h2', {}, `${ex.code} · ${ex.title}`),
+          h('p', { class: 'meta' }, `Réussite : ${ex.rule}`),
+          count > 1 ? h('p', { class: 'serie-badge' }, `Série ${k} sur ${count}`, h('span', { class: 'meta' }, ' · chaque série a des données différentes')) : null),
+        body,
+        h('div', { class: 'submit-bar' },
+          message,
+          h('button', {
+            type: 'button', class: 'btn primary',
+            onclick: () => {
+              const missing = instance.missing();
+              if (missing) { message.textContent = missing; return; }
+              done.push(instance);
+              if (last) finish(ex, done, seed, started); else serie(k + 1);
+            },
+          }, last ? 'Valider mes réponses' : `Valider et passer à la série ${k + 1}`)),
+      );
+      instance.render(body);
+    }
+    serie(1);
   }
 
-  function finish(ex, instance, seed, started) {
-    const result = instance.grade();
+  function finish(ex, instances, seed, started) {
+    const grades = instances.map((x) => x.grade());
+    const result = grades.length === 1 ? grades[0] : {
+      score: grades.reduce((s, g) => s + g.score, 0),
+      total: grades.reduce((s, g) => s + g.total, 0),
+      items: grades.flatMap((g, k) => g.items.map((it) => ({ ...it, title: `Série ${k + 1} · ${it.title}` }))),
+    };
+    if (grades.length > 1) result.passed = result.score >= ex.pass;
     const attempt = {
       date: new Date().toISOString(),
       seed,

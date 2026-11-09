@@ -1,6 +1,6 @@
 # Application d'entraînement
 
-Une seule page web (HTML, CSS, JavaScript sans dépendance ni compilation) pour tous les niveaux du programme d'initiation au poker. Chaque niveau a ses tests de passage, ses exercices d'entraînement et, au besoin, ses propres onglets. Le contenu de chaque niveau est décrit dans son README : [niveau 1](niveau-1/README.md), [niveau 2](niveau-2/README.md).
+Une seule page web (HTML, CSS, JavaScript sans dépendance ni compilation) pour tous les niveaux du programme d'initiation au poker. Chaque niveau a ses tests de passage, ses exercices d'entraînement et, au besoin, ses propres onglets. Le contenu de chaque niveau est décrit dans son README : niveaux [1](niveau-1/README.md), [2](niveau-2/README.md), [3](niveau-3/README.md), [4](niveau-4/README.md), [5](niveau-5/README.md), [6](niveau-6/README.md).
 
 ## Adresses
 
@@ -59,6 +59,7 @@ web/
 │   ├── app.js              lit l'adresse, dessine l'en-tête et la barre Cours + niveaux, charge niveau-N/niveau.js
 │   ├── cours.js            le cours : sommaire, pages, navigation précédent / suivant (flèches du clavier aussi)
 │   ├── profil.js           page Profil : prénom, résumé, code de transfert, fichier, effacement
+│   ├── serie.js            séries de questions (10 au plus), une à la fois : makeTest, makePractice (niveaux 3 à 6)
 │   ├── config.js           chemin des cartes, écart de jours, liste des niveaux (LEVELS)
 │   ├── shell.js            onglets, tableau de bord, passage d'un test, correction, exercices, export
 │   ├── dom.js              construction du DOM
@@ -98,6 +99,7 @@ Le script s'arrête avec un message si le doc a changé de structure (grande par
      level: 3,
      storageKey: 'poker.niveau3.v1',   // clé localStorage, propre au niveau
      tests: [...],                     // épreuves
+     manual: [{ id, text }],           // facultatif : critères vérifiés à la table, à cocher
      practices: [...],                 // exercices d'entraînement
      extraTabs: [{ id, label, render(root) }],   // facultatif
      testsNote: '…',                   // facultatif : texte sous l'introduction des tests
@@ -109,7 +111,9 @@ Le script s'arrête avec un message si le doc a changé de structure (grande par
 
 Les modules d'un niveau importent le code commun par `../js/…` (ou `../../js/…` depuis un sous-dossier).
 
-**Une épreuve** exporte `{ id, code, title, competences, rule, create(rand) }`. `create` reçoit un générateur aléatoire et renvoie un objet avec `render(root)`, `missing()` (message si des réponses manquent) et `grade()` (`{ score, total, passed, items }`).
+**Un critère à cocher** (`manual`) : ce que l'application ne peut pas mesurer (résultats sur des milliers de mains, durée, habitude de jeu). Il s'affiche dans l'onglet Tests, rubrique « À vérifier à la table » ; le joueur le coche, la date est enregistrée (`manual` dans les données du niveau) et suit le transfert et la sauvegarde. Le niveau est validé quand tous les tests le sont et que tous les critères sont cochés.
+
+**Une épreuve** exporte `{ id, code, title, competences, rule, create(rand) }`. `create` reçoit un générateur aléatoire et renvoie un objet avec `render(root)`, `missing()` (message si des réponses manquent) et `grade()` (`{ score, total, passed, items }`). Avec `series: 2` et `pass: 18`, le test se passe en 2 séries : `create` est appelé une fois par série (même générateur, donc d'autres données), les scores sont additionnés et jugés sur `pass`. Une série ne doit pas poser plus de 10 questions.
 
 **Un exercice d'entraînement** exporte `{ id, title, competences, summary, settings, create(rand, settings, report) }`. `settings` décrit les listes déroulantes (`{ id, label, default, options: [{ value, label }] }`) ; changer une option relance l'exercice. `create` renvoie un objet avec `render(root)` et appelle `report(ok)` après chaque réponse pour mettre à jour le compteur.
 

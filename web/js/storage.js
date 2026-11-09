@@ -4,7 +4,8 @@
 // createStore(clé) renvoie le magasin d'un niveau : chaque niveau a sa propre clé.
 import { CONFIG } from './config.js';
 
-const EMPTY = () => ({ version: 1, player: '', tests: {} });
+// manual : critères du cours vérifiés à la table, cochés par le joueur ({ id: date ISO }).
+const EMPTY = () => ({ version: 1, player: '', tests: {}, manual: {} });
 
 // Prénom du joueur : un seul pour tout le site (page Profil). Avant, chaque niveau avait le sien
 // (champ player de ses données) : s'il n'y a pas encore de prénom global, on reprend celui-là.
@@ -49,11 +50,17 @@ export function addDays(iso, n) {
 // fusionner deux historiques revient à les réunir sans doublon (code de transfert, import).
 const attemptKey = (a) => `${Math.floor(Date.parse(a.date) / 1000)}|${a.seed}`;
 
-// Fusionne incoming dans base (deux données de niveau { version, player, tests }).
-// Renvoie { data, added } ; base n'est pas modifié. (Le prénom est global : getPlayerName.)
+// Fusionne incoming dans base (deux données de niveau { version, player, tests, manual }).
+// Renvoie { data, added } : added compte les tentatives et les critères cochés ajoutés ; base
+// n'est pas modifié. Un critère coché des deux côtés garde la date la plus ancienne.
+// (Le prénom est global : getPlayerName.)
 export function mergeData(base, incoming) {
-  const data = { ...EMPTY(), ...base, tests: { ...base.tests } };
+  const data = { ...EMPTY(), ...base, tests: { ...base.tests }, manual: { ...(base.manual || {}) } };
   let added = 0;
+  for (const [id, date] of Object.entries(incoming.manual || {})) {
+    if (!date) continue;
+    if (!data.manual[id]) { data.manual[id] = date; added++; } else if (date < data.manual[id]) data.manual[id] = date;
+  }
   for (const [testId, t] of Object.entries(incoming.tests || {})) {
     const mine = data.tests[testId]?.attempts || [];
     const seen = new Set(mine.map(attemptKey));
@@ -115,6 +122,16 @@ export function createStore(storageKey) {
     },
 
     exportData: () => read(),
+
+    // Critère vérifié à la table : date où il a été coché, ou null.
+    manualDate: (id) => read().manual?.[id] || null,
+
+    setManual(id, checked) {
+      const data = read();
+      data.manual = { ...(data.manual || {}) };
+      if (checked) data.manual[id] = new Date().toISOString(); else delete data.manual[id];
+      return write(data);
+    },
 
     exportJSON: () => JSON.stringify(read(), null, 2),
 

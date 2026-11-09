@@ -13,7 +13,7 @@ Méthode progressive d'apprentissage du Texas Hold'em No-Limit en 6 niveaux, du 
 | [`doc/architecture.md`](doc/architecture.md) | Proposition d'architecture d'une application en ligne multi-joueurs qui implémente la méthode |
 | [`web/`](web/) | Application d'entraînement : une seule page (`web/index.html`) avec le cours (le tutoriel en pages web, bouton « Cours ») et un onglet par niveau, avec exercices et tests de passage. Dossier autonome, à déployer tel quel ; voir son [README](web/README.md) |
 | `web/cours/` | Le tutoriel en HTML : `contenu.js` (généré) et ses illustrations |
-| [`web/niveau-1/`](web/niveau-1/), [`web/niveau-2/`](web/niveau-2/) | Contenu des niveaux 1 et 2 ; voir leurs README ([1](web/niveau-1/README.md), [2](web/niveau-2/README.md)) |
+| `web/niveau-1/` à `web/niveau-6/` | Contenu des 6 niveaux ; voir leurs README ([1](web/niveau-1/README.md), [2](web/niveau-2/README.md), [3](web/niveau-3/README.md), [4](web/niveau-4/README.md), [5](web/niveau-5/README.md), [6](web/niveau-6/README.md)) |
 | `web/cartes/` | Cartes vectorielles poker-qr (SVG) utilisées par l'application et par les illustrations |
 | [`bin/serve.sh`](bin/serve.sh) | Lance un serveur local et affiche l'adresse de l'application et de chaque niveau (`bin/serve.sh [port]`, `HOST=0.0.0.0` pour le réseau local) |
 | `tools/make_figs.py` | Génère les illustrations de `doc/figures/` à partir des cartes |

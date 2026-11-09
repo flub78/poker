@@ -10,8 +10,10 @@
 //            #transfert/<code>       lien de transfert reçu : la page, avec le résumé de ce qui arrive
 //
 // Code de transfert : placé après le « # », le navigateur ne l'envoie jamais au serveur.
-// Format : « 1. » + base64url( deflate-raw( JSON ) ), JSON = { v: 1, p: prénom, n: { niveau: { test: [tentatives] } } },
-// chaque tentative en tableau compact [secondes depuis 1970, graine, score, total, réussi 0/1, durée en s].
+// Format : « 1. » + base64url( deflate-raw( JSON ) ),
+// JSON = { v: 1, p: prénom, n: { niveau: { test: [tentatives] } }, m: { niveau: { critère: secondes } } },
+// chaque tentative en tableau compact [secondes depuis 1970, graine, score, total, réussi 0/1, durée en s] ;
+// m : critères vérifiés à la table, cochés (date en secondes).
 // Transfert et import de fichier passent par la fusion (storage.js, mergeData) : on ajoute les
 // tentatives manquantes, rien n'est jamais remplacé.
 import { h, clear } from './dom.js';
@@ -43,7 +45,8 @@ async function mergeLevels(byLevel, apply) {
   for (const lvl of known) {
     const incoming = byLevel[lvl.n];
     if (!incoming) continue;
-    const received = Object.values(incoming.tests || {}).reduce((s, t) => s + (t.attempts?.length || 0), 0);
+    const received = Object.values(incoming.tests || {}).reduce((s, t) => s + (t.attempts?.length || 0), 0)
+      + Object.keys(incoming.manual || {}).length;
     let added;
     if (apply) {
       added = lvl.store.merge(incoming);
@@ -74,14 +77,18 @@ function toBase64url(bytes) {
 const fromBase64url = (text) => Uint8Array.from(atob(text.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0));
 
 export async function createCode() {
-  const payload = { v: 1, p: getPlayerName(), n: {} };
+  const payload = { v: 1, p: getPlayerName(), n: {}, m: {} };
   let attempts = 0;
   for (const lvl of await levels()) {
+    const data = lvl.store.exportData();
     const tests = {};
-    for (const [id, t] of Object.entries(lvl.store.exportData().tests)) {
+    for (const [id, t] of Object.entries(data.tests)) {
       if (t.attempts?.length) { tests[id] = t.attempts.map(compact); attempts += t.attempts.length; }
     }
     if (Object.keys(tests).length) payload.n[lvl.n] = tests;
+    const manual = Object.entries(data.manual || {});
+    if (manual.length) payload.m[lvl.n] = Object.fromEntries(manual.map(([id, d]) => [id, Math.floor(Date.parse(d) / 1000)]));
+    attempts += manual.length;
   }
   const bytes = await pipe(new TextEncoder().encode(JSON.stringify(payload)), new CompressionStream('deflate-raw'));
   return { code: `${VERSION}.${toBase64url(bytes)}`, attempts };
@@ -103,6 +110,9 @@ export async function readCode(text) {
   const byLevel = {};
   for (const [n, tests] of Object.entries(payload.n)) {
     byLevel[n] = { tests: Object.fromEntries(Object.entries(tests).map(([id, list]) => [id, { attempts: list.map(expand) }])) };
+  }
+  for (const [n, manual] of Object.entries(payload.m || {})) {
+    byLevel[n] = { tests: {}, ...byLevel[n], manual: Object.fromEntries(Object.entries(manual).map(([id, s]) => [id, new Date(s * 1000).toISOString()])) };
   }
   return { player: payload.p || '', byLevel, code: `${m[1]}.${m[2]}` };
 }
@@ -179,16 +189,18 @@ async function summaryBlock() {
     const attempts = Object.values(data.tests).reduce((s, t) => s + (t.attempts?.length || 0), 0);
     const states = lvl.def.tests.map((t) => lvl.store.status(t.id).state);
     const done = states.filter((s) => s === 'validated').length;
+    const manual = lvl.def.manual || [];
+    const checked = manual.filter((m) => lvl.store.manualDate(m.id)).length;
     return h('tr', {},
       h('td', {}, h('a', { href: `#niveau-${lvl.n}` }, `Niveau ${lvl.n}`), ` · ${lvl.title}`),
-      h('td', {}, `${done} / ${states.length}`),
+      h('td', {}, `${done} / ${states.length}${manual.length ? ` · critères ${checked} / ${manual.length}` : ''}`),
       h('td', {}, String(attempts)),
       h('td', {}, lvl.def.tests.map((t, i) => `${t.code} : ${STATES[states[i]]}`).join(' ; ')));
   });
   return h('section', { class: 'block' },
     h('h2', {}, 'Mes résultats'),
     h('div', { class: 'table-wrap' }, h('table', { class: 'summary' },
-      h('thead', {}, h('tr', {}, h('th', {}, 'Niveau'), h('th', {}, 'Tests validés'), h('th', {}, 'Tentatives'), h('th', {}, 'Détail'))),
+      h('thead', {}, h('tr', {}, h('th', {}, 'Niveau'), h('th', {}, 'Validés'), h('th', {}, 'Tentatives'), h('th', {}, 'Détail'))),
       h('tbody', {}, rows))),
     h('p', { class: 'meta' }, 'Ils restent dans ce navigateur. Transférez-les ou sauvegardez-les ci-dessous pour ne pas les perdre.'));
 }
@@ -211,8 +223,8 @@ function receiveBlock(code) {
     box.append(...[
       h('h2', {}, 'Résultats reçus'),
       h('p', {}, got.player ? `Joueur : ${got.player}.` : 'Joueur sans prénom.'),
-      h('ul', {}, rows.map((r) => h('li', {}, `Niveau ${r.n} : ${plural(r.received, 'tentative')}, dont `,
-        h('strong', {}, `${r.added} nouvelle${r.added > 1 ? 's' : ''}`), '.'))),
+      h('ul', {}, rows.map((r) => h('li', {}, `Niveau ${r.n} : ${plural(r.received, 'résultat')}, dont `,
+        h('strong', {}, `${r.added} nouveau${r.added > 1 ? 'x' : ''}`), '.'))),
       ignored.length ? h('p', { class: 'meta' }, `Niveau${ignored.length > 1 ? 'x' : ''} ${ignored.join(', ')} : pas encore dans cette version de l'application, ignoré${ignored.length > 1 ? 's' : ''}.`) : null,
     ].filter(Boolean));
     history.replaceState(null, '', '#profil');   // le code quitte la barre d'adresse
@@ -231,7 +243,7 @@ function receiveBlock(code) {
             const added = done.rows.reduce((s, r) => s + r.added, 0);
             box.classList.add('ok');
             clear(box).append(h('h2', {}, 'Résultats ajoutés'),
-              h('p', {}, `${plural(added, 'tentative')} ajoutée${added > 1 ? 's' : ''} à ce navigateur.`));
+              h('p', {}, `${plural(added, 'résultat')} ajouté${added > 1 ? 's' : ''} à ce navigateur.`));
             const summary = main().querySelector('.summary')?.closest('.block');
             if (summary) summary.replaceWith(await summaryBlock());
             const nameField = main().querySelector('#player');
@@ -240,7 +252,7 @@ function receiveBlock(code) {
             message.textContent = `Échec : ${err.message}.`;
           }
         },
-      }, `Ajouter ${plural(total, 'tentative')} à mes résultats`),
+      }, `Ajouter ${plural(total, 'résultat')}`),
       h('button', { type: 'button', class: 'btn secondary', onclick: () => box.remove() }, 'Ignorer')),
     message);
   })();
@@ -261,7 +273,7 @@ function sendBlock() {
         const field = h('textarea', { class: 'transfer-link', readonly: true, rows: 3, 'aria-label': 'Lien de transfert' });
         field.value = link;
         const status = h('p', { class: 'meta', 'aria-live': 'polite' },
-          `${plural(attempts, 'tentative')}, lien de ${(link.length / 1024).toFixed(1)} Ko.`);
+          `${plural(attempts, 'résultat')} (tentatives et critères cochés), lien de ${(link.length / 1024).toFixed(1)} Ko.`);
         const copy = h('button', {
           type: 'button', class: 'btn secondary',
           onclick: async () => {
@@ -321,7 +333,7 @@ function fileBlock() {
       const done = await mergeLevels(got.byLevel, true);
       if (!getPlayerName() && got.player) { setPlayerName(got.player); notify(); }
       const added = done.rows.reduce((s, r) => s + r.added, 0);
-      status.textContent = `${file.name} : ${plural(added, 'tentative')} ajoutée${added > 1 ? 's' : ''} (les résultats déjà présents sont conservés).`;
+      status.textContent = `${file.name} : ${plural(added, 'résultat')} ajouté${added > 1 ? 's' : ''} (ceux déjà présents sont conservés).`;
       const summary = main().querySelector('.summary')?.closest('.block');
       if (summary) summary.replaceWith(await summaryBlock());
     } catch (err) {
@@ -330,7 +342,7 @@ function fileBlock() {
   };
   return h('section', { class: 'block' },
     h('h2', {}, 'Sauvegarde dans un fichier'),
-    h('p', {}, 'Un fichier JSON avec tous les niveaux. L\'import ajoute les tentatives qui manquent ; ',
+    h('p', {}, 'Un fichier JSON avec tous les niveaux. L\'import ajoute les tentatives et critères cochés qui manquent ; ',
       'il accepte aussi les anciens fichiers d\'un seul niveau.'),
     h('div', { class: 'practice-actions' },
       h('button', { type: 'button', class: 'btn secondary', onclick: exportFile }, 'Exporter mes résultats'),
