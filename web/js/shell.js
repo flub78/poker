@@ -15,6 +15,7 @@ import { h, clear, formatDate } from './dom.js';
 import { rng, newSeed } from './cards.js';
 import { CONFIG } from './config.js';
 import { createStore } from './storage.js';
+import { reviewLinks } from './cours.js';
 
 const STATE_LABEL = {
   none: 'Non tenté',
@@ -82,11 +83,6 @@ export function startApp({ level, storageKey, tests, practices, extraTabs = [], 
     const done = statuses.filter((s) => s.state === 'validated').length;
     const levelOk = done === tests.length;
 
-    const nameInput = h('input', {
-      type: 'text', id: 'player', value: store.getPlayer(), placeholder: 'Votre prénom', autocomplete: 'given-name',
-      onchange: (e) => store.setPlayer(e.target.value),
-    });
-
     main.append(
       tabs('tests'),
       h('section', { class: 'intro' },
@@ -94,7 +90,10 @@ export function startApp({ level, storageKey, tests, practices, extraTabs = [], 
           h('strong', {}, `deux réussites à au moins ${CONFIG.minDaysBetween} jours d'écart`),
           '. Les questions changent à chaque essai.'),
         testsNote ? h('p', {}, testsNote) : null,
-        h('label', { class: 'player', for: 'player' }, 'Joueur ', nameInput)),
+        // Prénom, sauvegarde, transfert, effacement : page Profil (bouton à droite des niveaux).
+        h('p', { class: 'meta' }, store.getPlayer() ? `Joueur : ${store.getPlayer()} · ` : '',
+          h('a', { href: '#profil' }, store.getPlayer() ? 'Profil' : 'Indiquez votre prénom dans le Profil'),
+          ' (sauvegarde, changement d\'appareil)')),
       h('section', { class: `level-status ${levelOk ? 'ok' : ''}` },
         levelOk
           ? h('p', {}, h('strong', {}, `Tests du niveau ${level} validés.`), ` Reportez la date dans votre carnet.`)
@@ -109,14 +108,10 @@ export function startApp({ level, storageKey, tests, practices, extraTabs = [], 
           h('h2', {}, ex.title),
           h('p', { class: 'meta' }, `Compétences ${ex.competences} · Réussite : ${ex.rule}`),
           h('p', { class: 'meta' }, statusLine(st)),
+          reviewLinks(ex.competences),
           h('button', { type: 'button', class: 'btn', onclick: () => run(ex) },
             st.state === 'none' ? 'Commencer' : 'Refaire le test'));
       })),
-      h('section', { class: 'tools' },
-        h('button', { type: 'button', class: 'btn secondary', onclick: exportData }, 'Exporter mes résultats'),
-        h('label', { class: 'btn secondary file-btn' }, 'Importer des résultats',
-          h('input', { type: 'file', accept: 'application/json', onchange: importData })),
-        h('button', { type: 'button', class: 'btn danger', onclick: resetData }, 'Effacer mes résultats')),
     );
   }
 
@@ -134,6 +129,7 @@ export function startApp({ level, storageKey, tests, practices, extraTabs = [], 
         h('div', { class: 'test-head' }, h('span', { class: 'test-code' }, `Compétences ${px.competences}`)),
         h('h2', {}, px.title),
         h('p', { class: 'meta' }, px.summary),
+        reviewLinks(px.competences),
         h('button', { type: 'button', class: 'btn', onclick: () => practice(px) }, 'S\'entraîner')))),
     );
   }
@@ -156,7 +152,8 @@ export function startApp({ level, storageKey, tests, practices, extraTabs = [], 
       h('div', { class: 'exercise-head' },
         h('button', { type: 'button', class: 'link-btn', onclick: exercisesHome }, '← Exercices'),
         h('h2', {}, px.title),
-        h('p', { class: 'meta' }, `Compétences ${px.competences} · ${px.summary}`)),
+        h('p', { class: 'meta' }, `Compétences ${px.competences} · ${px.summary}`),
+        reviewLinks(px.competences)),
       h('div', { class: 'settings' }, px.settings.map((s) => h('label', { class: 'setting' }, s.label,
         h('select', { onchange: (e) => practice(px, { ...settings, [s.id]: e.target.value }) },
           s.options.map((o) => h('option', { value: o.value, selected: settings[s.id] === o.value }, o.label)))))),
@@ -229,7 +226,8 @@ export function startApp({ level, storageKey, tests, practices, extraTabs = [], 
         h('p', { class: 'score' }, `${result.score} / ${result.total}`),
         h('p', {}, verdict),
         h('p', { class: 'meta' }, `Durée : ${Math.floor(attempt.seconds / 60)} min ${attempt.seconds % 60} s`),
-        saved ? null : h('p', { class: 'meta' }, 'Attention : votre navigateur bloque l\'enregistrement, ce résultat ne sera pas conservé.')),
+        saved ? null : h('p', { class: 'meta' }, 'Attention : votre navigateur bloque l\'enregistrement, ce résultat ne sera pas conservé.'),
+        reviewLinks(ex.competences)),
       h('section', { class: 'block' },
         h('h3', {}, 'Correction'),
         h('ol', { class: 'review' }, result.items.map((it) => h('li', { class: it.ok ? 'ok' : 'ko' },
@@ -239,36 +237,6 @@ export function startApp({ level, storageKey, tests, practices, extraTabs = [], 
         h('button', { type: 'button', class: 'btn secondary', onclick: () => run(ex) }, 'Refaire ce test'),
         h('button', { type: 'button', class: 'btn primary', onclick: dashboard }, 'Retour au tableau de bord')),
     );
-  }
-
-  // ---------- outils ----------
-
-  function exportData() {
-    const blob = new Blob([store.exportJSON()], { type: 'application/json' });
-    const a = h('a', { href: URL.createObjectURL(blob), download: `poker-niveau${level}-${new Date().toISOString().slice(0, 10)}.json` });
-    document.body.append(a);
-    a.click();
-    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 0);
-  }
-
-  function importData(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    file.text().then((text) => {
-      try {
-        store.importJSON(text);
-        dashboard();
-      } catch (err) {
-        alert(`Import impossible : ${err.message}`);
-      }
-    });
-  }
-
-  function resetData() {
-    if (confirm(`Effacer tous vos résultats du niveau ${level} ? Cette action est définitive.`)) {
-      store.reset();
-      dashboard();
-    }
   }
 
   (TABS.find((t) => t.id === startTab) || TABS[0]).view();

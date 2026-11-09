@@ -1,24 +1,26 @@
-"""Version HTML du tutoriel, pour l'onglet « Cours » de l'application (web/).
+"""Publie un Claude Doc sous forme de site à pages : le « Cours » de l'application (web/).
 
-Source : l'export HTML (format `html`) du Claude Doc « Initiation au poker — programme progressif ».
-Le script découpe le document en pages :
+Source : l'export HTML (format `html`) du doc. Tout ce qui est propre au doc est dans un fichier
+de configuration JSON (par défaut tools/cours_config.json) :
 
-    accueil (titre + table des matières), introduction, mode d'emploi,
-    niveau-1 … niveau-6, puis les annexes grille, ressources, glossaire
+    auteur          nom affiché à la place de la mention de l'auteur
+    sortie          dossier écrit : <sortie>/contenu.js et <sortie>/img/
+    chemin_images   chemin des images vu depuis la page web
+    images          id de blob du doc → fichier local (une image nouvelle doit y être ajoutée)
+    pages           une entrée par titre de niveau 2, dans l'ordre :
+                    { titre (expression régulière), id, court?, annexe? }
+    couverture      { page, credit } : la première image de cette page, et le paragraphe
+                    en italique qui commence par `credit`, vont sur l'accueil
+    escaliers       tableaux à dessiner en escalier : { titre, prefixe, legende }. Le tableau
+                    suit un paragraphe en gras égal à `titre` ; colonnes : étape, objectif,
+                    durée, test pour passer à l'étape suivante.
 
-et écrit :
-    web/cours/contenu.js   les pages (module ES : export default { title, byline, pages })
-    web/cours/img/         les illustrations (copiées depuis doc/figures et doc/images)
-
-Il remplace aussi ce que l'export ne sait pas rendre hors de Claude Docs :
-- les images (blob/…) par les fichiers locaux (table BLOBS ci-dessous) ;
-- le graphique « escalier » des six niveaux (widget du doc) par une figure HTML ;
-- les liens internes du doc (#<id de bloc>) par l'adresse de la section dans le cours ;
+Le script remplace aussi ce que l'export ne sait pas rendre hors de Claude Docs :
+- les liens internes du doc (#<id de bloc>), résolus par le texte du lien (« C3.7 ») ;
 - la mention de l'auteur, les listes déroulantes (statut de la grille), la date.
-La photo d'ouverture de l'introduction passe sur l'accueil du cours (champ cover).
-Les symboles ♥ ♦ sont colorés en rouge, ♠ ♣ en noir.
+Les symboles ♥ ♦ sont colorés en rouge, ♠ ♣ en noir, toujours affichés en texte (jamais en émoji).
 
-Usage : python3 tools/cours_html.py export.html
+Usage : python3 tools/cours_html.py export.html [config.json]
 """
 import html
 import json
@@ -30,52 +32,6 @@ from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT_DIR = ROOT / "web" / "cours"
-AUTHOR = "Frédéric Peignot"
-
-# Images du doc (id de blob) → fichier local. Une image nouvelle dans le doc doit être ajoutée ici.
-BLOBS = {
-    "534de084-70ba": "doc/images/mallette-poker.jpg",
-    "da974040-16a6": "doc/figures/fig-main-complete.png",
-    "d207e48a-20be": "doc/figures/fig-classement.png",
-    "4e1bb97d-ae22": "doc/figures/fig-nuts.png",
-    "d9bf37ed-115c": "doc/figures/fig-mains-depart.png",
-    "9ada2409-d5a1": "doc/figures/fig-outs.png",
-    "1f8f621f-8b6b": "doc/figures/fig-duels.png",
-    "f653b3c8-4dfa": "doc/figures/fig-textures.png",
-    "3d3e87a9-2b50": "doc/figures/fig-range.png",
-}
-
-# Graphique « Six niveaux, chacun ouvert par un test de passage » (widget du doc, absent de l'export).
-STAIRS = [
-    ("Niveau 1 · Les règles", "Jouer une main complète sans aide", "1 semaine",
-     "main complète, 10 mains classées, nuts 18 sur 20"),
-    ("Niveau 2 · Anti-erreurs", "Jouer serré et agressif avant le flop", "2 à 3 semaines",
-     "VPIP 18 à 26 % sur 500 mains, aucun limp"),
-    ("Niveau 3 · Probabilités", "Savoir en 10 secondes si un call est rentable", "3 à 4 semaines",
-     "18 décisions call ou fold sur 20, en 10 s chacune"),
-    ("Niveau 4 · Après le flop", "Chaque mise a une raison : valeur ou bluff", "1 à 2 mois",
-     "5 000 mains au moins à l'équilibre"),
-    ("Niveau 5 · Ranges et adaptation", "Raisonner sur l'éventail adverse, exploiter", "2 à 3 mois",
-     "ranges décrites, bankroll et limite de perte tenues"),
-    ("Niveau 6 · Vers le GTO", "S'entraîner au solveur, puis exploiter", "continu", None),
-]
-
-# Grandes parties (titres h2) → page. Les annexes sont marquées pour la table des matières.
-PAGES = [
-    (r"Introduction", "introduction", "Introduction", False),
-    (r"Mode d'emploi", "mode-d-emploi", "Mode d'emploi", False),
-    (r"Niveau 1\b", "niveau-1", None, False),
-    (r"Niveau 2\b", "niveau-2", None, False),
-    (r"Niveau 3\b", "niveau-3", None, False),
-    (r"Niveau 4\b", "niveau-4", None, False),
-    (r"Niveau 5\b", "niveau-5", None, False),
-    (r"Niveau 6\b", "niveau-6", None, False),
-    (r"Grille d'auto-évaluation", "grille", None, True),
-    (r"Ressources d'entraînement", "ressources", None, True),
-    (r"Glossaire", "glossaire", None, True),
-]
-
 MONTHS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août",
           "septembre", "octobre", "novembre", "décembre"]
 
@@ -90,12 +46,12 @@ def plain(fragment):
 
 
 def color_suits(fragment):
-    """Colore les symboles de couleur dans le texte, jamais dans les attributs (alt…)."""
+    """Colore les symboles de couleur dans le texte, jamais dans les attributs (alt…).
+    Le doc contient parfois U+FE0F (« afficher en émoji ») : on le remplace par U+FE0E (« en texte »)."""
     def repl(m):
-        text = m.group(1)
-        # U+FE0E : affichage en texte, pas en émoji (certaines polices dessinent ♠ ♥ en émoji)
-        text = re.sub(r"([♥♦])\uFE0E?", "<span class=\"suit red\">\\1\uFE0E</span>", text)
-        text = re.sub(r"([♠♣])\uFE0E?", "<span class=\"suit black\">\\1\uFE0E</span>", text)
+        text = m.group(1).replace("️", "")
+        text = re.sub(r"([♥♦])︎?", "<span class=\"suit red\">\\1︎</span>", text)
+        text = re.sub(r"([♠♣])︎?", "<span class=\"suit black\">\\1︎</span>", text)
         return ">" + text + "<"
     return re.sub(r">([^<]+)<", repl, fragment)
 
@@ -114,40 +70,60 @@ def image_size(path):
     sys.exit(f"Erreur : taille de {path} illisible.")
 
 
-def stairs_html():
+def stairs(body, spec):
+    """Remplace le tableau qui suit le titre `spec['titre']` par une figure en escalier."""
+    m = None
+    for t in re.finditer(r"<p><strong>([^<]*)</strong></p>\s*<div class=\"table-wrap\"><table>.*?<tbody>(.*?)</tbody></table></div>",
+                         body, re.S):
+        if plain(t.group(1)) == spec["titre"]:
+            m = t
+            break
+    if not m:
+        return body, False
     items = []
-    for title, goal, duration, test in STAIRS:
+    for row in re.findall(r"<tr>(.*?)</tr>", m.group(2), re.S):
+        cells = [c.strip() for c in re.findall(r"<td>(.*?)</td>", row, re.S)]
+        step, goal, duration, test = (cells + ["", "", "", ""])[:4]
+        has_test = plain(test) not in ("", "—", "-")
         items.append(
-            f'<li><div class="stair"><div class="stair-head"><strong>{html.escape(title)}</strong>'
-            f'<span class="stair-time">{html.escape(duration)}</span></div>'
-            f'<div>{html.escape(goal)}</div></div>'
-            + (f'<p class="stair-test">Test : {html.escape(test)}</p>' if test else "") + "</li>")
-    return ('<figure class="stairs"><p class="stairs-title">Six niveaux, chacun ouvert par un test de passage</p>'
-            f'<ol>{"".join(items)}</ol>'
-            '<figcaption>Progression : 6 niveaux, 5 tests de passage</figcaption></figure>')
+            f'<li><div class="stair"><div class="stair-head"><strong>{spec.get("prefixe", "")}{step}</strong>'
+            f'<span class="stair-time">{duration}</span></div><div>{goal}</div></div>'
+            # « Main complète » → « main complète », mais « VPIP » reste en majuscules
+            + (f'<p class="stair-test">Test : {test[0].lower() + test[1:] if test[1:2].islower() else test}</p>'
+               if has_test else "")
+            + "</li>")
+    figure = (f'<figure class="stairs"><p class="stairs-title">{html.escape(spec["titre"])}</p>'
+              f'<ol>{"".join(items)}</ol>'
+              + (f'<figcaption>{html.escape(spec["legende"])}</figcaption>' if spec.get("legende") else "")
+              + "</figure>")
+    return body[:m.start()] + figure + body[m.end():], True
 
 
-def main(src):
+def main(src, config_path):
+    cfg = json.loads(Path(config_path).read_text(encoding="utf-8"))
+    out_dir = ROOT / cfg["sortie"]
+    author = cfg.get("auteur", "")
+    blobs = cfg.get("images", {})
     doc = Path(src).read_text(encoding="utf-8")
 
     # --- en-tête : titre et ligne de date ---
     title = plain(re.search(r"<h1[^>]*>(.*?)</h1>", doc, re.S).group(1))
     m = re.search(r'<time[^>]*datetime="(\d{4})-(\d{2})-(\d{2})"', doc)
     updated = date(int(m.group(1)), int(m.group(2)), int(m.group(3))) if m else None
-    byline = AUTHOR + (f" · mis à jour le {updated.day} {MONTHS[updated.month - 1]} {updated.year}" if updated else "")
+    byline = author + (f" · mis à jour le {updated.day} {MONTHS[updated.month - 1]} {updated.year}" if updated else "")
 
     # --- découpage par h2 ---
-    parts = re.split(r"(?=<h2[ >])", doc)
-    sections = parts[1:]
-    if len(sections) != len(PAGES):
-        sys.exit(f"Erreur : {len(sections)} grandes parties dans l'export, {len(PAGES)} attendues (PAGES).")
+    sections = re.split(r"(?=<h2[ >])", doc)[1:]
+    specs = cfg["pages"]
+    if len(sections) != len(specs):
+        found = ", ".join(plain(re.match(r"<h2[^>]*>(.*?)</h2>", s, re.S).group(1)) for s in sections)
+        sys.exit(f"Erreur : {len(sections)} grandes parties dans l'export ({found}), {len(specs)} attendues (pages).")
 
     pages = []
-    used_blobs = set()
-    for body, (pattern, pid, short, annex) in zip(sections, PAGES):
+    for body, spec in zip(sections, specs):
         h2 = plain(re.match(r"<h2[^>]*>(.*?)</h2>", body, re.S).group(1))
-        if not re.match(pattern, h2):
-            sys.exit(f"Erreur : partie « {h2} » trouvée, « {pattern} » attendue.")
+        if not re.match(spec["titre"], h2):
+            sys.exit(f"Erreur : partie « {h2} » trouvée, « {spec['titre']} » attendue.")
         body = re.sub(r"^<h2[^>]*>.*?</h2>\s*", "", body, flags=re.S)
 
         # sous-titres h3 : identifiants sans accents, pour l'adresse #cours/<page>/<section>
@@ -155,23 +131,22 @@ def main(src):
 
         def h3(m):
             text = plain(m.group(1))
-            sid = slug(text)
-            subs.append({"id": sid, "title": text})
-            return f'<h3 id="{sid}">{m.group(1)}</h3>'
+            subs.append({"id": slug(text), "title": text})
+            return f'<h3 id="{slug(text)}">{m.group(1)}</h3>'
         body = re.sub(r"<h3[^>]*>(.*?)</h3>", h3, body, flags=re.S)
 
-        pages.append({"id": pid, "title": h2, "short": short or h2.split(" — ")[0],
+        pages.append({"id": spec["id"], "title": h2, "short": spec.get("court") or h2.split(" — ")[0],
                       "subtitle": h2.split(" — ")[1] if " — " in h2 else None,
-                      "annex": annex, "sections": subs, "html": body})
+                      "annex": bool(spec.get("annexe")), "sections": subs, "html": body})
 
     # index des sections, pour résoudre les liens internes par leur texte (« C3.7 »)
     index = {}
     for p in pages:
         for s in p["sections"]:
-            code = s["title"].split(" ")[0]
-            index[code] = f"#cours/{p['id']}/{s['id']}"
-            index[s["title"]] = index[code]
+            index[s["title"].split(" ")[0]] = index[s["title"]] = f"#cours/{p['id']}/{s['id']}"
 
+    used_blobs = set()
+    stairs_done = set()
     for p in pages:
         body = p["html"]
 
@@ -188,52 +163,66 @@ def main(src):
 
         def img(m):
             blob, alt = m.group(1), m.group(2)
-            if blob not in BLOBS:
-                sys.exit(f"Erreur : image blob/{blob} inconnue ({html.unescape(alt)}) ; ajoutez-la à BLOBS.")
+            if blob not in blobs:
+                sys.exit(f"Erreur : image blob/{blob} inconnue ({html.unescape(alt)}) ; ajoutez-la à « images ».")
             used_blobs.add(blob)
-            name = Path(BLOBS[blob]).name
-            w, h = image_size(ROOT / BLOBS[blob])
-            return f'<img src="cours/img/{name}" alt="{alt}" width="{w}" height="{h}" loading="lazy">'
+            w, h = image_size(ROOT / blobs[blob])
+            return (f'<img src="{cfg["chemin_images"]}/{Path(blobs[blob]).name}" alt="{alt}" '
+                    f'width="{w}" height="{h}" loading="lazy">')
         body = re.sub(r'<img src="blob/([^"]+)" alt="([^"]*)">', img, body)
         body = re.sub(r"<p>(<img [^>]*>)</p>", r'<figure class="figure">\1</figure>', body)
 
-        body = re.sub(r'<figure data-embed="[^"]*">.*?</figure>', lambda _: stairs_html(), body, flags=re.S)
+        if re.search(r"<figure data-embed=", body):
+            print(f"Attention : graphique du doc non exportable dans « {p['title']} », retiré. "
+                  "Le remplacer dans le doc par un tableau (voir « escaliers »).")
+            body = re.sub(r'<figure data-embed="[^"]*">.*?</figure>', "", body, flags=re.S)
         body = re.sub(r'<span data-atom="enum"[^>]*>(.*?)</span>', r'<span class="chip">\1</span>', body)
-        body = re.sub(r'<span data-atom="mention"[^>]*>.*?</span>', AUTHOR, body)
-        body = re.sub(r"<table>", '<div class="table-wrap"><table>', body)
-        body = re.sub(r"</table>", "</table></div>", body)
+        body = re.sub(r'<span data-atom="mention"[^>]*>.*?</span>', author, body)
+        body = body.replace("<table>", '<div class="table-wrap"><table>').replace("</table>", "</table></div>")
+        for spec in cfg.get("escaliers", []):
+            body, done = stairs(body, spec)
+            if done:
+                stairs_done.add(spec["titre"])
         p["html"] = color_suits(body).strip()
 
-    # La photo d'ouverture (et son crédit) va sur l'accueil, comme en page 1 du PDF.
-    intro = pages[0]
-    m = re.search(r'<figure class="figure">.*?</figure>\s*(?:<p><em>Photo[^<]*</em></p>)?', intro["html"], re.S)
-    cover = m.group(0) if m else ""
-    if m:
-        intro["html"] = (intro["html"][:m.start()] + intro["html"][m.end():]).strip()
-        cover = cover.replace(' loading="lazy"', "").replace("<p><em>", '<p class="cover-credit"><em>')
+    for spec in cfg.get("escaliers", []):
+        if spec["titre"] not in stairs_done:
+            sys.exit(f"Erreur : tableau « {spec['titre']} » introuvable (paragraphe en gras + tableau).")
+    unused = [b for b in blobs if b not in used_blobs]
+    if unused:
+        print(f"Attention : images de la configuration absentes du doc : {', '.join(unused)}")
 
-    missing = [b for b in BLOBS if b not in used_blobs]
-    if missing:
-        print(f"Attention : images de BLOBS absentes du doc : {', '.join(missing)}")
+    # --- couverture : première image (et son crédit) de la page indiquée, déplacée sur l'accueil ---
+    cover = ""
+    cov = cfg.get("couverture")
+    if cov:
+        page = next(p for p in pages if p["id"] == cov["page"])
+        credit = re.escape(cov.get("credit", "\u0000"))
+        m = re.search(r'<figure class="figure">.*?</figure>\s*(?:<p><em>' + credit + r'[^<]*</em></p>)?',
+                      page["html"], re.S)
+        if m:
+            page["html"] = (page["html"][:m.start()] + page["html"][m.end():]).strip()
+            cover = m.group(0).replace(' loading="lazy"', "").replace("<p><em>", '<p class="cover-credit"><em>')
 
     # --- sortie ---
-    img_dir = OUT_DIR / "img"
+    img_dir = out_dir / "img"
     if img_dir.exists():
         shutil.rmtree(img_dir)
     img_dir.mkdir(parents=True)
     for b in used_blobs:
-        shutil.copy2(ROOT / BLOBS[b], img_dir / Path(BLOBS[b]).name)
+        shutil.copy2(ROOT / blobs[b], img_dir / Path(blobs[b]).name)
 
     data = {"title": title, "byline": byline, "cover": cover, "pages": pages}
-    js = ("// Fichier généré par tools/cours_html.py à partir de l'export HTML du Claude Doc.\n"
+    js = (f"// Fichier généré par tools/cours_html.py ({Path(config_path).name}) "
+          "à partir de l'export HTML du Claude Doc.\n"
           "// Ne pas modifier à la main : modifier le doc, réexporter, relancer le script.\n"
           "export default " + json.dumps(data, ensure_ascii=False, indent=1) + ";\n")
-    (OUT_DIR / "contenu.js").write_text(js, encoding="utf-8")
+    (out_dir / "contenu.js").write_text(js, encoding="utf-8")
     print(f"{len(pages)} pages, {sum(len(p['sections']) for p in pages)} sections, "
-          f"{len(used_blobs)} images → {OUT_DIR.relative_to(ROOT)}/")
+          f"{len(used_blobs)} images → {out_dir.relative_to(ROOT)}/")
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
+    if len(sys.argv) not in (2, 3):
         sys.exit(__doc__)
-    main(sys.argv[1])
+    main(sys.argv[1], sys.argv[2] if len(sys.argv) == 3 else ROOT / "tools" / "cours_config.json")

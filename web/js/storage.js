@@ -6,6 +6,34 @@ import { CONFIG } from './config.js';
 
 const EMPTY = () => ({ version: 1, player: '', tests: {} });
 
+// Prénom du joueur : un seul pour tout le site (page Profil). Avant, chaque niveau avait le sien
+// (champ player de ses données) : s'il n'y a pas encore de prénom global, on reprend celui-là.
+const PLAYER_KEY = 'poker.joueur';
+
+export function getPlayerName() {
+  try {
+    const name = localStorage.getItem(PLAYER_KEY);
+    if (name !== null) return name;
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (/^poker\.niveau\d+\./.test(key)) {
+        const old = JSON.parse(localStorage.getItem(key) || '{}').player;
+        if (old) return old;
+      }
+    }
+  } catch { /* stockage bloqué */ }
+  return '';
+}
+
+export function setPlayerName(name) {
+  try {
+    localStorage.setItem(PLAYER_KEY, name.trim());
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 const dayIndex = (iso) => {
   const d = new Date(iso);
   return Math.floor(new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime() / 86400000);
@@ -15,6 +43,26 @@ export function addDays(iso, n) {
   const d = new Date(iso);
   d.setDate(d.getDate() + n);
   return d.toISOString();
+}
+
+// Identité d'une tentative : sa seconde et sa graine. Une tentative n'est jamais modifiée, donc
+// fusionner deux historiques revient à les réunir sans doublon (code de transfert, import).
+const attemptKey = (a) => `${Math.floor(Date.parse(a.date) / 1000)}|${a.seed}`;
+
+// Fusionne incoming dans base (deux données de niveau { version, player, tests }).
+// Renvoie { data, added } ; base n'est pas modifié. (Le prénom est global : getPlayerName.)
+export function mergeData(base, incoming) {
+  const data = { ...EMPTY(), ...base, tests: { ...base.tests } };
+  let added = 0;
+  for (const [testId, t] of Object.entries(incoming.tests || {})) {
+    const mine = data.tests[testId]?.attempts || [];
+    const seen = new Set(mine.map(attemptKey));
+    const fresh = (t.attempts || []).filter((a) => a && a.date && !seen.has(attemptKey(a)) && seen.add(attemptKey(a)));
+    if (!fresh.length) continue;
+    added += fresh.length;
+    data.tests[testId] = { ...data.tests[testId], attempts: [...mine, ...fresh].sort((a, b) => a.date.localeCompare(b.date)) };
+  }
+  return { data, added };
 }
 
 export function createStore(storageKey) {
@@ -39,13 +87,8 @@ export function createStore(storageKey) {
   const attempts = (testId) => read().tests[testId]?.attempts || [];
 
   return {
-    getPlayer: () => read().player,
-
-    setPlayer(name) {
-      const data = read();
-      data.player = name.trim();
-      write(data);
-    },
+    getPlayer: getPlayerName,
+    setPlayer: setPlayerName,
 
     attempts,
 
@@ -71,14 +114,26 @@ export function createStore(storageKey) {
       };
     },
 
+    exportData: () => read(),
+
     exportJSON: () => JSON.stringify(read(), null, 2),
 
+    // Ajoute les tentatives de incoming qui manquent ; renvoie leur nombre (false si l'écriture échoue).
+    merge(incoming) {
+      const { data, added } = mergeData(read(), incoming);
+      if (!added) return 0;
+      return write(data) ? added : false;
+    },
+
+    // Import d'un fichier exporté : fusion, pas remplacement (les tentatives locales restent).
     importJSON(text) {
       const data = JSON.parse(text);
       if (!data || typeof data !== 'object' || typeof data.tests !== 'object') {
         throw new Error('Fichier non reconnu.');
       }
-      write({ ...EMPTY(), ...data });
+      const added = this.merge(data);
+      if (added === false) throw new Error('le navigateur bloque l\'enregistrement.');
+      return added;
     },
 
     reset() {

@@ -63,6 +63,7 @@ body {
 
 .site-footer { color: var(--quiet); font-size: 0.85rem; padding: 32px 0; }
 .site-footer p { margin: 4px 0; }
+.site-footer a { color: inherit; }
 
 /* navigation entre niveaux */
 .level-nav { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
@@ -271,9 +272,28 @@ a.level-link:focus-visible { outline: 3px solid var(--felt-ink); outline-offset:
   .announce .btn { width: 100%; }
 }
 
+/* ---------- profil (js/profil.js) ---------- */
+
+.level-nav .profile-link { margin-left: auto; }
+.profile-icon { width: 18px; height: 18px; flex: none; }
+.summary td:first-child { white-space: nowrap; }
+.summary a, .block a:not(.btn), .intro .meta a { color: var(--accent); }
+
+.block h2 { font-size: 1.15rem; margin: 0 0 8px; }
+.block textarea { width: 100%; font: 0.85rem ui-monospace, monospace; color: var(--ink); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 8px; padding: 8px; word-break: break-all; }
+.transfer-receive { border-width: 2px; border-color: var(--accent); }
+.transfer-receive.ok { border-color: var(--good); background: var(--good-soft); }
+.transfer-receive.ko { border-color: var(--bad); background: var(--bad-soft); }
+.transfer-receive ul { margin: 4px 0 12px; }
+
 /* ---------- cours (js/cours.js) ---------- */
 
+.review-links { font-size: 0.9rem; color: var(--quiet); margin: 0 0 12px; }
+.review-links a { color: var(--accent); font-weight: 600; }
+
 .level-link.cours-link { margin-right: 8px; }
+.level-nav { flex-wrap: nowrap; }
 a.level-link.current:hover { background: var(--felt-ink); }
 
 .cours-nav { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; }
@@ -334,12 +354,12 @@ a.level-link.current:hover { background: var(--felt-ink); }
 
 .table-wrap { overflow-x: auto; margin: 12px 0 16px; max-width: calc(100vw - 32px); }
 .cours-body:has(.table-wrap) { max-width: none; }
-.cours-body table { border-collapse: collapse; font-size: 0.92rem; min-width: 100%; background: var(--surface); }
-.cours-body th, .cours-body td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
-.cours-body th { background: var(--bg); font-weight: 700; }
+.summary, .cours-body table { border-collapse: collapse; font-size: 0.92rem; min-width: 100%; background: var(--surface); }
+.summary th, .summary td, .cours-body th, .cours-body td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+.summary th, .cours-body th { background: var(--bg); font-weight: 700; }
 .cours-body td p { margin: 0; }
 .cours-body .chip { white-space: nowrap; }
-.cours-body td:has(.suit) { white-space: nowrap; }
+.grid-note { padding: 8px 12px; border-radius: 8px; background: var(--accent-soft); font-size: 0.92rem; }
 .cours-body th, .cours-body td { min-width: 6em; }
 
 .cours-practice { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; padding: 16px; border-radius: var(--radius); background: var(--accent-soft); }
@@ -366,9 +386,54 @@ a.level-link.current:hover { background: var(--felt-ink); }
   .cours-nav-mid { grid-column: 1 / -1; grid-row: 1; flex-direction: row; justify-content: space-between; width: 100%; }
   .cours-nav.bottom .cours-nav-mid { grid-row: 2; }
   .stairs li { margin-left: 0 !important; }
-  .level-nav .level-nav-title { display: none; }   /* place libérée pour le bouton Cours */
-  .level-nav ul { gap: 4px; }
-  .level-link.cours-link { margin-right: 4px; }
+  .level-nav .level-nav-title { display: none; }   /* place libérée pour les boutons Cours et Profil */
+  .level-nav { gap: 4px; }
+  .level-nav ul { gap: 3px; }
+  .level-link { min-width: 32px; padding: 0 6px; }
+  .level-link.cours-link { margin-right: 3px; }
   .stair-head { flex-direction: column; gap: 0; }
 }
-@media print { .cours-nav, .page-toc, .cours-practice { display: none; } }
+/* vue « tout le cours » (#cours/imprimer) */
+.print-only { display: none; }
+.cours-print-link { margin: 4px 0 0; }
+.cours-print .print-part > h2 { font-size: 1.5rem; margin: 48px 0 12px; padding-top: 16px; border-top: 2px solid var(--line); }
+.cours-print .print-toc h2 { font-size: 1.3rem; }
+.cours-print .toc a { display: flex; gap: 8px; }
+.cours-print .toc-text { flex: 1; }
+.cours-print .toc-sections { display: grid; gap: 2px; padding-left: 1.2em; }
+.toc-pageno { font-variant-numeric: tabular-nums; color: var(--quiet); }
+
+@media print {
+  :root {
+    --bg: #ffffff; --surface: #ffffff; --ink: #1f2328; --quiet: #5b636b; --line: #d9dcd6;
+    --accent: #1f5fa8; --accent-soft: #e6eef8; --good: #1b7a3d; --good-soft: #e5f4e8;
+    --bad: #b3261e; --bad-soft: #fbeaea; --warn: #8a5a00; --warn-soft: #fbf1dc;
+    color-scheme: light;
+  }
+  .suit.red { color: #c62828; }
+  body { font-size: 11pt; line-height: 1.45; background: #fff; }
+  .site-header, .site-footer, .cours-nav, .page-toc, .cours-practice, .no-print, .review-links, .grid-note { display: none !important; }
+  .wrap { max-width: none; padding: 0; }
+  .print-only { display: block; }
+  .print-title { font-size: 22pt; font-weight: 700; margin: 0 0 6px; }
+  .cours-cover img { max-height: 110mm; }
+  .print-toc { break-before: page; }
+  .print-toc .toc > li { padding: 4px 0; break-inside: avoid; }
+  .print-toc .toc-page { font-size: 11pt; }
+  .print-toc .toc-sections { font-size: 9.5pt; margin-top: 2px; }
+  .print-toc .toc-sections a { color: var(--ink); text-decoration: none; }
+  .print-toc a { text-decoration: none; }
+  .print-part { break-before: page; }
+  .cours-print .print-part > h2 { margin-top: 0; padding-top: 0; border-top: 0; font-size: 18pt; }
+  .cours-body { max-width: none; }
+  .cours-body h3 { break-after: avoid; margin-top: 18pt; }
+  .cours-body p:has(> strong:only-child) { break-after: avoid; }
+  figure, .figure, .stairs, .stair, tr, .cours-body li { break-inside: avoid; }
+  .figure img { max-height: 120mm; width: auto; }
+  .table-wrap { overflow: visible; max-width: none; }
+  .cours-body table { font-size: 9pt; }
+  .cours-body th, .cours-body td { min-width: 0; padding: 3px 6px; }
+  a { color: inherit; }
+  .cours-body a[target="_blank"]::after { content: " (" attr(href) ")"; font-size: 8pt; color: var(--quiet); word-break: break-all; }
+  .level-nav { display: none; }
+}
