@@ -23,8 +23,8 @@ Les deux tests vérifient la compétence sur des situations générées ; le cou
 
 ## Règles de réponse
 
-- **Catégories de la range** : forte = deux paires ou mieux ; moyenne = une paire ; bluff = moins qu'une paire. Le cours ne les définit pas : ce sont les définitions de l'application, rappelées sous chaque question. Les tableaux ne permettent ni quinte ni couleur.
-- **Profils** : le cours donne les profils et leur exploitation, pas de seuils chiffrés. Repères de l'application : serré = VPIP sous 25 %, large = VPIP au-dessus de 35 % ; passif = AF sous 1,5, agressif = AF au-dessus de 2,5. Les statistiques tirées restent loin de ces seuils (voir la suggestion S-014).
+- **Catégories de la range** : forte = deux paires ou mieux ; moyenne = une paire ; bluff = moins qu'une paire. Définitions du cours (C5.1), rappelées sous chaque question. Les tableaux ne permettent ni quinte ni couleur.
+- **Profils** : repères du cours (C5.4) : serré = VPIP sous 25 %, large = VPIP au-dessus de 35 % ; passif = AF sous 1,5, agressif = AF au-dessus de 2,5. Les statistiques tirées restent loin de ces seuils.
 - **Bankroll** : les bankrolls trop proches d'un seuil (à 8 % près) ne sont pas tirées.
 
 ## Organisation du code

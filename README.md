@@ -6,7 +6,7 @@ Méthode progressive d'apprentissage du Texas Hold'em No-Limit en 6 niveaux, du 
 
 | Fichier | Description |
 | --- | --- |
-| [`doc/initiation-poker-tutoriel.pdf`](doc/initiation-poker-tutoriel.pdf) | Le tutoriel complet, imprimé depuis le cours de l'application : règles, stratégie, probabilités, exercices, tests de passage, ressources, glossaire, avec table des matières (36 pages) |
+| [`doc/initiation-poker-tutoriel.pdf`](doc/initiation-poker-tutoriel.pdf) | Le tutoriel complet, imprimé depuis le cours de l'application : règles, stratégie, probabilités, exercices, tests de passage, ressources, glossaire, avec table des matières (37 pages) |
 | [`doc/carnet-progression-poker.pdf`](doc/carnet-progression-poker.pdf) | Carnet de progression individuel, formulaire PDF à remplir (10 pages) |
 | [`doc/suggestions.md`](doc/suggestions.md) | Suggestions d'amélioration du projet, avec bénéfices et coûts, classées par rapport bénéfice/coût |
 | [`strategie_suggestions.md`](strategie_suggestions.md) | Comment les suggestions sont produites : consignes, commandes `/suggestions` et `/audit-suggestions` (dans `.claude/skills/`), revues à créer |
