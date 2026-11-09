@@ -6,11 +6,15 @@
 //            index.html#niveau-2/aide       onglet propre au niveau
 //            index.html#cours               le cours (tutoriel), accueil et table des matières
 //            index.html#cours/niveau-1      une page du cours (voir js/cours.js)
+//            index.html#profil              prénom, résultats, transfert, sauvegarde (voir js/profil.js)
+//            index.html#transfert/<code>    lien de transfert reçu : page Profil
 // Sans niveau dans l'adresse, on reprend le dernier niveau ouvert (sinon le 1).
 import { h, clear } from './dom.js';
 import { LEVELS } from './config.js';
 import { startApp } from './shell.js';
 import { loadCours, coursPage, renderCours, renderPrint } from './cours.js';
+import { renderProfil } from './profil.js';
+import { getPlayerName } from './storage.js';
 
 const LAST_KEY = 'poker.dernierNiveau';
 const header = document.querySelector('.site-header .wrap');
@@ -27,10 +31,30 @@ function parse() {
   return { level: ready(last) ? last : 1, tab: 'tests' };
 }
 
-// level : numéro du niveau affiché, ou null pour le cours (title donne alors le titre de la page).
-function renderHeader(level, title) {
+// Icône du bouton Profil (silhouette), seule visible sur petit écran.
+function profileIcon() {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('class', 'profile-icon');
+  svg.innerHTML = '<circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor"/>';
+  return svg;
+}
+
+// level : numéro du niveau affiché, ou null pour le cours et le profil (title donne alors le titre).
+// current : 'cours' ou 'profil' marque le bouton correspondant comme page courante.
+let lastHeader = null;
+function renderHeader(level, title, current = level ? null : 'cours') {
+  lastHeader = [level, title, current];
+  const inCours = current === 'cours';
+  const name = getPlayerName();
   const info = LEVELS.find((l) => l.n === level);
-  document.title = level ? `Poker · Niveau ${level}` : `Poker · Cours`;
+  document.title = level ? `Poker · Niveau ${level}` : `Poker · ${inCours ? 'Cours' : title}`;
+  const profile = h('a', {
+    class: `level-link profile-link${current === 'profil' ? ' current' : ''}`, href: '#profil',
+    title: 'Profil : prénom, résultats, sauvegarde, changement d\'appareil',
+    'aria-label': name ? `Profil de ${name}` : 'Profil', 'aria-current': current === 'profil' ? 'page' : false,
+  }, profileIcon(), h('span', { class: 'long' }, name || 'Profil'));
   const label = (l) => [h('span', { class: 'long' }, 'Niveau'), String(l.n)];
   clear(header).append(
     h('p', { class: 'kicker' }, 'Initiation au poker · Texas Hold\'em No-Limit'),
@@ -40,15 +64,16 @@ function renderHeader(level, title) {
       h('ul', {},
         // Toujours un lien : depuis une page du cours, il ramène au sommaire.
         h('li', { class: 'cours-li' }, h('a', {
-          class: `level-link cours-link${level ? '' : ' current'}`, href: '#cours',
-          title: 'Le cours complet : sommaire', 'aria-current': level ? false : 'page',
+          class: `level-link cours-link${inCours ? ' current' : ''}`, href: '#cours',
+          title: 'Le cours complet : sommaire', 'aria-current': inCours ? 'page' : false,
         }, 'Cours')),
         LEVELS.map((l) => h('li', {},
         l.n === level
           ? h('span', { class: 'level-link current', 'aria-current': 'page', title: l.title, 'aria-label': `Niveau ${l.n}` }, label(l))
           : l.ready
             ? h('a', { class: 'level-link', href: `#niveau-${l.n}`, title: l.title, 'aria-label': `Niveau ${l.n} : ${l.title}` }, label(l))
-            : h('span', { class: 'level-link soon', title: `${l.title} (à venir)`, 'aria-label': `Niveau ${l.n}, à venir` }, label(l)))))));
+            : h('span', { class: 'level-link soon', title: `${l.title} (à venir)`, 'aria-label': `Niveau ${l.n}, à venir` }, label(l))))),
+      profile));
 }
 
 // Feuille de style propre au niveau (facultative), chargée à côté de css/style.css.
@@ -83,6 +108,13 @@ async function show() {
   document.onkeydown = null;   // posé par le cours (flèches gauche et droite)
   main.onclick = null;         // posé par la vue imprimable du cours
   if (/^#cours\b/.test(location.hash)) { showCours(); return; }
+  const profil = /^#(?:profil|transfert)(?:\/(.+))?$/.exec(location.hash);
+  if (profil) {
+    renderHeader(null, 'Profil', 'profil');
+    levelStyle(0, {});
+    renderProfil(main, location.hash.startsWith('#transfert/') ? profil[1] : null);
+    return;
+  }
   const { level, tab } = parse();
   try { localStorage.setItem(LAST_KEY, String(level)); } catch { /* stockage bloqué */ }
   renderHeader(level);
@@ -101,4 +133,5 @@ async function show() {
 }
 
 window.addEventListener('hashchange', show);
+window.addEventListener('profil-change', () => { if (lastHeader) renderHeader(...lastHeader); });   // prénom modifié
 show();

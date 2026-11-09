@@ -6,7 +6,9 @@
 //   - les fichiers introuvables (réponse HTTP 400 ou plus, image non chargée) ;
 //   - les boutons et liens dont le contraste texte/fond est insuffisant (WCAG AA : 4,5,
 //     ou 3 pour un grand texte) ;
-//   - les liens internes du cours qui ne mènent à aucune page ou section.
+//   - les liens internes du cours qui ne mènent à aucune page ou section ;
+//   - le code de transfert (page Profil) : aller-retour entre deux navigateurs (profils distincts),
+//     fusion sans doublon, prénom repris, lien rouvert sans effet, code abîmé signalé.
 //
 // Usage : node tools/verifier_web.mjs        code de sortie 1 s'il y a un problème
 import { pathToFileURL } from 'node:url';
@@ -91,6 +93,10 @@ try {
     await open('#cours/imprimer');
     await page.waitFor('document.body.dataset.coursPret === "1"', 30000);
     await check(t('#cours/imprimer'));
+    await open('#profil');
+    await page.eval(`[...document.querySelectorAll('button')].find((b) => b.textContent === 'Créer le lien')?.click()`);
+    await wait(400);
+    await check(t('#profil'));
 
     for (const lvl of LEVELS.filter((l) => l.ready)) {
       const base = `#niveau-${lvl.n}`;
@@ -114,9 +120,60 @@ try {
       }
     }
   }
+  await checkTransfer();
 } finally {
   chrome.stop();
   site.stop();
+}
+
+// Aller-retour du code de transfert entre deux profils de navigateur.
+async function checkTransfer() {
+  views++;
+  current = 'transfert';
+  const at = (days, seed, passed) => ({ date: new Date(Date.now() - days * 86400000).toISOString(), seed, score: 9, total: 10, passed, seconds: 42 });
+  const KEY = 'poker.niveau1.v1';
+  const count = (pg) => pg.eval(`Object.values(JSON.parse(localStorage.getItem('${KEY}') || '{"tests":{}}').tests).reduce((s, t) => s + t.attempts.length, 0)`);
+  // A : 3 tentatives ; B : 1 tentative propre + 1 commune avec A
+  const common = at(5, 111, true);
+  await open('#niveau-1');
+  await page.eval(`localStorage.setItem('${KEY}', JSON.stringify({ version: 1, player: 'Alice', tests: {
+    deroulement: { attempts: ${JSON.stringify([at(10, 100, true), common])} }, nuts: { attempts: ${JSON.stringify([at(1, 222, false)])} } } }))`);
+  const link = await page.eval(`import('./js/profil.js').then(async (m) => m.transferLink((await m.createCode()).code))`);
+
+  const other = await startChrome();
+  try {
+    const b = other.page;
+    await b.goto(`${site.url}index.html#niveau-1`);
+    await b.eval(`localStorage.setItem('${KEY}', JSON.stringify({ version: 1, player: '', tests: {
+      deroulement: { attempts: ${JSON.stringify([common])} }, classement: { attempts: ${JSON.stringify([at(2, 333, true)])} } } }))`);
+    await b.goto('about:blank', 100);
+    await b.goto(link.replace(/^https?:\/\/[^/]+\//, site.url), 800);
+    const button = await b.waitFor(`[...document.querySelectorAll('.transfer-receive button')].map((x) => x.textContent).join('|')`, 5000).catch(() => '');
+    if (!/Ajouter 2 tentatives/.test(button)) report('transfert', `bouton attendu « Ajouter 2 tentatives », trouvé « ${button} »`);
+    await b.eval(`document.querySelector('.transfer-receive button').click()`);
+    await wait(500);
+    const n = await count(b);
+    if (n !== 4) report('transfert', `4 tentatives attendues après fusion, ${n} trouvées`);
+    const player = await b.eval(`localStorage.getItem('poker.joueur')`);
+    if (player !== 'Alice') report('transfert', `prénom non repris (« ${player} »)`);
+    const profileBtn = await b.eval(`document.querySelector('.profile-link')?.textContent`);
+    if (profileBtn !== 'Alice') report('transfert', `bouton Profil : « Alice » attendu, « ${profileBtn} » trouvé`);
+    if (/transfert\/./.test(await b.eval('location.hash'))) report('transfert', 'le code reste dans la barre d\'adresse');
+    // rouvrir le même lien : rien de nouveau
+    await b.goto('about:blank', 100);
+    await b.goto(link.replace(/^https?:\/\/[^/]+\//, site.url), 800);
+    const again = await b.waitFor(`document.querySelector('.transfer-receive')?.textContent.includes('Rien de nouveau')`, 5000).catch(() => false);
+    if (!again) report('transfert', 'un lien rouvert devrait annoncer « Rien de nouveau »');
+    if (await count(b) !== 4) report('transfert', 'un lien rouvert a modifié les résultats');
+    // code abîmé
+    await b.goto('about:blank', 100);
+    await b.goto(`${site.url}index.html#transfert/1.abc`, 600);
+    if (!await b.eval(`document.querySelector('.transfer-receive.ko') !== null`)) report('transfert', 'un code abîmé devrait être signalé');
+  } finally {
+    other.stop();
+  }
+  await open('#niveau-1');
+  await page.eval(`localStorage.clear()`);
 }
 
 const unique = [...new Set(problems)];

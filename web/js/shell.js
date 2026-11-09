@@ -83,11 +83,6 @@ export function startApp({ level, storageKey, tests, practices, extraTabs = [], 
     const done = statuses.filter((s) => s.state === 'validated').length;
     const levelOk = done === tests.length;
 
-    const nameInput = h('input', {
-      type: 'text', id: 'player', value: store.getPlayer(), placeholder: 'Votre prénom', autocomplete: 'given-name',
-      onchange: (e) => store.setPlayer(e.target.value),
-    });
-
     main.append(
       tabs('tests'),
       h('section', { class: 'intro' },
@@ -95,7 +90,10 @@ export function startApp({ level, storageKey, tests, practices, extraTabs = [], 
           h('strong', {}, `deux réussites à au moins ${CONFIG.minDaysBetween} jours d'écart`),
           '. Les questions changent à chaque essai.'),
         testsNote ? h('p', {}, testsNote) : null,
-        h('label', { class: 'player', for: 'player' }, 'Joueur ', nameInput)),
+        // Prénom, sauvegarde, transfert, effacement : page Profil (bouton à droite des niveaux).
+        h('p', { class: 'meta' }, store.getPlayer() ? `Joueur : ${store.getPlayer()} · ` : '',
+          h('a', { href: '#profil' }, store.getPlayer() ? 'Profil' : 'Indiquez votre prénom dans le Profil'),
+          ' (sauvegarde, changement d\'appareil)')),
       h('section', { class: `level-status ${levelOk ? 'ok' : ''}` },
         levelOk
           ? h('p', {}, h('strong', {}, `Tests du niveau ${level} validés.`), ` Reportez la date dans votre carnet.`)
@@ -114,11 +112,6 @@ export function startApp({ level, storageKey, tests, practices, extraTabs = [], 
           h('button', { type: 'button', class: 'btn', onclick: () => run(ex) },
             st.state === 'none' ? 'Commencer' : 'Refaire le test'));
       })),
-      h('section', { class: 'tools' },
-        h('button', { type: 'button', class: 'btn secondary', onclick: exportData }, 'Exporter mes résultats'),
-        h('label', { class: 'btn secondary file-btn' }, 'Importer des résultats',
-          h('input', { type: 'file', accept: 'application/json', onchange: importData })),
-        h('button', { type: 'button', class: 'btn danger', onclick: resetData }, 'Effacer mes résultats')),
     );
   }
 
@@ -244,36 +237,6 @@ export function startApp({ level, storageKey, tests, practices, extraTabs = [], 
         h('button', { type: 'button', class: 'btn secondary', onclick: () => run(ex) }, 'Refaire ce test'),
         h('button', { type: 'button', class: 'btn primary', onclick: dashboard }, 'Retour au tableau de bord')),
     );
-  }
-
-  // ---------- outils ----------
-
-  function exportData() {
-    const blob = new Blob([store.exportJSON()], { type: 'application/json' });
-    const a = h('a', { href: URL.createObjectURL(blob), download: `poker-niveau${level}-${new Date().toISOString().slice(0, 10)}.json` });
-    document.body.append(a);
-    a.click();
-    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 0);
-  }
-
-  function importData(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    file.text().then((text) => {
-      try {
-        store.importJSON(text);
-        dashboard();
-      } catch (err) {
-        alert(`Import impossible : ${err.message}`);
-      }
-    });
-  }
-
-  function resetData() {
-    if (confirm(`Effacer tous vos résultats du niveau ${level} ? Cette action est définitive.`)) {
-      store.reset();
-      dashboard();
-    }
   }
 
   (TABS.find((t) => t.id === startTab) || TABS[0]).view();

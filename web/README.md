@@ -16,6 +16,8 @@ Tout passe par `index.html` ; la partie après `#` choisit le niveau et l'onglet
 | `index.html#cours/niveau-3` | une page du cours (`introduction`, `mode-d-emploi`, `niveau-1` à `niveau-6`, `grille`, `ressources`, `glossaire`) |
 | `index.html#cours/niveau-3/c3-7-compter-les-mains-qui-vous-battent` | une section d'une page du cours |
 | `index.html#cours/imprimer` | tout le cours sur une page, pour l'impression (source du PDF) |
+| `index.html#profil` | le Profil (bouton à droite des niveaux) : prénom, résultats, changement d'appareil, sauvegarde, effacement |
+| `index.html#transfert/1.…` | lien de transfert reçu : page Profil, avec le résumé de ce qui arrive |
 
 Les anciennes adresses `niveau-1/` et `niveau-2/` redirigent vers `index.html#niveau-N`, pour ne pas casser les favoris.
 
@@ -56,11 +58,12 @@ web/
 ├── js/
 │   ├── app.js              lit l'adresse, dessine l'en-tête et la barre Cours + niveaux, charge niveau-N/niveau.js
 │   ├── cours.js            le cours : sommaire, pages, navigation précédent / suivant (flèches du clavier aussi)
+│   ├── profil.js           page Profil : prénom, résumé, code de transfert, fichier, effacement
 │   ├── config.js           chemin des cartes, écart de jours, liste des niveaux (LEVELS)
 │   ├── shell.js            onglets, tableau de bord, passage d'un test, correction, exercices, export
 │   ├── dom.js              construction du DOM
 │   ├── cards.js            paquet, tirage reproductible (graine), affichage des cartes
-│   └── storage.js          historique des tentatives (localStorage), règle des 3 jours
+│   └── storage.js          historique des tentatives (localStorage), règle des 3 jours, fusion
 ├── niveau-1/
 │   ├── niveau.js           définition du niveau : tests, exercices
 │   ├── index.html          redirection vers ../index.html#niveau-1
@@ -114,4 +117,12 @@ Chaque tentative enregistre sa graine aléatoire : on peut régénérer exacteme
 
 ## Résultats
 
-Les résultats restent dans le navigateur du joueur (`localStorage`), une clé par niveau. Le tableau de bord de chaque niveau permet de les exporter en JSON, de les réimporter sur un autre appareil ou de les effacer. En navigation privée, la page fonctionne mais rien n'est conservé.
+Les résultats restent dans le navigateur du joueur (`localStorage`), une clé par niveau (`poker.niveauN.v1`). En navigation privée, la page fonctionne mais rien n'est conservé.
+
+**Le Profil** (`js/profil.js`, bouton à droite des niveaux, qui affiche le prénom une fois saisi) regroupe tout ce qui concerne le joueur, pour tous les niveaux à la fois : le prénom, commun à tout le site (clé `poker.joueur` ; un prénom saisi autrefois dans un niveau est repris), le résumé des résultats, le changement d'appareil, la sauvegarde dans un fichier et l'effacement.
+
+**Changer d'appareil : le code de transfert.** Le Profil crée un lien qui contient le prénom et tous les résultats, compressé : environ 2,4 Ko pour 200 tentatives. Ouvert sur un autre appareil, il ajoute les tentatives qui y manquent. Aucun serveur : le code est après le `#`, que le navigateur n'envoie jamais. Format : `#transfert/1.<base64url(deflate-raw(JSON))>`, chaque tentative en tableau `[secondes, graine, score, total, réussi, durée]`.
+
+**Sauvegarde dans un fichier.** Un fichier JSON pour tous les niveaux (`{ format: "poker-resultats", joueur, niveaux: { 1: …, 2: … } }`). L'import accepte aussi les anciens fichiers d'un seul niveau, reconnus à leurs tests.
+
+**Fusion, jamais remplacement.** Une tentative n'est jamais modifiée ; elle est identifiée par sa seconde et sa graine. Fusionner deux historiques revient à les réunir sans doublon (`mergeData`, `js/storage.js`) : rouvrir un lien ou réimporter un fichier ne change rien, un vieux lien ne fait rien perdre, on peut transférer dans les deux sens.

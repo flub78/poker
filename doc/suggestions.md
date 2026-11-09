@@ -1,6 +1,6 @@
 # Suggestions d'amélioration
 
-Mis à jour le 2026-11-09 (réalisation de S-001, S-003 à S-009). Fiches classées par section ; index trié par rapport
+Mis à jour le 2026-11-09 (réalisation de S-001, S-003 à S-009 ; S-012 option A). Fiches classées par section ; index trié par rapport
 bénéfice/coût. Statuts : proposée · acceptée · en cours · faite · reportée · refusée.
 Règles de tenue et commandes : voir [`strategie_suggestions.md`](../strategie_suggestions.md).
 
@@ -10,6 +10,7 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 
 | ID | Section | Suggestion | Bénéfice | Coût | Rapport | Statut |
 |---|---|---|---|---|---|---|
+| S-012 | Architecture | Garder les progrès d'un appareil à l'autre : code de transfert (A), puis petit serveur PHP + fichiers JSON (B) | élevé | S puis M | élevé | A faite, B proposée |
 | S-010 | Tutoriel | Corriger l'écart de VPIP du test du niveau 2 (18–26 % ou 12–20 %) | moyen | S | élevé | proposée |
 | S-011 | Tutoriel | Ajouter C3.7 à la grille d'auto-évaluation | faible | S | élevé | proposée |
 | S-002 | Système | Remplacer le carnet PDF par la progression enregistrée dans l'application | élevé | M | moyen | proposée |
@@ -86,7 +87,37 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 
 ## 2. Architecture
 
-(aucune suggestion pour l'instant)
+### S-012 · Garder les progrès d'un appareil à l'autre
+- **Statut** : option A faite, option B proposée · **Date** : 2026-11-09 · **Origine** : question de l'utilisateur
+- **Constat** : les résultats ne vivent que dans un navigateur (`localStorage`). Changer de
+  téléphone, d'ordinateur ou de navigateur fait tout perdre, sauf export JSON manuel par niveau.
+  L'import remplaçait les données locales au lieu de les compléter.
+- **Proposition** : sans base de données ni framework, par étapes.
+  - **A. Code de transfert** : un lien qui contient tous les résultats, compressé, après le `#`
+    (jamais envoyé au serveur) ; ouvert ailleurs, il fusionne. Aucun serveur.
+  - **B. Synchronisation** : `api.php` (~120 lignes) et un fichier JSON par joueur hors de la partie
+    publique ; un « code joueur » secret de 128 bits gardé dans un cookie `HttpOnly; Secure;
+    SameSite=Strict`. Variante C : SQLite (intégré à PHP) au lieu des fichiers JSON.
+  - Écartées : D, service externe (Firebase, Supabase : dépendance, données ailleurs) ;
+    E, Laravel de `doc/architecture.md` (framework et MySQL).
+- **Bénéfices** : A : changement d'appareil et sauvegarde en un lien. B : synchronisation
+  automatique, plus besoin d'y penser.
+- **Coûts** : A : S (~250 lignes avec la page et le test). B : M (1 à 2 sessions), plus une
+  sauvegarde régulière du dossier de données ; demande PHP sur le serveur (à vérifier : `php -v`).
+  Sans PHP, un petit service Python, avec un service système et un proxy à gérer.
+- **Rapport** : élevé.
+- **Premier pas pour B** : vérifier que le serveur exécute PHP.
+- **Décision** : 2026-11-09, A acceptée et réalisée. `web/js/transfert.js`, page `#transfert`,
+  bouton dans l'onglet Tests et lien en pied de page ; fusion `mergeData` dans `web/js/storage.js`,
+  utilisée aussi par l'import de fichier (qui ne remplace plus). Lien d'environ 2,4 Ko pour 200
+  tentatives. Testé par `tools/verifier_web.mjs` : aller-retour entre deux profils de navigateur,
+  sans doublon, lien rouvert sans effet, code abîmé signalé. Pas de QR code (bibliothèque à ajouter,
+  peu lisible au-delà de 1 Ko) : « Partager » du téléphone à la place. B reste à décider.
+  Puis, à la demande : tout est regroupé dans une page **Profil** (`web/js/profil.js`, bouton à
+  droite des niveaux) : prénom commun à tout le site (clé `poker.joueur`, reprise de l'ancien prénom
+  d'un niveau), résumé des résultats, transfert, fichier de sauvegarde unique pour tous les niveaux
+  (anciens fichiers d'un niveau acceptés), effacement de tout. L'onglet Tests de chaque niveau perd
+  son champ prénom et ses quatre boutons.
 
 ## 3. Méthodes de développement
 
