@@ -6,7 +6,7 @@ Méthode progressive d'apprentissage du Texas Hold'em No-Limit en 6 niveaux, du 
 
 | Fichier | Description |
 | --- | --- |
-| [`doc/initiation-poker-tutoriel.pdf`](doc/initiation-poker-tutoriel.pdf) | Le tutoriel complet : règles, stratégie, probabilités, exercices, tests de passage, ressources, glossaire, avec table des matières (40 pages) |
+| [`doc/initiation-poker-tutoriel.pdf`](doc/initiation-poker-tutoriel.pdf) | Le tutoriel complet, imprimé depuis le cours de l'application : règles, stratégie, probabilités, exercices, tests de passage, ressources, glossaire, avec table des matières (36 pages) |
 | [`doc/carnet-progression-poker.pdf`](doc/carnet-progression-poker.pdf) | Carnet de progression individuel, formulaire PDF à remplir (10 pages) |
 | [`doc/suggestions.md`](doc/suggestions.md) | Suggestions d'amélioration du projet, avec bénéfices et coûts, classées par rapport bénéfice/coût |
 | [`strategie_suggestions.md`](strategie_suggestions.md) | Comment les suggestions sont produites : consignes, commandes `/suggestions` et `/audit-suggestions` (dans `.claude/skills/`), revues à créer |
@@ -17,8 +17,12 @@ Méthode progressive d'apprentissage du Texas Hold'em No-Limit en 6 niveaux, du 
 | `web/cartes/` | Cartes vectorielles poker-qr (SVG) utilisées par l'application et par les illustrations |
 | [`bin/serve.sh`](bin/serve.sh) | Lance un serveur local et affiche l'adresse de l'application et de chaque niveau (`bin/serve.sh [port]`, `HOST=0.0.0.0` pour le réseau local) |
 | `tools/make_figs.py` | Génère les illustrations de `doc/figures/` à partir des cartes |
-| `tools/cours_html.py` | Génère `web/cours/` (le cours de l'application) à partir de l'export HTML du Claude Doc |
-| `tools/mise_en_page_pdf.py` | Met en page le PDF exporté du Claude Doc : sauts de page avant les grandes parties, table des matières cliquable en page 2, signets (dépend de PyMuPDF : `tools/requirements.txt`) |
+| `tools/cours_html.py`, `tools/cours_config.json` | Génèrent `web/cours/` (le cours de l'application) à partir de l'export HTML du Claude Doc |
+| `tools/decoder_export.py` | Décode un export de Claude Doc enregistré par Claude Code |
+| `tools/pdf_cours.mjs` | Fabrique le PDF du tutoriel en imprimant le cours (Chrome headless) : sauts de page, table des matières numérotée et cliquable, signets |
+| `tools/verifier_web.mjs` | Test de fumée de l'application : toutes les pages, thèmes clair et sombre ; erreurs, fichiers manquants, contraste |
+| `tools/chrome.mjs` | Serveur local et Chrome headless, communs aux deux scripts précédents (Node 22+, sans dépendance) |
+| [`bin/deploy.sh`](bin/deploy.sh) | Déploie `web/` avec rsync, numéro de version des fichiers tiré du commit |
 
 ## Les 6 niveaux
 

@@ -5,19 +5,21 @@
 - **Source** : le Claude Doc « Initiation au poker — programme progressif »
   (https://claude.ai/artifact/Gi1w58HDF6x5atzDWz5HuB). On le modifie avec les outils Claude Docs,
   jamais en éditant le PDF.
-- **PDF** : `doc/initiation-poker-tutoriel.pdf` est fabriqué à partir de ce doc. Après chaque
-  modification du doc :
-  1. réexporter le PDF (export `pdf`, papier A4) dans un fichier temporaire ;
-  2. le mettre en page : `.venv/bin/python tools/mise_en_page_pdf.py export.pdf doc/initiation-poker-tutoriel.pdf`
-     (sauts de page avant les grandes parties, table des matières en page 2 avec liens, signets,
-     « Page X sur N ») ; l'export des Docs ne sait pas faire de saut de page ;
-  3. vérifier le texte avec `pdftotext` ;
-  4. mettre à jour le nombre de pages dans `README.md` ;
-  5. régénérer le cours de l'application : export `html` du même doc dans un fichier temporaire, puis
-     `python3 tools/cours_html.py export.html` (écrit `web/cours/`) ; vérifier dans le navigateur
-     (`bin/serve.sh`, puis `#cours`).
-  Une modification qui n'apparaît pas dans le PDF et dans le cours n'est pas terminée. Première fois :
-  `python3 -m venv .venv && .venv/bin/pip install -r tools/requirements.txt`.
+- **Site et PDF** : le cours de l'application (`web/`, bouton « Cours ») est la version de
+  référence ; `doc/initiation-poker-tutoriel.pdf` en est une impression. Après chaque modification
+  du doc, lancer `/publier-tutoriel`, qui enchaîne :
+  1. export `html` du doc, décodé par `python3 tools/decoder_export.py <résultat> export.html` ;
+  2. `python3 tools/cours_html.py export.html` (écrit `web/cours/`, configuration dans
+     `tools/cours_config.json`) ;
+  3. `node tools/verifier_web.mjs` (test de fumée : erreurs, fichiers manquants, contraste) ;
+  4. `node tools/pdf_cours.mjs` (PDF imprimé depuis `#cours/imprimer` : sauts de page, table des
+     matières numérotée avec liens, signets, « Page X sur N »), vérification avec `pdftotext` ;
+  5. nombre de pages du PDF dans `README.md`.
+  Une modification qui n'apparaît pas dans le cours et dans le PDF n'est pas terminée.
+- **Pas de graphique (widget) dans le doc** : l'export HTML ne les contient pas. Utiliser un
+  tableau ; le générateur sait dessiner un tableau en escalier (`escaliers` dans la configuration).
+- **Déploiement** : `bin/deploy.sh <destination rsync>` (numéro de version des fichiers calculé
+  depuis le commit).
 
 ## Principes de rédaction du tutoriel
 

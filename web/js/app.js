@@ -10,7 +10,7 @@
 import { h, clear } from './dom.js';
 import { LEVELS } from './config.js';
 import { startApp } from './shell.js';
-import { loadCours, coursPage, renderCours } from './cours.js';
+import { loadCours, coursPage, renderCours, renderPrint } from './cours.js';
 
 const LAST_KEY = 'poker.dernierNiveau';
 const header = document.querySelector('.site-header .wrap');
@@ -68,6 +68,12 @@ async function showCours() {
     clear(main).append(h('p', { class: 'form-message' }, `Impossible de charger le cours : ${err.message}`));
     return;
   }
+  if (pageId === 'imprimer') {
+    const content = await loadCours();
+    renderHeader(null, content.title);
+    renderPrint(main);
+    return;
+  }
   const page = coursPage(pageId);
   renderHeader(null, page.title);
   renderCours(main, page.id, sectionId);
@@ -75,6 +81,7 @@ async function showCours() {
 
 async function show() {
   document.onkeydown = null;   // posé par le cours (flèches gauche et droite)
+  main.onclick = null;         // posé par la vue imprimable du cours
   if (/^#cours\b/.test(location.hash)) { showCours(); return; }
   const { level, tab } = parse();
   try { localStorage.setItem(LAST_KEY, String(level)); } catch { /* stockage bloqué */ }
@@ -85,6 +92,8 @@ async function show() {
     clear(main).append(h('p', { class: 'form-message' }, `Impossible de charger le niveau ${level} : ${err.message}`));
     return;
   }
+  // Le cours est chargé aussi pour les niveaux : liens « Revoir dans le cours » (sans lui, pas de lien).
+  try { await loadCours(); } catch { /* cours absent : on continue sans */ }
   const def = cache.get(level);
   levelStyle(level, def);
   window.scrollTo(0, 0);

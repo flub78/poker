@@ -15,6 +15,7 @@ Tout passe par `index.html` ; la partie après `#` choisit le niveau et l'onglet
 | `index.html#cours` | le cours : accueil et table des matières |
 | `index.html#cours/niveau-3` | une page du cours (`introduction`, `mode-d-emploi`, `niveau-1` à `niveau-6`, `grille`, `ressources`, `glossaire`) |
 | `index.html#cours/niveau-3/c3-7-compter-les-mains-qui-vous-battent` | une section d'une page du cours |
+| `index.html#cours/imprimer` | tout le cours sur une page, pour l'impression (source du PDF) |
 
 Les anciennes adresses `niveau-1/` et `niveau-2/` redirigent vers `index.html#niveau-N`, pour ne pas casser les favoris.
 
@@ -36,7 +37,11 @@ rsync -av --delete web/ utilisateur@vps:/chemin/public_html/poker/
 
 La page est alors à `https://domaine/poker/`. Aucune configuration serveur particulière : des fichiers statiques suffisent. Les `.svg` doivent être servis en `image/svg+xml` et les `.js` en `text/javascript` (réglages par défaut de nginx et d'Apache).
 
-`index.html` charge `css/style.css?v=6` et `js/app.js?v=5` : après une mise à jour, augmentez ce numéro pour que les navigateurs ne gardent pas l'ancienne version en cache. Pour les autres fichiers JavaScript, un rechargement forcé (Ctrl+Maj+R) peut être nécessaire.
+Ou, depuis la racine du dépôt : `bin/deploy.sh utilisateur@vps:/chemin/public_html/poker/` (ajouter `--dry-run` pour simuler). `index.html` charge `css/style.css?v=…` et `js/app.js?v=…` ; le script remplace ce numéro par le commit courant, pour que les navigateurs ne gardent pas l'ancienne version en cache. Pour les autres fichiers JavaScript, un rechargement forcé (Ctrl+Maj+R) peut être nécessaire.
+
+## Vérifier
+
+`node tools/verifier_web.mjs` (depuis la racine) ouvre chaque page dans Chrome headless, en thème clair et sombre, y compris l'intérieur des exercices et des tests. Il signale les erreurs JavaScript, les fichiers introuvables, les boutons et liens peu lisibles (contraste WCAG AA) et les liens internes du cours sans cible.
 
 ## Organisation
 
@@ -71,13 +76,15 @@ web/
 
 Le bouton « Cours », avant les niveaux, affiche le tutoriel complet en 12 pages : l'accueil avec la table des matières, l'introduction, le mode d'emploi, une page par niveau, puis une page par annexe (grille d'auto-évaluation, ressources, glossaire). Chaque page a, en haut et en bas, un bouton Sommaire et des liens vers la page précédente et la suivante ; les flèches gauche et droite du clavier font de même. Les pages d'un niveau prêt renvoient aussi vers ses exercices et ses tests.
 
-Le contenu vient du Claude Doc du tutoriel, comme le PDF. Après une modification du doc : l'exporter au format `html`, puis
+Chaque exercice et chaque test renvoie vers les sections du cours de ses compétences (« Revoir dans le cours : C1.3 »). La page Grille d'auto-évaluation se remplit avec les résultats des tests enregistrés dans le navigateur. La vue `#cours/imprimer` met tout le cours sur une page ; c'est elle que `tools/pdf_cours.mjs` imprime pour fabriquer le PDF.
+
+Le contenu vient du Claude Doc du tutoriel. Après une modification du doc (commande `/publier-tutoriel` dans Claude Code) : l'exporter au format `html`, puis
 
 ```bash
 python3 tools/cours_html.py export.html
 ```
 
-Le script s'arrête avec un message si le doc a changé de structure (grande partie ajoutée, image inconnue, lien interne sans cible) : il faut alors compléter ses tables `PAGES` ou `BLOBS`.
+Le script s'arrête avec un message si le doc a changé de structure (grande partie ajoutée, image inconnue, lien interne sans cible, tableau d'escalier introuvable) : il faut alors compléter `tools/cours_config.json`. Ce fichier contient tout ce qui est propre au doc ; le script lui-même sert pour n'importe quel Claude Doc.
 
 ## Ajouter un niveau
 

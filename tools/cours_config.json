@@ -1,0 +1,38 @@
+{
+  "_doc": "Configuration de tools/cours_html.py pour le Claude Doc « Initiation au poker — programme progressif ».",
+  "auteur": "Frédéric Peignot",
+  "sortie": "web/cours",
+  "chemin_images": "cours/img",
+  "images": {
+    "534de084-70ba": "doc/images/mallette-poker.jpg",
+    "da974040-16a6": "doc/figures/fig-main-complete.png",
+    "d207e48a-20be": "doc/figures/fig-classement.png",
+    "4e1bb97d-ae22": "doc/figures/fig-nuts.png",
+    "d9bf37ed-115c": "doc/figures/fig-mains-depart.png",
+    "9ada2409-d5a1": "doc/figures/fig-outs.png",
+    "1f8f621f-8b6b": "doc/figures/fig-duels.png",
+    "f653b3c8-4dfa": "doc/figures/fig-textures.png",
+    "3d3e87a9-2b50": "doc/figures/fig-range.png"
+  },
+  "pages": [
+    { "titre": "Introduction", "id": "introduction", "court": "Introduction" },
+    { "titre": "Mode d'emploi", "id": "mode-d-emploi" },
+    { "titre": "Niveau 1\\b", "id": "niveau-1" },
+    { "titre": "Niveau 2\\b", "id": "niveau-2" },
+    { "titre": "Niveau 3\\b", "id": "niveau-3" },
+    { "titre": "Niveau 4\\b", "id": "niveau-4" },
+    { "titre": "Niveau 5\\b", "id": "niveau-5" },
+    { "titre": "Niveau 6\\b", "id": "niveau-6" },
+    { "titre": "Grille d'auto-évaluation", "id": "grille", "annexe": true },
+    { "titre": "Ressources d'entraînement", "id": "ressources", "annexe": true },
+    { "titre": "Glossaire", "id": "glossaire", "annexe": true }
+  ],
+  "couverture": { "page": "introduction", "credit": "Photo" },
+  "escaliers": [
+    {
+      "titre": "Six niveaux, chacun ouvert par un test de passage",
+      "prefixe": "Niveau ",
+      "legende": "Progression : 6 niveaux, 5 tests de passage"
+    }
+  ]
+}

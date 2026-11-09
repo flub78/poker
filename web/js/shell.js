@@ -15,6 +15,7 @@ import { h, clear, formatDate } from './dom.js';
 import { rng, newSeed } from './cards.js';
 import { CONFIG } from './config.js';
 import { createStore } from './storage.js';
+import { reviewLinks } from './cours.js';
 
 const STATE_LABEL = {
   none: 'Non tenté',
@@ -109,6 +110,7 @@ export function startApp({ level, storageKey, tests, practices, extraTabs = [], 
           h('h2', {}, ex.title),
           h('p', { class: 'meta' }, `Compétences ${ex.competences} · Réussite : ${ex.rule}`),
           h('p', { class: 'meta' }, statusLine(st)),
+          reviewLinks(ex.competences),
           h('button', { type: 'button', class: 'btn', onclick: () => run(ex) },
             st.state === 'none' ? 'Commencer' : 'Refaire le test'));
       })),
@@ -134,6 +136,7 @@ export function startApp({ level, storageKey, tests, practices, extraTabs = [], 
         h('div', { class: 'test-head' }, h('span', { class: 'test-code' }, `Compétences ${px.competences}`)),
         h('h2', {}, px.title),
         h('p', { class: 'meta' }, px.summary),
+        reviewLinks(px.competences),
         h('button', { type: 'button', class: 'btn', onclick: () => practice(px) }, 'S\'entraîner')))),
     );
   }
@@ -156,7 +159,8 @@ export function startApp({ level, storageKey, tests, practices, extraTabs = [], 
       h('div', { class: 'exercise-head' },
         h('button', { type: 'button', class: 'link-btn', onclick: exercisesHome }, '← Exercices'),
         h('h2', {}, px.title),
-        h('p', { class: 'meta' }, `Compétences ${px.competences} · ${px.summary}`)),
+        h('p', { class: 'meta' }, `Compétences ${px.competences} · ${px.summary}`),
+        reviewLinks(px.competences)),
       h('div', { class: 'settings' }, px.settings.map((s) => h('label', { class: 'setting' }, s.label,
         h('select', { onchange: (e) => practice(px, { ...settings, [s.id]: e.target.value }) },
           s.options.map((o) => h('option', { value: o.value, selected: settings[s.id] === o.value }, o.label)))))),
@@ -229,7 +233,8 @@ export function startApp({ level, storageKey, tests, practices, extraTabs = [], 
         h('p', { class: 'score' }, `${result.score} / ${result.total}`),
         h('p', {}, verdict),
         h('p', { class: 'meta' }, `Durée : ${Math.floor(attempt.seconds / 60)} min ${attempt.seconds % 60} s`),
-        saved ? null : h('p', { class: 'meta' }, 'Attention : votre navigateur bloque l\'enregistrement, ce résultat ne sera pas conservé.')),
+        saved ? null : h('p', { class: 'meta' }, 'Attention : votre navigateur bloque l\'enregistrement, ce résultat ne sera pas conservé.'),
+        reviewLinks(ex.competences)),
       h('section', { class: 'block' },
         h('h3', {}, 'Correction'),
         h('ol', { class: 'review' }, result.items.map((it) => h('li', { class: it.ok ? 'ok' : 'ko' },
