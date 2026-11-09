@@ -7,6 +7,7 @@
 //   - les boutons et liens dont le contraste texte/fond est insuffisant (WCAG AA : 4,5,
 //     ou 3 pour un grand texte) ;
 //   - les liens internes du cours qui ne mènent à aucune page ou section ;
+//   - les textes « null », « undefined » ou « NaN » affichés (valeur vide écrite telle quelle) ;
 //   - le code de transfert (page Profil) : aller-retour entre deux navigateurs (profils distincts),
 //     fusion sans doublon, prénom repris, lien rouvert sans effet, code abîmé signalé.
 //
@@ -48,6 +49,11 @@ const CHECK = `(async () => {
     const size = parseFloat(cs.fontSize), bold = Number(cs.fontWeight) >= 700;
     const min = size >= 24 || (bold && size >= 18.66) ? 3 : 4.5;
     if (ratio < min) out.push('contraste ' + ratio.toFixed(2) + ' < ' + min + ' : « ' + label.slice(0, 40) + ' » (' + el.className + ')');
+  }
+  // « null » ou « undefined » affichés : une valeur vide passée à append (natif) au lieu de h()
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+    if (/\b(null|undefined|NaN)\b/.test(n.textContent) && n.parentElement?.offsetParent) out.push('texte suspect : « ' + n.textContent.trim().slice(0, 60) + ' »');
   }
   for (const img of document.images) {
     img.loading = 'eager';
@@ -149,7 +155,7 @@ async function checkTransfer() {
     await b.goto('about:blank', 100);
     await b.goto(link.replace(/^https?:\/\/[^/]+\//, site.url), 800);
     const button = await b.waitFor(`[...document.querySelectorAll('.transfer-receive button')].map((x) => x.textContent).join('|')`, 5000).catch(() => '');
-    if (!/Ajouter 2 tentatives/.test(button)) report('transfert', `bouton attendu « Ajouter 2 tentatives », trouvé « ${button} »`);
+    if (!/Ajouter 2 résultats/.test(button)) report('transfert', `bouton attendu « Ajouter 2 résultats », trouvé « ${button} »`);
     await b.eval(`document.querySelector('.transfer-receive button').click()`);
     await wait(500);
     const n = await count(b);

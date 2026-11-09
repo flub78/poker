@@ -15,5 +15,8 @@ export default {
   tests: [grille, quiz],
   practices: [decision, positionMin, colorier, seuils],
   extraTabs: [{ id: 'aide', label: 'Aide-mémoire', render: renderAide }],
-  testsNote: 'Deux critères du test de passage se vérifient à la table, pas ici : sur 500 mains, un VPIP entre 12 et 20 % et aucun limp. Notez-les dans votre carnet.',
+  manual: [
+    { id: 'vpip', text: 'Sur 500 mains, mon VPIP est entre 12 et 20 %.' },
+    { id: 'limp', text: 'Sur ces 500 mains, je n\'ai fait aucun limp.' },
+  ],
 };

@@ -39,6 +39,40 @@ export function competenceHref(code) {
   return null;
 }
 
+// Objectif et compétences d'un niveau, tirés du cours (null si le cours n'est pas chargé).
+export function levelInfo(n) {
+  const page = content?.pages.find((p) => p.id === `niveau-${n}`);
+  if (!page) return null;
+  const text = h('div', {});
+  text.innerHTML = page.html.slice(0, page.html.indexOf('</p>') + 4);   // premier paragraphe
+  const objective = /Objectif\s*:\s*([^.]+\.)/.exec(text.textContent)?.[1] || '';
+  const competences = page.sections.filter((s) => /^C\d\.\d /.test(s.title)).map((s) => ({
+    code: s.title.split(' ')[0], name: s.title.slice(s.title.indexOf(' ') + 1), href: `#cours/${page.id}/${s.id}`,
+  }));
+  return { objective, competences };
+}
+
+// « C3.1 Compter ses outs · C3.2 La règle du 2 et du 4 » à partir de « C3.1, C3.2 ».
+export function competenceNames(text) {
+  return competenceCodes(text).map((code) => {
+    for (const p of content?.pages || []) {
+      const s = p.sections.find((x) => x.title.startsWith(`${code} `));
+      if (s) return s.title;
+    }
+    return code;
+  }).join(' · ');
+}
+
+// Rappel en tête des exercices : objectif du niveau et ses compétences, liées au cours.
+export function levelCompetences(n) {
+  const info = levelInfo(n);
+  if (!info) return null;
+  return h('section', { class: 'level-competences' },
+    info.objective ? h('p', {}, h('strong', {}, 'Objectif du niveau : '), info.objective) : null,
+    h('ul', {}, info.competences.map((c) => h('li', {},
+      h('a', { href: c.href }, h('span', { class: 'comp-code' }, c.code), ' ', c.name)))));
+}
+
 // « Revoir dans le cours : C1.1 · C1.2 », pour les cartes d'exercice et la correction des tests.
 export function reviewLinks(competences) {
   const links = competenceCodes(competences)

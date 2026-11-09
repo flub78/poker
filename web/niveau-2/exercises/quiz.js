@@ -1,5 +1,6 @@
 // Test 2 : quiz préflop (C2.1 à C2.3).
-// 20 situations, dont 10 face à une relance ou une sur-relance ; 18 bonnes réponses au moins.
+// 20 situations en 2 séries de 10 (chaque série : 5 face à une relance ou une sur-relance) ;
+// 18 bonnes réponses au moins sur les 20.
 import { h } from '../../js/dom.js';
 import { shuffle, cardRow } from '../../js/cards.js';
 import { cardsFor, handName } from '../ranges.js';
@@ -7,9 +8,10 @@ import { decide, actionLabel } from '../strategy.js';
 import { makeSituation, handFor, describe } from '../situations.js';
 import { situationView, actionButtons } from '../hand.js';
 
-const PLAN = [
-  ...Array(9).fill('open'), 'bb',
-  ...Array(6).fill('vsRaise'), 'vs3bet', 'vs3bet', 'squeeze', 'squeeze',
+// Une moitié du plan par série : 4 ou 5 ouvertures, la BB une fois sur deux, 3 relances, 1 sur-relance, 1 squeeze.
+const PLANS = [
+  [...Array(5).fill('open'), ...Array(3).fill('vsRaise'), 'vs3bet', 'squeeze'],
+  [...Array(4).fill('open'), 'bb', ...Array(3).fill('vsRaise'), 'vs3bet', 'squeeze'],
 ];
 const PASS = 18;
 
@@ -18,10 +20,12 @@ export default {
   code: 'Test 2',
   title: 'Quiz préflop',
   competences: 'C2.1 à C2.3',
-  rule: `${PASS} situations sur ${PLAN.length}, dont la moitié face à une relance`,
+  rule: `${PASS} situations sur 20, en 2 séries de 10, dont la moitié face à une relance`,
+  series: PLANS.length,
+  pass: PASS,
 
-  create(rand) {
-    const items = shuffle(PLAN, rand).map((type) => {
+  create(rand, { serie = 1 } = {}) {
+    const items = shuffle(PLANS[serie - 1], rand).map((type) => {
       const sit = makeSituation(type, rand);
       const code = handFor(sit, rand);
       return { sit, code, cards: cardsFor(code, rand) };

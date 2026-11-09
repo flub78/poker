@@ -10,8 +10,8 @@ export const CONFIG = {
 export const LEVELS = [
   { n: 1, title: 'Les règles', ready: true },
   { n: 2, title: 'Éviter les grosses erreurs', ready: true },
-  { n: 3, title: 'Les probabilités', ready: false },
-  { n: 4, title: 'Après le flop', ready: false },
-  { n: 5, title: 'Ranges et adaptation', ready: false },
-  { n: 6, title: 'Vers le GTO', ready: false },
+  { n: 3, title: 'Les probabilités', ready: true },
+  { n: 4, title: 'Après le flop', ready: true },
+  { n: 5, title: 'Ranges et adaptation', ready: true },
+  { n: 6, title: 'Vers le GTO', ready: true },
 ];

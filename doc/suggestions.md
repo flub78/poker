@@ -1,6 +1,6 @@
 # Suggestions d'amélioration
 
-Mis à jour le 2026-11-09 (réalisation de S-001, S-003 à S-009 ; S-012 option A). Fiches classées par section ; index trié par rapport
+Mis à jour le 2026-11-09 (réalisation de S-001, S-003 à S-009, S-012 option A, S-013). Fiches classées par section ; index trié par rapport
 bénéfice/coût. Statuts : proposée · acceptée · en cours · faite · reportée · refusée.
 Règles de tenue et commandes : voir [`strategie_suggestions.md`](../strategie_suggestions.md).
 
@@ -11,6 +11,8 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 | ID | Section | Suggestion | Bénéfice | Coût | Rapport | Statut |
 |---|---|---|---|---|---|---|
 | S-012 | Architecture | Garder les progrès d'un appareil à l'autre : code de transfert (A), puis petit serveur PHP + fichiers JSON (B) | élevé | S puis M | élevé | A faite, B proposée |
+| S-014 | Tutoriel | Écrire dans le cours trois règles que l'application a dû fixer (c-bet sur flop apparié ou monotone, seuils des profils, catégories de range) | moyen | S | élevé | proposée |
+| S-013 | Par fonctionnalité | Quiz préflop du niveau 2 en 2 séries de 10 (règle des 10 questions par série) | moyen | S | élevé | faite |
 | S-010 | Tutoriel | Corriger l'écart de VPIP du test du niveau 2 (18–26 % ou 12–20 %) | moyen | S | élevé | proposée |
 | S-011 | Tutoriel | Ajouter C3.7 à la grille d'auto-évaluation | faible | S | élevé | proposée |
 | S-002 | Système | Remplacer le carnet PDF par la progression enregistrée dans l'application | élevé | M | moyen | proposée |
@@ -210,7 +212,40 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
   changent pas. Rien n'est écrit : les données restent celles du navigateur. Vérifié avec des
   résultats simulés. Rejoint S-002 sans la remplacer : le carnet reste nécessaire pour la table.
 
+### S-013 · Quiz préflop du niveau 2 en 2 séries de 10
+- **Statut** : faite · **Date** : 2026-11-09 · **Origine** : réalisation du niveau 3
+- **Constat** : depuis le niveau 3, une série ne pose pas plus de 10 questions ; les tests de 20
+  situations se passent en 2 séries avec des données différentes (option `series` de `shell.js`).
+  Le test 2 du niveau 2 (quiz préflop) pose encore ses 20 situations sur une seule page.
+- **Proposition** : `series: 2, pass: 18` et 10 situations par série (dont 5 face à une relance),
+  comme le test 3 du niveau 3.
+- **Bénéfices** : même rythme dans tous les niveaux ; une page moins longue, surtout sur mobile.
+- **Coûts** : S. Répartir le plan des 20 situations en deux moitiés équilibrées.
+- **Rapport** : élevé.
+- **Premier pas** : découper `PLAN` dans `web/niveau-2/exercises/quiz.js`.
+- **Décision** : 2026-11-09, acceptée et réalisée. Deux plans de 10 (5 face à une relance chacun),
+  `series: 2, pass: 18`. Au passage, les deux critères de table du niveau 2 (VPIP sur 500 mains,
+  aucun limp) sont devenus des cases à cocher dans l'onglet Tests.
+
 ### 5.2 Contenu du tutoriel
+
+### S-014 · Écrire dans le cours les règles que l'application a dû fixer
+- **Statut** : proposée · **Date** : 2026-11-09 · **Origine** : réalisation des niveaux 4 et 5
+- **Constat** : pour corriger sans ambiguïté, l'application applique trois règles que le cours ne
+  donne pas :
+  1. taille de c-bet sur flop **apparié** et **monotone** : petite (1/3) dans l'application ; le
+     cours ne la donne que pour sec (petite) et humide (grosse) ;
+  2. **seuils des profils** (C5.4) : serré VPIP < 25 %, large > 35 % ; passif AF < 1,5,
+     agressif > 2,5 ;
+  3. **catégories de la range** à la river (test du niveau 5) : forte = deux paires ou mieux,
+     moyenne = une paire, bluff = moins qu'une paire.
+- **Proposition** : les écrire dans le doc (C4.3 ou C4.4, C5.4, C5.1), ou corriger l'application si
+  le cours dit autre chose, puis `/publier-tutoriel`.
+- **Bénéfices** : le cours et les tests disent la même chose ; le joueur trouve la règle dans le cours.
+- **Coûts** : S. Trois paragraphes ou lignes de tableau dans le doc.
+- **Rapport** : élevé.
+- **Premier pas** : valider ou corriger les trois règles (question de contenu).
+- **Décision** :
 
 ### S-010 · Corriger l'écart de VPIP du test du niveau 2
 - **Statut** : proposée · **Date** : 2026-11-09 · **Origine** : réalisation de S-003
