@@ -12,6 +12,9 @@ Tout passe par `index.html` ; la partie après `#` choisit le niveau et l'onglet
 | `index.html#niveau-2` | l'onglet Tests du niveau 2 |
 | `index.html#niveau-2/exercices` | l'onglet Exercices du niveau 2 |
 | `index.html#niveau-2/aide` | un onglet propre au niveau (ici l'Aide-mémoire) |
+| `index.html#cours` | le cours : accueil et table des matières |
+| `index.html#cours/niveau-3` | une page du cours (`introduction`, `mode-d-emploi`, `niveau-1` à `niveau-6`, `grille`, `ressources`, `glossaire`) |
+| `index.html#cours/niveau-3/c3-7-compter-les-mains-qui-vous-battent` | une section d'une page du cours |
 
 Les anciennes adresses `niveau-1/` et `niveau-2/` redirigent vers `index.html#niveau-N`, pour ne pas casser les favoris.
 
@@ -20,30 +23,34 @@ Les anciennes adresses `niveau-1/` et `niveau-2/` redirigent vers `index.html#ni
 Les modules JavaScript ne fonctionnent pas en ouvrant le fichier directement (`file://`) : il faut un serveur HTTP. Depuis la racine du dépôt :
 
 ```bash
-bin/serve.sh            # affiche http://localhost:8000/tests/ et l'adresse de chaque niveau
+bin/serve.sh            # affiche http://localhost:8000/web/ et l'adresse de chaque niveau
 ```
 
 ## Déployer sur un serveur
 
-Le dossier `tests/` est autonome : tous les chemins sont relatifs à `index.html`, cartes comprises (`cartes/`). On le copie tel quel, sous le nom qu'on veut :
+Le dossier `web/` est autonome : tous les chemins sont relatifs à `index.html`, cartes comprises (`cartes/`). On le copie tel quel, sous le nom qu'on veut :
 
 ```bash
-rsync -av --delete tests/ utilisateur@vps:/chemin/public_html/poker/
+rsync -av --delete web/ utilisateur@vps:/chemin/public_html/poker/
 ```
 
 La page est alors à `https://domaine/poker/`. Aucune configuration serveur particulière : des fichiers statiques suffisent. Les `.svg` doivent être servis en `image/svg+xml` et les `.js` en `text/javascript` (réglages par défaut de nginx et d'Apache).
 
-`index.html` charge `css/style.css?v=4` et `js/app.js?v=4` : après une mise à jour, augmentez ce numéro pour que les navigateurs ne gardent pas l'ancienne version en cache. Pour les autres fichiers JavaScript, un rechargement forcé (Ctrl+Maj+R) peut être nécessaire.
+`index.html` charge `css/style.css?v=6` et `js/app.js?v=5` : après une mise à jour, augmentez ce numéro pour que les navigateurs ne gardent pas l'ancienne version en cache. Pour les autres fichiers JavaScript, un rechargement forcé (Ctrl+Maj+R) peut être nécessaire.
 
 ## Organisation
 
 ```
-tests/
+web/
 ├── index.html              la page unique
 ├── css/style.css           mise en page commune, thème clair et sombre, mobile
 ├── cartes/                 jeu de cartes vectoriel poker-qr (SVG)
+├── cours/
+│   ├── contenu.js          le tutoriel découpé en pages (généré par tools/cours_html.py, ne pas modifier)
+│   └── img/                ses illustrations
 ├── js/
-│   ├── app.js              lit l'adresse, dessine l'en-tête et la barre des niveaux, charge niveau-N/niveau.js
+│   ├── app.js              lit l'adresse, dessine l'en-tête et la barre Cours + niveaux, charge niveau-N/niveau.js
+│   ├── cours.js            le cours : sommaire, pages, navigation précédent / suivant (flèches du clavier aussi)
 │   ├── config.js           chemin des cartes, écart de jours, liste des niveaux (LEVELS)
 │   ├── shell.js            onglets, tableau de bord, passage d'un test, correction, exercices, export
 │   ├── dom.js              construction du DOM
@@ -59,6 +66,18 @@ tests/
     ├── index.html          redirection vers ../index.html#niveau-2
     └── …
 ```
+
+## Le cours
+
+Le bouton « Cours », avant les niveaux, affiche le tutoriel complet en 12 pages : l'accueil avec la table des matières, l'introduction, le mode d'emploi, une page par niveau, puis une page par annexe (grille d'auto-évaluation, ressources, glossaire). Chaque page a, en haut et en bas, un bouton Sommaire et des liens vers la page précédente et la suivante ; les flèches gauche et droite du clavier font de même. Les pages d'un niveau prêt renvoient aussi vers ses exercices et ses tests.
+
+Le contenu vient du Claude Doc du tutoriel, comme le PDF. Après une modification du doc : l'exporter au format `html`, puis
+
+```bash
+python3 tools/cours_html.py export.html
+```
+
+Le script s'arrête avec un message si le doc a changé de structure (grande partie ajoutée, image inconnue, lien interne sans cible) : il faut alors compléter ses tables `PAGES` ou `BLOBS`.
 
 ## Ajouter un niveau
 

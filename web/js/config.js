@@ -1,5 +1,5 @@
 // Réglages de l'application. Tous les chemins sont relatifs à index.html :
-// on déploie le dossier tests/ tel quel, à n'importe quel endroit d'un site.
+// on déploie le dossier web/ tel quel, à n'importe quel endroit d'un site.
 export const CONFIG = {
   cardsPath: 'cartes/',
   cardBack: '1B',
