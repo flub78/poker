@@ -89,9 +89,17 @@
 .sim-hint .comp-code { font-weight: 700; }
 
 .sim-journal, .sim-totals { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 14px; margin: 0 0 12px; }
-.sim-journal ol { list-style: none; margin: 6px 0 4px; padding: 0; font-size: 0.92rem; max-height: 260px; overflow-y: auto; }
+.sim-journal ol { list-style: none; margin: 6px 0 4px; padding: 0; font-size: 0.92rem; }
 .sim-journal li { padding: 1px 0; }
 .sim-log-street { font-weight: 700; margin-top: 6px; }
+.sim-log-cards { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 3px 0; }
+.sim-log-row { display: inline-flex; gap: 3px; }
+.sim-journal .card.xs { width: 38px; box-shadow: 0 0 0 1px var(--line); }
+.sim-journal .card.dim { opacity: 0.55; }
+.sim-log-note { color: var(--quiet); font-size: 0.85rem; }
+.sim-log-hand { color: var(--quiet); }
+.sim-log-hand > span:first-child, .sim-log-deal > span:first-child { min-width: 15em; }
+@media (max-width: 640px) { .sim-log-hand > span:first-child, .sim-log-deal > span:first-child { min-width: 0; flex-basis: 100%; } }
 .sim-log-result { font-weight: 700; color: var(--good); }
 .sim-journal li.you { color: var(--accent); }
 .sim-journal li.sim-log-result.you { color: var(--good); }

@@ -47,3 +47,37 @@ test('journal en français, à la 2e personne pour l\'humain', () => {
   assert.ok(lines.some((l) => /(gagne|gagnez) \d/.test(l)));
   assert.ok(!lines.some((l) => /undefined|NaN/.test(l)));
 });
+
+// Joue des mains jusqu'à trouver un abattage avec le tableau complet.
+function showdownHand(seed) {
+  const g = newGame({ seed });
+  for (let k = 0; k < 200; k++) {
+    playHand(g);
+    if (g.hand.result.showdown && g.hand.board.length === 5) return g;
+  }
+  throw new Error('aucun abattage');
+}
+
+test('journal : vos cartes après les blinds, le tableau rue par rue, les mains de tous à la fin', () => {
+  const g = showdownHand(21);
+  const names = g.players.map((p) => p.name);
+  const lines = handLog(g.hand, names, HUMAN);
+  const kinds = lines.map((l) => l.kind);
+  assert.equal(kinds.indexOf('deal'), 2);                           // après les deux blinds
+  assert.deepEqual(lines[2].cards, g.hand.seats[HUMAN].hole);
+  const streets = lines.filter((l) => l.kind === 'street');
+  assert.deepEqual(streets.map((l) => [l.street, l.cards.length, l.newCards]), [['flop', 3, 3], ['turn', 4, 1], ['river', 5, 1]]);
+  const hands = lines.filter((l) => l.kind === 'hand');
+  assert.equal(hands.length, 5);                                    // les 5 bots, couchés compris
+  for (const l of hands) assert.deepEqual(l.cards, g.hand.seats[l.seat].hole);
+  assert.ok(hands.some((l) => /\(couché\)$/.test(l.text)));
+  assert.ok(lines.some((l) => /^Cartes d'Alix/.test(l.text)) || !hands.some((l) => l.seat === 1));
+});
+
+test('journal pendant la main : cartes des bots cachées, sauf réglage « visibles »', () => {
+  const g = newGame({ seed: 4 });
+  startHand(g);
+  const names = g.players.map((p) => p.name);
+  assert.equal(handLog(g.hand, names, HUMAN).filter((l) => l.kind === 'hand').length, 0);
+  assert.equal(handLog(g.hand, names, HUMAN, { showAll: true }).filter((l) => l.kind === 'hand').length, 5);
+});

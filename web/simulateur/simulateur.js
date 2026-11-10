@@ -231,10 +231,25 @@ export function renderSimulateur(main) {
   }
 
   function journalPanel() {
-    const lines = handLog(game.hand, game.players.map((p) => p.name), HUMAN);
+    const lines = handLog(game.hand, game.players.map((p) => p.name), HUMAN, { showAll: settings.voirCartes });
+    // Une ligne avec cartes : son libellé (avant « : »), puis les cartes en miniature ; sur le
+    // tableau, les cartes de la rue en cours sont mises en avant. Le texte complet reste pour les
+    // lecteurs d'écran (aria-label).
+    const item = (l) => {
+      const cls = `sim-log-${l.kind}${l.seat === HUMAN ? ' you' : ''}`;
+      if (!l.cards) return h('li', { class: cls }, l.text);
+      const label = l.text.slice(0, l.text.indexOf(' : '));
+      const after = /\(([^)]*)\)$/.exec(l.text);
+      const old = l.kind === 'street' ? l.cards.length - l.newCards : 0;
+      return h('li', { class: `${cls} sim-log-cards`, 'aria-label': l.text },
+        h('span', { 'aria-hidden': 'true' }, `${label} :`),
+        h('span', { class: 'sim-log-row', 'aria-hidden': 'true' },
+          l.cards.map((c, k) => { const img = cardImg(c, 'xs'); if (k < old) img.classList.add('dim'); return img; })),
+        l.kind === 'hand' && after ? h('span', { class: 'sim-log-note', 'aria-hidden': 'true' }, after[1]) : null);
+    };
     return h('details', { class: 'sim-journal', open: true },
       h('summary', {}, 'Journal de la main'),
-      h('ol', {}, lines.map((l) => h('li', { class: `sim-log-${l.kind}${l.seat === HUMAN ? ' you' : ''}` }, l.text))));
+      h('ol', {}, lines.map(item)));
   }
 
   function totalsPanel() {
