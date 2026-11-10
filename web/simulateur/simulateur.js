@@ -84,20 +84,25 @@ export function renderSimulateur(main) {
     const pos = positions(hand);
     const legal = humanToAct(game) ? legalActions(hand) : null;
     // append natif : il écrirait « null » pour un panneau absent, d'où le filtre.
-    clear(root).append(...[
+    // Deux colonnes sur grand écran (simulateur.css) : la table à gauche ; actions, indice,
+    // journal et bilan à droite. Sur petit écran, l'une sous l'autre.
+    const side = h('div', { class: 'sim-side' }, ...[actionsPanel(legal), hintPanel(), journalPanel(), totalsPanel()].filter(Boolean));
+    clear(root).append(
       settingsPanel(),
-      h('div', { class: 'sim-status-bar' },
-        h('span', {}, `Main n° ${game.handNo}`),
-        h('span', {}, STREET_LABEL[hand.street]),
-        h('span', {}, `Votre niveau : ${settings.humanLevel}`)),
-      h('div', { class: 'sim-table', role: 'group', 'aria-label': 'Table de poker' },
-        game.players.map((p, i) => seatView(i, pos)),
-        hand.seats.map((s, i) => (s.bet > 0 ? h('div', { class: `sim-bet sim-bet-${i}` }, bbText(s.bet, hand.bb)) : null)),
-        centerView()),
-      actionsPanel(legal),
-      hintPanel(),
-      journalPanel(),
-      totalsPanel()].filter(Boolean));
+      h('div', { class: 'sim-layout' },
+        h('div', { class: 'sim-main' },
+          h('div', { class: 'sim-status-bar' },
+            h('span', {}, `Main n° ${game.handNo}`),
+            h('span', {}, STREET_LABEL[hand.street]),
+            h('span', {}, `Votre niveau : ${settings.humanLevel}`)),
+          h('div', { class: 'sim-table', role: 'group', 'aria-label': 'Table de poker' },
+            game.players.map((p, i) => seatView(i, pos)),
+            hand.seats.map((s, i) => (s.bet > 0 ? h('div', { class: `sim-bet sim-bet-${i}` }, bbText(s.bet, hand.bb)) : null)),
+            centerView())),
+        side));
+    // Sur grand écran, le journal défile seul dans la colonne de droite : on montre sa fin.
+    const log = side.querySelector('.sim-journal ol');
+    if (log) log.scrollTop = log.scrollHeight;
   }
 
   function seatView(i, pos) {
@@ -247,8 +252,8 @@ export function renderSimulateur(main) {
           l.cards.map((c, k) => { const img = cardImg(c, 'xs'); if (k < old) img.classList.add('dim'); return img; })),
         l.kind === 'hand' && after ? h('span', { class: 'sim-log-note', 'aria-hidden': 'true' }, after[1]) : null);
     };
-    return h('details', { class: 'sim-journal', open: true },
-      h('summary', {}, 'Journal de la main'),
+    return h('section', { class: 'sim-journal', 'aria-label': 'Journal de la main' },
+      h('h2', {}, 'Journal de la main'),
       h('ol', {}, lines.map(item)));
   }
 

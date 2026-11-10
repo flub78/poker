@@ -3,7 +3,8 @@
 .sim { --rail: #6b4a2f; --seat-bg: #173f2d; --seat-human: #0f2e20; --active: #ffd54a; --win: #9be89b; }
 
 .sim-settings { margin: 0 0 12px; }
-.sim-settings summary, .sim-journal summary, .sim-totals summary { cursor: pointer; font-weight: 600; min-height: 32px; }
+.sim-settings summary, .sim-totals summary { cursor: pointer; font-weight: 600; min-height: 32px; }
+.sim-journal h2 { font-size: 1rem; margin: 2px 0 0; }
 .sim-status-bar { display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--quiet); font-size: 0.9rem; font-weight: 600; }
 
 /* ---------- la table ---------- */
@@ -129,4 +130,29 @@
   .sim-bet-4, .sim-bet-5 { left: 62%; }
   .sim-buttons .btn { flex: 1 1 40%; }
   .sim-buttons kbd, .sim-actions kbd { display: none; }
+}
+
+/* ---------- grand écran : la table à gauche, une colonne à droite ---------- */
+
+/* La page du simulateur s'élargit (en-tête, contenu et pied alignés). */
+@media (min-width: 1100px) {
+  body:has(.sim) .wrap { max-width: 1480px; }
+  .sim-layout { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 28px; align-items: start; }
+  /* La table tient dans la hauteur de l'écran (en-tête, réglages et sièges débordants compris). */
+  .sim-table { max-width: calc((100vh - 300px) * 1.6); margin-left: auto; margin-right: auto; }
+  /* La colonne de droite tient dans la partie visible sous l'en-tête ; seul le journal défile. */
+  .sim-side {
+    position: sticky; top: 12px; display: flex; flex-direction: column;
+    height: max(460px, calc(100vh - 220px)); padding-top: 4px;
+  }
+  .sim-side .sim-actions { margin-top: 0; }
+  .sim-side .sim-actions.done { flex-direction: column; align-items: stretch; }
+  .sim-side .btn.primary { min-width: 0; width: 100%; }
+  .sim-side .sim-buttons .btn { flex: 1 1 45%; }
+  .sim-side .sim-journal { display: flex; flex-direction: column; min-height: 120px; flex: 1 1 auto; overflow: hidden; }
+  .sim-side .sim-journal ol { overflow-y: auto; flex: 1 1 auto; min-height: 0; }
+  .sim-side .sim-totals { flex: none; }
+  .sim-side .sim-hint { flex: none; max-height: 40vh; overflow-y: auto; }
+  /* Le journal est étroit : les libellés passent au-dessus des cartes. */
+  .sim-side .sim-log-hand > span:first-child, .sim-side .sim-log-deal > span:first-child { min-width: 0; flex-basis: 100%; }
 }
