@@ -181,3 +181,19 @@
 .sim-verdict.erreur, .sim-mentor-note.erreur { color: var(--bad); background: var(--bad-soft); }
 .sim-mentor-note { margin: 0 0 12px; padding: 8px 12px; border-radius: 8px; flex: none; }
 .sim-mentor-note strong { color: inherit; }
+
+/* ---------- évaluation de la partie ---------- */
+
+.sim-eval h2 { margin: 0 0 4px; }
+.sim-eval h3 { font-size: 1.1rem; margin: 22px 0 6px; }
+.sim-eval-text p { margin: 4px 0; max-width: 72ch; }
+.sim-eval-table tr.you td { font-weight: 700; }
+.sim-worst-list { padding-left: 1.4em; display: grid; gap: 14px; }
+.sim-worst { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--bad); border-radius: 8px; padding: 10px 14px; }
+.sim-worst p { margin: 4px 0; }
+.sim-worst .btn { margin-top: 8px; }
+.sim-worst-cards { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 6px 0; }
+.sim-worst-label { color: var(--quiet); font-size: 0.85rem; }
+.sim-worst .card.xs, .sim-eval .card.xs { width: 38px; box-shadow: 0 0 0 1px var(--line); }
+.sim-replay { color: var(--warn); }
+.sim-totals .link-btn { display: block; margin: 4px 0; }

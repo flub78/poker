@@ -3,7 +3,8 @@
 //   - le prénom, commun à tout le site ;
 //   - le résumé des résultats par niveau ;
 //   - le code de transfert vers un autre appareil (envoyer, recevoir) ;
-//   - la sauvegarde dans un fichier (exporter, importer) ;
+//   - les parties jouées au simulateur (simulateur/historique.js) ;
+//   - la sauvegarde dans un fichier (exporter, importer), parties du simulateur comprises ;
 //   - l'effacement des résultats.
 //
 // Adresses : #profil                 la page
@@ -19,6 +20,7 @@
 import { h, clear } from './dom.js';
 import { LEVELS } from './config.js';
 import { createStore, mergeData, getPlayerName, setPlayerName } from './storage.js';
+import { loadParties, mergeParties, clearParties } from '../simulateur/historique.js';
 
 const VERSION = '1';
 const FILE_FORMAT = 'poker-resultats';
@@ -124,7 +126,7 @@ export const transferLink = (code) => `${location.origin}${location.pathname}#tr
 async function exportFile() {
   const niveaux = {};
   for (const lvl of await levels()) niveaux[lvl.n] = lvl.store.exportData();
-  const json = JSON.stringify({ format: FILE_FORMAT, version: 1, joueur: getPlayerName(), date: new Date().toISOString(), niveaux }, null, 2);
+  const json = JSON.stringify({ format: FILE_FORMAT, version: 1, joueur: getPlayerName(), date: new Date().toISOString(), niveaux, simulateur: loadParties() }, null, 2);
   const a = h('a', {
     href: URL.createObjectURL(new Blob([json], { type: 'application/json' })),
     download: `poker-resultats-${new Date().toISOString().slice(0, 10)}.json`,
@@ -138,7 +140,7 @@ async function exportFile() {
 async function readFile(text) {
   let data;
   try { data = JSON.parse(text); } catch { throw new Error('ce n\'est pas un fichier JSON'); }
-  if (data?.format === FILE_FORMAT && typeof data.niveaux === 'object') return { player: data.joueur || '', byLevel: data.niveaux };
+  if (data?.format === FILE_FORMAT && typeof data.niveaux === 'object') return { player: data.joueur || '', byLevel: data.niveaux, parties: data.simulateur || [] };
   if (data && typeof data.tests === 'object') {
     const ids = Object.keys(data.tests);
     const lvl = (await levels()).find((l) => ids.length && ids.every((id) => l.def.tests.some((t) => t.id === id)));
@@ -157,6 +159,7 @@ export async function renderProfil(main, code) {
     code ? receiveBlock(code) : null,
     nameBlock(),
     await summaryBlock(),
+    partiesBlock(),
     sendBlock(),
     receiveFormBlock(),
     fileBlock(),
@@ -203,6 +206,31 @@ async function summaryBlock() {
       h('thead', {}, h('tr', {}, h('th', {}, 'Niveau'), h('th', {}, 'Validés'), h('th', {}, 'Tentatives'), h('th', {}, 'Détail'))),
       h('tbody', {}, rows))),
     h('p', { class: 'meta' }, 'Ils restent dans ce navigateur. Transférez-les ou sauvegardez-les ci-dessous pour ne pas les perdre.'));
+}
+
+// Les dernières parties du simulateur (simulateur/historique.js), les plus récentes en tête.
+function partiesBlock() {
+  const list = loadParties().slice().reverse();
+  const num = (x) => String(x).replace('.', ',');
+  const rows = list.slice(0, 15).map((p) => h('tr', {},
+    h('td', {}, new Date(p.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })),
+    h('td', {}, String(p.hands)),
+    h('td', {}, String(p.level)),
+    h('td', {}, p.decisions ? `${Math.round((100 * p.conforme) / p.decisions)} %` : '—'),
+    h('td', {}, String(p.erreur)),
+    h('td', {}, `${p.vpip} % / ${p.pfr} %`),
+    h('td', {}, `${p.gains > 0 ? '+' : p.gains < 0 ? '−' : ''}${num(Math.abs(p.gains))} BB`),
+    h('td', {}, p.rules.join(', ') || '—')));
+  return h('section', { class: 'block sim-parties' },
+    h('h2', {}, 'Mes parties au simulateur'),
+    list.length
+      ? h('div', { class: 'table-wrap' }, h('table', { class: 'summary' },
+        h('thead', {}, h('tr', {}, h('th', {}, 'Date'), h('th', {}, 'Mains'), h('th', {}, 'Niveau'), h('th', {}, 'Conformes'),
+          h('th', {}, 'Erreurs'), h('th', {}, 'VPIP / PFR'), h('th', {}, 'Gains'), h('th', {}, 'Règles à revoir'))),
+        h('tbody', {}, rows)))
+      : h('p', {}, 'Aucune partie terminée pour l\'instant. ', h('a', { href: '#simulateur' }, 'Jouer à la table'), '.'),
+    list.length > 15 ? h('p', { class: 'meta' }, `Les 15 dernières sur ${list.length}.`) : null,
+    h('p', { class: 'meta' }, 'Une partie est enregistrée quand sa dernière main est jouée. Le code de transfert ne les emporte pas encore ; le fichier de sauvegarde, si.'));
 }
 
 // Résumé d'un lien reçu, puis ajout sur confirmation.
@@ -332,17 +360,18 @@ function fileBlock() {
       const got = await readFile(await file.text());
       const done = await mergeLevels(got.byLevel, true);
       if (!getPlayerName() && got.player) { setPlayerName(got.player); notify(); }
-      const added = done.rows.reduce((s, r) => s + r.added, 0);
+      const added = done.rows.reduce((s, r) => s + r.added, 0) + (mergeParties(got.parties || []) || 0);
       status.textContent = `${file.name} : ${plural(added, 'résultat')} ajouté${added > 1 ? 's' : ''} (ceux déjà présents sont conservés).`;
       const summary = main().querySelector('.summary')?.closest('.block');
       if (summary) summary.replaceWith(await summaryBlock());
+      main().querySelector('.sim-parties')?.replaceWith(partiesBlock());
     } catch (err) {
       status.textContent = `Import impossible : ${err.message}.`;
     }
   };
   return h('section', { class: 'block' },
     h('h2', {}, 'Sauvegarde dans un fichier'),
-    h('p', {}, 'Un fichier JSON avec tous les niveaux. L\'import ajoute les tentatives et critères cochés qui manquent ; ',
+    h('p', {}, 'Un fichier JSON avec tous les niveaux et les parties du simulateur. L\'import ajoute ce qui manque ; ',
       'il accepte aussi les anciens fichiers d\'un seul niveau.'),
     h('div', { class: 'practice-actions' },
       h('button', { type: 'button', class: 'btn secondary', onclick: exportFile }, 'Exporter mes résultats'),
@@ -354,12 +383,13 @@ function fileBlock() {
 function resetBlock() {
   return h('section', { class: 'block' },
     h('h2', {}, 'Effacer'),
-    h('p', {}, 'Efface les résultats de tous les niveaux dans ce navigateur. Le prénom est conservé.'),
+    h('p', {}, 'Efface les résultats de tous les niveaux et les parties du simulateur dans ce navigateur. Le prénom est conservé.'),
     h('button', {
       type: 'button', class: 'btn danger',
       onclick: async () => {
         if (!confirm('Effacer les résultats de tous les niveaux ? Cette action est définitive. Pensez à exporter avant.')) return;
         for (const lvl of await levels()) lvl.store.reset();
+        clearParties();
         renderProfil(main());
       },
     }, 'Effacer tous mes résultats'));
