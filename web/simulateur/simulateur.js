@@ -8,6 +8,7 @@ import { legalActions } from './moteur/table.js';
 import { newGame, startHand, playBot, play, humanToAct, botToAct, HUMAN } from './partie.js';
 import { decider, BOT_LEVELS, playLevel } from './bots.js';
 import { handLog } from './journal.js';
+import { judge, actionLabel, VERDICTS } from './mentor.js';
 import { positions, bbText, potTotal } from './positions.js';
 
 const KEY = 'poker.simulateur.v1';
@@ -37,9 +38,12 @@ export function renderSimulateur(main) {
   let timer = null;
   let hint = null;              // décision du bot pour l'humain, affichée par le bouton Indice
   let raiseTo = null;           // montant choisi avec le curseur
+  let mentorNote = null;        // dernier avis du mentor, affiché dans la colonne des actions
+  let mentorStats = null;       // décompte des verdicts de la partie (bilan)
 
   function newGameFromSettings() {
     game = newGame({ botLevels: settings.botLevels, humanLevel: settings.humanLevel });
+    mentorStats = { conforme: 0, défendable: 0, erreur: 0, repris: 0 };
     nextHand();
   }
 
@@ -47,6 +51,7 @@ export function renderSimulateur(main) {
     startHand(game);
     hint = null;
     raiseTo = null;
+    mentorNote = null;
     update();
   }
 
@@ -63,12 +68,53 @@ export function renderSimulateur(main) {
     }
   }
 
+  // Coup du joueur. En mode Mentor, il est d'abord analysé : conforme, il est joué aussitôt ;
+  // sinon une fenêtre explique l'écart et propose de confirmer, de jouer le coup du mentor ou
+  // d'annuler.
   function humanPlay(action) {
-    if (!humanToAct(game)) return;
+    if (!humanToAct(game) || root.querySelector('dialog[open]')) return;
+    if (settings.aide === 'mentor') {
+      const legal = legalActions(game.hand);
+      const advice = decider(game.hand, HUMAN, settings.humanLevel);
+      const j = judge(game.hand, action, advice, legal);
+      if (j.verdict !== 'conforme') { mentorDialog(j, action, advice.action); return; }
+      mentorStats.conforme++;
+      mentorNote = j;
+    }
+    commit(action);
+  }
+
+  function commit(action) {
     play(game, action);
     hint = null;
     raiseTo = null;
     update();
+  }
+
+  function mentorDialog(j, action, advised) {
+    const close = (then) => { dialog.close(); dialog.remove(); then?.(); };
+    const dialog = h('dialog', { class: 'sim-mentor', 'aria-labelledby': 'sim-mentor-title' },
+      h('h2', { id: 'sim-mentor-title' }, h('span', { class: `sim-verdict ${j.verdict}` }, VERDICTS[j.verdict]), ' Le mentor analyse votre coup'),
+      h('dl', {},
+        h('dt', {}, 'Votre coup'), h('dd', {}, j.human),
+        h('dt', {}, `Le mentor (règles du niveau ${j.level})`), h('dd', {}, j.advised)),
+      j.why.length ? h('div', {}, h('h3', {}, 'Pourquoi votre coup est moins bon'), reasonList(j.why)) : null,
+      h('h3', {}, 'Le raisonnement du mentor'), reasonList(j.raisons),
+      h('div', { class: 'sim-mentor-buttons' },
+        h('button', { class: 'btn secondary', onclick: () => close() }, 'Annuler'),
+        h('button', { class: 'btn secondary', onclick: () => { mentorStats[j.verdict]++; mentorStats.repris++; close(() => { mentorNote = { ...j, repris: true }; commit(advised); }); } }, `Jouer : ${j.advised}`),
+        h('button', { class: 'btn', onclick: () => close(() => { mentorStats[j.verdict]++; mentorNote = { ...j, confirme: true }; commit(action); }) }, 'Confirmer mon coup')));
+    dialog.addEventListener('cancel', () => dialog.remove());       // Échap = annuler
+    root.append(dialog);
+    dialog.showModal();
+  }
+
+  // Liste de raisons, chacune avec le lien vers sa section du cours.
+  function reasonList(list) {
+    return h('ul', { class: 'sim-reasons' }, list.map((x) => {
+      const href = x.code ? competenceHref(x.code) : null;
+      return h('li', {}, x.code ? (href ? h('a', { href, class: 'comp-code' }, x.code) : h('span', { class: 'comp-code' }, x.code)) : null, x.code ? ' ' : '', x.texte);
+    }));
   }
 
   function showHint() {
@@ -86,7 +132,7 @@ export function renderSimulateur(main) {
     // append natif : il écrirait « null » pour un panneau absent, d'où le filtre.
     // Deux colonnes sur grand écran (simulateur.css) : la table à gauche ; actions, indice,
     // journal et bilan à droite. Sur petit écran, l'une sous l'autre.
-    const side = h('div', { class: 'sim-side' }, ...[actionsPanel(legal), hintPanel(), journalPanel(), totalsPanel()].filter(Boolean));
+    const side = h('div', { class: 'sim-side' }, ...[actionsPanel(legal), mentorPanel(), hintPanel(), journalPanel(), totalsPanel()].filter(Boolean));
     clear(root).append(
       settingsPanel(),
       h('div', { class: 'sim-layout' },
@@ -187,7 +233,7 @@ export function renderSimulateur(main) {
       const { min, max } = legal.raise;
       if (raiseTo === null || raiseTo < min || raiseTo > max) raiseTo = min;
       const verb = facing || hand.street === 'preflop' ? 'Relancer à' : 'Miser';
-      const raiseBtn = h('button', { class: 'btn', onclick: () => humanPlay({ type: 'raise', to: raiseTo }) },
+      const raiseBtn = h('button', { class: 'btn sim-raise-btn', onclick: () => humanPlay({ type: 'raise', to: raiseTo }) },
         `${verb} ${bbText(raiseTo, hand.bb)}${raiseTo === max ? ' (tapis)' : ''}`, h('kbd', {}, 'R'));
       const slider = h('input', {
         type: 'range', min, max, step: 1, value: raiseTo, 'aria-label': 'Montant de la relance',
@@ -212,25 +258,23 @@ export function renderSimulateur(main) {
       hand.board.length ? h('p', { class: 'meta' }, `Votre main : ${describe(evaluate([...s.hole, ...hand.board]))}.`) : null);
   }
 
-  function actionLabel(action, legal) {
-    const bb = game.hand.bb;
-    switch (action.type) {
-      case 'fold': return 'Se coucher';
-      case 'check': return 'Checker';
-      case 'call': return `Suivre ${bbText(legal.toCall, bb)}`;
-      default: return `${game.hand.currentBet > 0 ? 'Relancer à' : 'Miser'} ${bbText(action.to, bb)}`;
-    }
+  // Dernier avis du mentor sur votre coup.
+  function mentorPanel() {
+    if (!mentorNote || settings.aide !== 'mentor') return null;
+    const n = mentorNote;
+    const low = (t) => t.charAt(0).toLowerCase() + t.slice(1);       // « Suivre 1 BB » → « suivre 1 BB »
+    const text = n.verdict === 'conforme' ? `${n.human} : conforme aux règles du niveau ${n.level}.`
+      : n.repris ? `Vous avez repris le coup du mentor : ${low(n.advised)}.`
+        : `Vous avez confirmé « ${low(n.human)} » (${low(VERDICTS[n.verdict])} ; le mentor : ${low(n.advised)}).`;
+    return h('p', { class: `sim-mentor-note ${n.verdict}`, 'aria-live': 'polite' }, h('strong', {}, 'Mentor : '), text);
   }
 
   function hintPanel() {
     if (!hint || !humanToAct(game)) return null;
     const legal = legalActions(game.hand);
     return h('section', { class: 'sim-hint', 'aria-live': 'polite' },
-      h('p', { class: 'sim-hint-title' }, `Indice (règles du niveau ${hint.level}) : `, h('strong', {}, actionLabel(hint.action, legal))),
-      h('ul', {}, hint.raisons.map((x) => {
-        const href = x.code ? competenceHref(x.code) : null;
-        return h('li', {}, x.code ? (href ? h('a', { href, class: 'comp-code' }, x.code) : h('span', { class: 'comp-code' }, x.code)) : null, x.code ? ' ' : '', x.texte);
-      })),
+      h('p', { class: 'sim-hint-title' }, `Indice (règles du niveau ${hint.level}) : `, h('strong', {}, actionLabel(hint.action, game.hand, legal))),
+      reasonList(hint.raisons),
       settings.humanLevel === 1 ? h('p', { class: 'meta' }, 'Au niveau 1, l\'indice applique déjà les règles du niveau 2.') : null,
       settings.humanLevel > 3 ? h('p', { class: 'meta' }, 'Les règles des niveaux 4 à 6 arrivent bientôt : l\'indice applique celles du niveau 3.') : null);
   }
@@ -261,6 +305,11 @@ export function renderSimulateur(main) {
     return h('details', { class: 'sim-totals' },
       h('summary', {}, `Bilan de la partie (${game.handNo} main${game.handNo > 1 ? 's' : ''})`),
       h('p', { class: 'meta' }, 'Sur quelques dizaines de mains, les jetons mesurent surtout la chance. Ce sont les décisions qu\'il faut juger.'),
+      mentorStats && mentorStats.conforme + mentorStats.défendable + mentorStats.erreur > 0
+        ? h('p', {}, h('strong', {}, 'Vos décisions jugées par le mentor : '),
+          `${mentorStats.conforme} conforme${mentorStats.conforme > 1 ? 's' : ''}, ${mentorStats.défendable} défendable${mentorStats.défendable > 1 ? 's' : ''}, ${mentorStats.erreur} erreur${mentorStats.erreur > 1 ? 's' : ''}`,
+          mentorStats.repris ? ` (coup du mentor repris ${mentorStats.repris} fois).` : '.')
+        : null,
       h('table', {},
         h('thead', {}, h('tr', {}, h('th', {}, 'Joueur'), h('th', {}, 'Niveau'), h('th', {}, 'Gains'))),
         h('tbody', {}, game.players.map((p, i) => h('tr', {},
@@ -277,7 +326,7 @@ export function renderSimulateur(main) {
       h('summary', {}, 'Réglages'),
       h('div', { class: 'settings' },
         select('Votre niveau', settings.humanLevel, levels, (v) => { settings.humanLevel = Number(v); game.humanLevel = settings.humanLevel; game.players[HUMAN].level = settings.humanLevel; hint = null; saveSettings(settings); render(); }),
-        select('Aide', settings.aide, [['indice', 'Bouton Indice'], ['sans', 'Sans aide']], (v) => { settings.aide = v; hint = null; saveSettings(settings); render(); }),
+        select('Aide', settings.aide, [['indice', 'Bouton Indice'], ['mentor', 'Mentor (analyse de chaque coup)'], ['sans', 'Sans aide']], (v) => { settings.aide = v; hint = null; saveSettings(settings); render(); }),
         select('Vitesse des adversaires', settings.vitesse, [['lente', 'Lente'], ['normale', 'Normale'], ['rapide', 'Rapide']], (v) => { settings.vitesse = v; saveSettings(settings); }),
         select('Cartes des adversaires', settings.voirCartes ? 'oui' : 'non', [['non', 'Cachées'], ['oui', 'Visibles (entraînement)']], (v) => { settings.voirCartes = v === 'oui'; saveSettings(settings); render(); })),
       h('p', { class: 'meta' }, 'Niveau des adversaires (pour l\'instant 2 ou 3 ; les niveaux 4 à 6 viendront ensuite). Appliqué à la prochaine partie.'),
@@ -289,6 +338,7 @@ export function renderSimulateur(main) {
   // Raccourcis clavier ; js/app.js remet document.onkeydown à zéro en changeant de page.
   document.onkeydown = (e) => {
     if (e.ctrlKey || e.metaKey || e.altKey || /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName) && e.target.type !== 'range') return;
+    if (root.querySelector('dialog[open]')) return;          // la fenêtre du mentor a ses propres touches
     const key = e.key.toLowerCase();
     if (game.hand.done) {
       if (key === 'enter' || key === ' ') { e.preventDefault(); nextHand(); }

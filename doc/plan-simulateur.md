@@ -115,14 +115,22 @@ Le code renvoie au cours grâce au lien déjà en place (S-005).
 
 ## Phase 3 — Mentor
 
-- [ ] Mode **Mentor** : l'humain choisit son coup, le simulateur le compare à `decider` avant de
-      l'appliquer.
-- [ ] `mentor.js` : verdicts conforme / défendable / erreur (D5). Définir et écrire les seuils
-      de « défendable » (par exemple main à la limite d'une range, équité à moins de 5 points de
-      l'équité requise).
-- [ ] Explication : pourquoi le coup humain est moins bon, avec la règle et la section du cours.
-- [ ] Choix laissé à l'humain : jouer son coup quand même, ou reprendre celui du mentor.
-- [ ] Tests : situations types pour chaque verdict.
+Principe retenu (2026-11-10) : le joueur joue comme d'habitude ; un coup conforme est joué
+aussitôt (une ligne « Mentor : conforme » s'affiche) ; sinon une fenêtre analyse le coup et le joueur
+confirme, reprend le coup du mentor ou annule.
+
+- [x] Mode **Mentor** (réglage Aide) : chaque coup est comparé à `decider` avant d'être appliqué.
+- [x] `mentor.js` : verdicts conforme / défendable / erreur (D5). Seuils : main sur la frontière
+      de la liste du cours (`frontier`) ; équité à moins de 5 points de l'équité requise ; relance
+      dont la taille s'écarte de plus de 30 % ; valeur manquée sans perte (checker, suivre au lieu
+      de relancer). Erreur : limp, main loin de la liste, call « pour voir », mise sans paire,
+      se coucher quand checker est gratuit, jeter une main rentable.
+- [x] Explication : pourquoi le coup est moins bon, avec la règle et le lien vers le cours, puis le
+      raisonnement du mentor.
+- [x] Choix : confirmer son coup, jouer celui du mentor ou annuler (Échap).
+- [x] Décompte des verdicts dans le bilan de la partie (coups annulés non comptés).
+- [x] Tests : situations types pour chaque verdict (`tests/simulateur/mentor.test.js`) ; la fenêtre
+      entre dans le test de fumée.
 
 ## Phase 4 — Journal et évaluation de fin de partie
 

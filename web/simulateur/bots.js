@@ -1,5 +1,5 @@
 // Le bot : decider(hand, seat, level) renvoie le coup que jouerait un joueur du niveau donné,
-// avec ses raisons ({ code: 'C2.2', texte }) — le code renvoie à la section du cours.
+// avec ses raisons et les faits qui les fondent (facts, pour le mentor) ({ code: 'C2.2', texte }) — le code renvoie à la section du cours.
 // Sert aux bots, au bouton Indice et (phase 3) au mentor.
 // Niveaux disponibles : 2 et 3 (les niveaux 4 à 6 viendront en phase 5 ; ils jouent comme le 3).
 import { legalActions } from './moteur/table.js';
@@ -16,7 +16,7 @@ export function decider(hand, seat, level) {
   const d = hand.street === 'preflop'
     ? preflopDecision(hand, seat, lvl, legal)
     : postflopDecision(hand, seat, lvl, legal);
-  return { action: makeLegal(d.action, legal), raisons: d.raisons, level: lvl };
+  return { action: makeLegal(d.action, legal), raisons: d.raisons, facts: d.facts, level: lvl };
 }
 
 // Ramène une décision à une action permise : on ne se couche jamais quand checker est gratuit.

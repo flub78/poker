@@ -38,7 +38,9 @@ function raiseTo(hand, sit, legal, raisons) {
   let to;
   if (sit.type === 'open' || sit.type === 'bb') {
     to = Math.round((2.5 + sit.limpers) * bb);
-    raisons.push(r('C2.3', `Taille standard : 2,5 BB${sit.limpers ? `, plus 1 BB par joueur qui a suivi (${sit.limpers})` : ''}, soit ${bbText(to, bb)}.`));
+    raisons.push(r('C2.3', sit.limpers
+      ? `Taille standard : 2,5 BB, plus 1 BB par joueur qui a suivi (${sit.limpers}), soit ${bbText(to, bb)}.`
+      : 'Taille standard : 2,5 BB.'));
   } else {
     const oop = isBlind(sit.hero);
     to = hand.currentBet * (oop ? 4 : 3);
@@ -52,13 +54,14 @@ function raiseTo(hand, sit, legal, raisons) {
   return Math.min(Math.max(to, legal.raise.min), legal.raise.max);
 }
 
-// Décision avant le flop. Renvoie { action, raisons } ; l'action peut être retouchée par bots.js
+// Décision avant le flop. Renvoie { action, raisons, facts } ; l'action peut être retouchée par bots.js
 // si elle n'est pas permise (par exemple relancer après une relance incomplète).
 export function preflopDecision(hand, seat, level, legal) {
   const s = hand.seats[seat];
   const code = handCode(s.hole);
   const sit = preflopSituation(hand, seat);
   const raisons = [];
+  const facts = { street: 'preflop', sit, code };    // pour le mentor (mentor.js)
   let type;
   if (sit.type === 'vs4bet') {
     // C2.2 : si l'on relance encore votre sur-relance ou votre 4-bet, QQ+ et AK partent à tapis.
@@ -80,10 +83,10 @@ export function preflopDecision(hand, seat, level, legal) {
       }
     }
   }
-  if (type === 'allin') return { action: { type: 'raise', to: legal.raise?.max }, raisons };
+  if (type === 'allin') return { facts, action: { type: 'raise', to: legal.raise?.max }, raisons };
   if (type === 'raise') {
-    if (!legal.raise) return { action: { type: 'call' }, raisons };
-    return { action: { type: 'raise', to: raiseTo(hand, sit, legal, raisons) }, raisons };
+    if (!legal.raise) return { facts, action: { type: 'call' }, raisons };
+    return { facts, action: { type: 'raise', to: raiseTo(hand, sit, legal, raisons) }, raisons };
   }
-  return { action: { type }, raisons };
+  return { facts, action: { type }, raisons };
 }

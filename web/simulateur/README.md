@@ -8,7 +8,8 @@ en bas et 5 bots qui appliquent les règles du cours. Plan et état d'avancement
 | --- | --- |
 | `simulateur.js`, `simulateur.css` | L'écran : table, boutons (raccourcis F, C, R, I, Entrée), indice, journal, bilan, réglages |
 | `partie.js` | Suite de mains : bouton qui tourne, 100 BB à chaque main, gains cumulés |
-| `bots.js` | `decider(main, siège, niveau)` → `{ action, raisons }` : sert aux bots et à l'indice |
+| `bots.js` | `decider(main, siège, niveau)` → `{ action, raisons, facts }` : sert aux bots, à l'indice et au mentor |
+| `mentor.js` | `judge(main, coup, conseil, actions légales)` → verdict (conforme, défendable, erreur) et explications |
 | `regles/preflop.js` | Grille du niveau 2 (C2.2), tailles (C2.2, C2.3), cotes implicites des petites paires (C3.4) |
 | `regles/postflop.js` | Après le flop : schéma du niveau 2 (C2.3), outs et cote du pot au niveau 3 (C3.2, C3.3) |
 | `regles/force.js` | Classe d'une main (forte, top paire, paire, rien) et outs |
