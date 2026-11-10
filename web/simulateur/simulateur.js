@@ -5,7 +5,9 @@ import { cardImg, backImg } from '../js/cards.js';
 import { competenceHref } from '../js/cours.js';
 import { evaluate, describe } from '../niveau-1/evaluator.js';
 import { legalActions } from './moteur/table.js';
-import { newGame, startHand, playBot, play, humanToAct, botToAct, HUMAN } from './partie.js';
+import { newGame, startHand, replayHand, playBot, play, humanToAct, botToAct, gameOver, HUMAN } from './partie.js';
+import { evaluateGame, afText, pctText } from './evaluation.js';
+import { summarize, saveParty } from './historique.js';
 import { decider, BOT_LEVELS, playLevel } from './bots.js';
 import { handLog } from './journal.js';
 import { judge, actionLabel, VERDICTS } from './mentor.js';
@@ -18,7 +20,7 @@ const STREET_LABEL = { preflop: 'Préflop', flop: 'Flop', turn: 'Turn', river: '
 function loadSettings() {
   let last = 2;
   try { last = Number(localStorage.getItem('poker.dernierNiveau')) || 2; } catch { /* stockage bloqué */ }
-  const defaults = { humanLevel: Math.max(1, Math.min(6, last)), botLevels: [2, 3, 2, 3, 2], aide: 'indice', vitesse: 'normale', voirCartes: false };
+  const defaults = { humanLevel: Math.max(1, Math.min(6, last)), botLevels: [2, 3, 2, 3, 2], aide: 'indice', vitesse: 'normale', voirCartes: false, mains: 30, graine: '' };
   try {
     const saved = JSON.parse(localStorage.getItem(KEY) || '{}');
     return { ...defaults, ...saved };
@@ -40,15 +42,20 @@ export function renderSimulateur(main) {
   let raiseTo = null;           // montant choisi avec le curseur
   let mentorNote = null;        // dernier avis du mentor, affiché dans la colonne des actions
   let mentorStats = null;       // décompte des verdicts de la partie (bilan)
+  let view = 'table';           // 'table' ou 'evaluation'
 
   function newGameFromSettings() {
-    game = newGame({ botLevels: settings.botLevels, humanLevel: settings.humanLevel });
+    const seed = /^\d+$/.test(String(settings.graine).trim()) ? Number(settings.graine) : null;
+    game = newGame({ botLevels: settings.botLevels, humanLevel: settings.humanLevel, maxHands: Number(settings.mains) || 0, seed });
+    view = 'table';
     mentorStats = { conforme: 0, défendable: 0, erreur: 0, repris: 0 };
     nextHand();
   }
 
   function nextHand() {
+    if (gameOver(game)) { showEvaluation(); return; }
     startHand(game);
+    view = 'table';
     hint = null;
     raiseTo = null;
     mentorNote = null;
@@ -84,8 +91,8 @@ export function renderSimulateur(main) {
     commit(action);
   }
 
-  function commit(action) {
-    play(game, action);
+  function commit(action, meta) {
+    play(game, action, meta);
     hint = null;
     raiseTo = null;
     update();
@@ -102,8 +109,8 @@ export function renderSimulateur(main) {
       h('h3', {}, 'Le raisonnement du mentor'), reasonList(j.raisons),
       h('div', { class: 'sim-mentor-buttons' },
         h('button', { class: 'btn secondary', onclick: () => close() }, 'Annuler'),
-        h('button', { class: 'btn secondary', onclick: () => { mentorStats[j.verdict]++; mentorStats.repris++; close(() => { mentorNote = { ...j, repris: true }; commit(advised); }); } }, `Jouer : ${j.advised}`),
-        h('button', { class: 'btn', onclick: () => close(() => { mentorStats[j.verdict]++; mentorNote = { ...j, confirme: true }; commit(action); }) }, 'Confirmer mon coup')));
+        h('button', { class: 'btn secondary', onclick: () => { mentorStats[j.verdict]++; mentorStats.repris++; close(() => { mentorNote = { ...j, repris: true }; commit(advised, { mentor: 'repris' }); }); } }, `Jouer : ${j.advised}`),
+        h('button', { class: 'btn', onclick: () => close(() => { mentorStats[j.verdict]++; mentorNote = { ...j, confirme: true }; commit(action, { mentor: 'confirmé' }); }) }, 'Confirmer mon coup')));
     dialog.addEventListener('cancel', () => dialog.remove());       // Échap = annuler
     root.append(dialog);
     dialog.showModal();
@@ -126,6 +133,7 @@ export function renderSimulateur(main) {
   // ---------- dessin ----------
 
   function render() {
+    if (view === 'evaluation') { renderEvaluation(); return; }
     const hand = game.hand;
     const pos = positions(hand);
     const legal = humanToAct(game) ? legalActions(hand) : null;
@@ -138,7 +146,8 @@ export function renderSimulateur(main) {
       h('div', { class: 'sim-layout' },
         h('div', { class: 'sim-main' },
           h('div', { class: 'sim-status-bar' },
-            h('span', {}, `Main n° ${game.handNo}`),
+            hand.replay ? h('span', { class: 'sim-replay' }, `Main n° ${hand.no} rejouée : elle ne compte pas`)
+              : h('span', {}, `Main n° ${game.handNo}${game.maxHands ? ` sur ${game.maxHands}` : ''}`),
             h('span', {}, STREET_LABEL[hand.street]),
             h('span', {}, `Votre niveau : ${settings.humanLevel}`)),
           h('div', { class: 'sim-table', role: 'group', 'aria-label': 'Table de poker' },
@@ -213,7 +222,9 @@ export function renderSimulateur(main) {
         h('div', { class: 'sim-result' },
           results.map((l) => h('p', {}, l.text)),
           h('p', { class: 'meta' }, net === 0 ? 'Main neutre pour vous.' : `Pour vous : ${net > 0 ? '+' : '−'}${bbText(Math.abs(net), hand.bb)}.`)),
-        h('button', { class: 'btn primary', id: 'sim-next', onclick: nextHand }, 'Main suivante'));
+        gameOver(game)
+          ? h('button', { class: 'btn primary', id: 'sim-next', onclick: showEvaluation }, hand.replay ? 'Retour à l\'évaluation' : 'Fin de partie : voir l\'évaluation')
+          : h('button', { class: 'btn primary', id: 'sim-next', onclick: nextHand }, 'Main suivante'));
     }
     if (!legal) {
       return h('section', { class: 'sim-actions waiting', 'aria-live': 'polite' },
@@ -304,6 +315,7 @@ export function renderSimulateur(main) {
   function totalsPanel() {
     return h('details', { class: 'sim-totals' },
       h('summary', {}, `Bilan de la partie (${game.handNo} main${game.handNo > 1 ? 's' : ''})`),
+      h('button', { class: 'link-btn', onclick: showEvaluation }, 'Évaluer la partie maintenant'),
       h('p', { class: 'meta' }, 'Sur quelques dizaines de mains, les jetons mesurent surtout la chance. Ce sont les décisions qu\'il faut juger.'),
       mentorStats && mentorStats.conforme + mentorStats.défendable + mentorStats.erreur > 0
         ? h('p', {}, h('strong', {}, 'Vos décisions jugées par le mentor : '),
@@ -317,6 +329,77 @@ export function renderSimulateur(main) {
           h('td', {}, `${game.totals[i] > 0 ? '+' : game.totals[i] < 0 ? '−' : ''}${bbText(Math.abs(game.totals[i]), game.bb)}`))))));
   }
 
+  // ---------- évaluation de la partie ----------
+
+  function showEvaluation() {
+    clearTimeout(timer);
+    view = 'evaluation';
+    // Une partie terminée est enregistrée une fois (page Profil).
+    if (gameOver(game) && !game.saved) {
+      game.saved = true;
+      saveParty(summarize(evaluateGame(game), game));
+    }
+    render();
+    window.scrollTo(0, 0);
+  }
+
+  function replay(no) {
+    replayHand(game, no);
+    view = 'table';
+    hint = null;
+    raiseTo = null;
+    mentorNote = null;
+    update();
+    window.scrollTo(0, 0);
+  }
+
+  function renderEvaluation() {
+    const ev = evaluateGame(game);
+    const bb = (chips) => bbText(chips, game.bb);
+    const signed = (chips) => `${chips > 0 ? '+' : chips < 0 ? '−' : ''}${bb(Math.abs(chips))}`;
+    const over = gameOver(game);
+    const STREETS = { preflop: 'avant le flop', flop: 'au flop', turn: 'au turn', river: 'à la river' };
+    const worst = ev.worst.map((d) => h('li', { class: 'sim-worst' },
+      h('p', { class: 'sim-worst-head' }, h('strong', {}, `Main n° ${d.hand}`), ` · ${STREETS[d.street]} · ${d.pos} · `,
+        d.ev !== null ? `espérance perdue ≈ ${bb(d.ev)}` : `${bb(d.stake)} en jeu`),
+      h('div', { class: 'sim-worst-cards' },
+        h('span', { class: 'sim-worst-label' }, 'Vos cartes'), h('span', { class: 'sim-log-row' }, d.hole.map((c) => cardImg(c, 'xs'))),
+        d.board.length ? [h('span', { class: 'sim-worst-label' }, 'Tableau'), h('span', { class: 'sim-log-row' }, d.board.map((c) => cardImg(c, 'xs')))] : null),
+      h('p', {}, `Vous : ${d.human}. Le mentor : ${d.advised}.${d.mentor === 'confirmé' ? ' (Coup confirmé malgré l\'avis du mentor.)' : ''}`),
+      reasonList(d.why),
+      h('button', { class: 'btn secondary', onclick: () => replay(d.hand) }, 'Rejouer cette main')));
+    const rows = ev.players.map((p) => h('tr', { class: p.human ? 'you' : '' },
+      h('td', {}, p.name), h('td', {}, p.human ? `${p.level} (jugé au ${p.judgedAt})` : `${p.level} (jugé au ${p.judgedAt})`),
+      h('td', {}, String(p.decisions)), h('td', {}, p.score === null ? '—' : pctText(p.score)),
+      h('td', {}, String(p.counts.défendable)), h('td', {}, String(p.counts.erreur)),
+      h('td', {}, pctText(p.stats.vpip)), h('td', {}, pctText(p.stats.pfr)), h('td', {}, afText(p.stats.af)),
+      h('td', {}, p.profile), h('td', {}, signed(p.gains))));
+    const coursLink = (code, text) => { const href = competenceHref(code); return href ? h('a', { href }, text) : text; };
+    clear(root).append(
+      h('section', { class: 'sim-eval', 'aria-labelledby': 'sim-eval-title' },
+        h('h2', { id: 'sim-eval-title' }, over ? 'Évaluation de la partie' : 'Évaluation provisoire de la partie'),
+        h('p', { class: 'meta' }, `${ev.hands} main${ev.hands > 1 ? 's' : ''} jouée${ev.hands > 1 ? 's' : ''} · graine ${ev.seed} (la reprendre dans les réglages redonne les mêmes cartes)`
+          + (over ? ' · partie enregistrée dans votre Profil.' : '.')),
+        h('div', { class: 'sim-eval-text' },
+          h('h3', {}, 'Vos décisions'),
+          ev.comments.you.map((t) => h('p', {}, t)),
+          h('p', { class: 'meta' }, 'Vos décisions sont jugées avec les règles de votre niveau, comme le fait le mentor. Celles des bots avec les règles du niveau ',
+            String(ev.players.find((p) => !p.human)?.judgedAt), ', le plus haut disponible. Les jetons gagnés mesurent surtout la chance sur si peu de mains.')),
+        h('h3', {}, 'Vos erreurs les plus coûteuses'),
+        ev.worst.length ? h('ol', { class: 'sim-worst-list' }, worst) : h('p', {}, 'Aucune erreur : bravo.'),
+        ev.worst.some((d) => d.ev === null) ? h('p', { class: 'meta' }, 'L\'espérance perdue ne se calcule que pour suivre ou jeter un tirage (C3.6) ; sinon, le montant indiqué est celui qui était en jeu.') : null,
+        h('h3', {}, 'Tous les joueurs'),
+        h('div', { class: 'table-wrap' }, h('table', { class: 'summary sim-eval-table' },
+          h('thead', {}, h('tr', {}, ['Joueur', 'Niveau', 'Décisions', 'Conformes', 'Défendables', 'Erreurs', 'VPIP', 'PFR', 'AF', 'Profil', 'Gains'].map((t) => h('th', {}, t)))),
+          h('tbody', {}, rows))),
+        h('p', { class: 'meta' }, 'VPIP, PFR, AF et profils : ', coursLink('C5.4', 'C5.4'), '. Serré = VPIP sous 25 %, large = au-dessus de 35 % ; passif = AF sous 1,5, agressif = au-dessus de 2,5.'),
+        h('h3', {}, 'Les bots'),
+        h('ul', {}, ev.comments.bots.map((t) => h('li', {}, t))),
+        h('div', { class: 'practice-actions' },
+          over ? null : h('button', { class: 'btn secondary', onclick: () => { view = 'table'; update(); } }, 'Retour à la table'),
+          h('button', { class: 'btn', onclick: () => { clearTimeout(timer); newGameFromSettings(); } }, 'Nouvelle partie'))));
+  }
+
   function settingsPanel() {
     const select = (label, value, options, onchange) => h('label', { class: 'setting' }, label,
       h('select', { onchange: (e) => onchange(e.target.value) },
@@ -328,7 +411,12 @@ export function renderSimulateur(main) {
         select('Votre niveau', settings.humanLevel, levels, (v) => { settings.humanLevel = Number(v); game.humanLevel = settings.humanLevel; game.players[HUMAN].level = settings.humanLevel; hint = null; saveSettings(settings); render(); }),
         select('Aide', settings.aide, [['indice', 'Bouton Indice'], ['mentor', 'Mentor (analyse de chaque coup)'], ['sans', 'Sans aide']], (v) => { settings.aide = v; hint = null; saveSettings(settings); render(); }),
         select('Vitesse des adversaires', settings.vitesse, [['lente', 'Lente'], ['normale', 'Normale'], ['rapide', 'Rapide']], (v) => { settings.vitesse = v; saveSettings(settings); }),
-        select('Cartes des adversaires', settings.voirCartes ? 'oui' : 'non', [['non', 'Cachées'], ['oui', 'Visibles (entraînement)']], (v) => { settings.voirCartes = v === 'oui'; saveSettings(settings); render(); })),
+        select('Cartes des adversaires', settings.voirCartes ? 'oui' : 'non', [['non', 'Cachées'], ['oui', 'Visibles (entraînement)']], (v) => { settings.voirCartes = v === 'oui'; saveSettings(settings); render(); }),
+        select('Mains par partie', settings.mains, [[10, '10'], [20, '20'], [30, '30'], [50, '50'], [100, '100'], [0, 'Sans limite']], (v) => { settings.mains = Number(v); saveSettings(settings); }),
+        h('label', { class: 'setting' }, 'Graine (facultatif)',
+          h('input', { type: 'text', inputmode: 'numeric', value: settings.graine, placeholder: 'au hasard', size: 12,
+            onchange: (e) => { settings.graine = e.target.value.trim(); saveSettings(settings); } }))),
+      h('p', { class: 'meta' }, 'Nombre de mains et graine : appliqués à la prochaine partie. Une même graine redonne les mêmes cartes.'),
       h('p', { class: 'meta' }, 'Niveau des adversaires (pour l\'instant 2 ou 3 ; les niveaux 4 à 6 viendront ensuite). Appliqué à la prochaine partie.'),
       h('div', { class: 'settings' }, game.players.slice(1).map((p, k) => select(p.name, settings.botLevels[k],
         BOT_LEVELS.map((n) => [n, `Niveau ${n}`]), (v) => { settings.botLevels[k] = Number(v); saveSettings(settings); }))),
@@ -339,9 +427,10 @@ export function renderSimulateur(main) {
   document.onkeydown = (e) => {
     if (e.ctrlKey || e.metaKey || e.altKey || /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName) && e.target.type !== 'range') return;
     if (root.querySelector('dialog[open]')) return;          // la fenêtre du mentor a ses propres touches
+    if (view === 'evaluation') return;
     const key = e.key.toLowerCase();
     if (game.hand.done) {
-      if (key === 'enter' || key === ' ') { e.preventDefault(); nextHand(); }
+      if (key === 'enter' || key === ' ') { e.preventDefault(); if (gameOver(game)) showEvaluation(); else nextHand(); }
       return;
     }
     const legal = humanToAct(game) ? legalActions(game.hand) : null;

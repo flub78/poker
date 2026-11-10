@@ -90,7 +90,7 @@ Le code renvoie au cours grâce au lien déjà en place (S-005).
 - [x] Lien « Table » dans l'en-tête (à côté de Cours), adresse `#simulateur`.
 - [x] Réglages : niveau de l'humain, niveau de chaque bot (2 ou 3 pour l'instant, mélangés),
       aide (Indice ou sans aide), vitesse, cartes des bots visibles ou non. Enregistrés dans le navigateur.
-- [ ] Réglages restants : nombre de mains d'une partie et graine (avec la phase 4, fin de partie).
+- [x] Réglages restants : nombre de mains d'une partie et graine (faits avec la phase 4).
 - [x] Partie (`partie.js`) : bouton qui tourne, 100 BB à chaque main, gains cumulés.
 - [x] Vue de la table : 6 sièges, cartes (`web/cartes/`), pot, mises, bouton dealer, joueur actif.
 - [x] Boutons de l'humain (raccourcis F, C, R, I, Entrée) : seules les actions légales sont actives ; montant de relance avec
@@ -134,15 +134,23 @@ confirme, reprend le coup du mentor ou annule.
 
 ## Phase 4 — Journal et évaluation de fin de partie
 
-- [ ] `journal.js` : chaque décision (humain et bots) avec la situation, le coup, la décision de
-      référence, le verdict.
-- [ ] Rejouer une main du journal à partir de sa graine.
-- [ ] `evaluation.js` : par joueur, nombre de décisions conformes, défendables et erreurs ;
-      erreurs regroupées par règle ; perte d'espérance estimée quand elle est calculable.
-- [ ] Commentaire : les 3 erreurs les plus coûteuses de l'humain, avec la main et la règle.
-- [ ] Statistiques du cours sur la partie : VPIP, PFR, AF (lien avec les profils du niveau 5).
-- [ ] Rappel affiché : sur quelques dizaines de mains, les jetons mesurent surtout la chance.
-- [ ] Sauvegarde du bilan dans le profil (`storage.js`), visible sur la page Profil.
+- [x] Chaque décision (humain et bots) est jugée au moment où elle est jouée (`partie.js`,
+      `game.decisions`) : situation, coup, coup de référence, verdict, raisons, coût. Le joueur est
+      jugé avec les règles de son niveau, les bots avec celles du niveau le plus haut disponible.
+- [x] Rejouer une main : chaque main a sa graine ; « Rejouer cette main » redonne les mêmes cartes
+      et le même bouton ; une main rejouée ne compte ni dans les gains ni dans l'évaluation.
+- [x] `evaluation.js` : par joueur, décisions conformes, défendables et erreurs ; erreurs par
+      règle ; espérance perdue quand elle se calcule (suivre ou jeter un tirage, C3.6), sinon le
+      montant en jeu.
+- [x] Commentaire : les 3 erreurs les plus coûteuses de l'humain (une par main), avec ses cartes,
+      le tableau, la règle et un bouton pour rejouer la main.
+- [x] Statistiques du cours : VPIP, PFR, AF et profil (repères de C5.4) ; rappel du VPIP du test du
+      niveau 2 (12 à 20 %) et de la règle d'or 1 si l'on suit plus qu'on ne relance.
+- [x] Rappel affiché : sur quelques dizaines de mains, les jetons mesurent surtout la chance.
+- [x] Sauvegarde du bilan (`historique.js`), visible sur la page Profil, compris dans l'export, l'import
+      et l'effacement. Le code de transfert ne l'emporte pas encore.
+- [x] Réglages : nombre de mains par partie (30 par défaut) et graine.
+- [ ] Code de transfert : y ajouter les parties du simulateur.
 
 ## Phase 5 — Bots des niveaux 4 à 6
 

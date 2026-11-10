@@ -118,6 +118,9 @@ try {
       await wait(300);
     }
     await check(t('#simulateur fin de main'));
+    await page.eval(`[...document.querySelectorAll('.link-btn')].find((b) => b.textContent.startsWith('Évaluer'))?.click()`);
+    await wait(200);
+    await check(t('#simulateur évaluation'));
     // Mode Mentor : un coup hors des règles (suivre plutôt que relancer ou se coucher) ouvre la fenêtre d'analyse.
     await page.eval(`localStorage.setItem('poker.simulateur.v1', JSON.stringify({ vitesse: 'rapide', aide: 'mentor' }))`);
     await open('#simulateur');

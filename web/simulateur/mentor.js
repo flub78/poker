@@ -70,6 +70,10 @@ export function judge(hand, action, advice, legal) {
     if ((sit.type === 'open') && action.type === 'call') {
       return out('erreur', r('C2.3', 'Règle d\'or 1 : on entre dans un pot en relançant, jamais en suivant (limp).'));
     }
+    // Niveau 3 : petite paire payée pour ses cotes implicites (C3.4).
+    if (action.type === 'fold' && advice.raisons.some((x) => x.code === 'C3.4')) {
+      return out('défendable', r('C3.4', `Avec ${hand2} et de gros tapis, payer pour toucher un brelan est rentable : les cotes implicites le permettent.`));
+    }
     const edge = onEdge(sit, code);
     if (plays(action) && !plays(a)) {
       return edge
