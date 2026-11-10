@@ -10,14 +10,14 @@ en bas et 5 bots qui appliquent les règles du cours. Plan et état d'avancement
 | `partie.js` | Suite de mains : bouton qui tourne, 100 BB à chaque main, gains cumulés |
 | `bots.js` | `decider(main, siège, niveau)` → `{ action, raisons }` : sert aux bots et à l'indice |
 | `regles/preflop.js` | Grille du niveau 2 (C2.2), tailles (C2.2, C2.3), cotes implicites des petites paires (C3.4) |
-| `regles/postflop.js` | Après le flop : règle provisoire du niveau 2, outs et cote du pot au niveau 3 (C3.2, C3.3) |
+| `regles/postflop.js` | Après le flop : schéma du niveau 2 (C2.3), outs et cote du pot au niveau 3 (C3.2, C3.3) |
 | `regles/force.js` | Classe d'une main (forte, top paire, paire, rien) et outs |
 | `positions.js` | Positions (BTN, SB, BB, UTG, MP, CO), montants en BB |
 | `journal.js` | Le journal d'une main en français |
 | `moteur/` | Les règles du jeu (ci-dessous) |
 
 Chaque raison porte le code de la compétence du cours (`C2.2`…) ; l'indice en fait un lien vers la
-section. Une règle que le cours ne donne pas encore est marquée « provisoire ».
+section. Toute règle appliquée par un bot est écrite dans le cours (décision D8 du plan).
 
 ## Le moteur (`moteur/`)
 

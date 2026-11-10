@@ -102,10 +102,11 @@ Le code renvoie au cours grâce au lien déjà en place (S-005).
 - [ ] `equite.js` : équité contre une range par Monte-Carlo. Pas nécessaire aux niveaux 2 et 3
       (la règle du 2 et du 4 suffit) : reporté à la phase 3 (mentor) ou 5.
 - [x] `bots.js` : `decider(situation, niveau)` pour les niveaux 2 et 3, avec ses raisons.
-- [ ] Postflop au niveau 2 : **règle provisoire codée** (`regles/postflop.js`, signalée dans
-      l'indice) : top paire ou mieux mise la moitié du pot ; face à une mise, main forte relance,
-      top paire suit (se couche face à une relance), le reste se couche. **À valider puis écrire
-      dans le cours (D8).** Idem pour la relance d'un 4-bet (QQ+, AK à tapis).
+- [x] Postflop au niveau 2 : schéma écrit dans le cours (C2.3, « Après le flop, en attendant le
+      niveau 4 ») le 2026-11-10 : top paire ou mieux mise la moitié du pot ; face à une mise, main
+      forte relance à 3 fois, top paire suit (se couche face à une relance), le reste se couche.
+      Et en C2.2 : relancé après une sur-relance ou un 4-bet, QQ+ et AK à tapis, le reste se couche.
+- [x] Bouton « Jouer à la table » en tête des onglets Tests et Exercices de chaque niveau.
 - [x] Bouton **Indice** : affiche la décision et ses raisons, avec un lien vers le cours.
 - [x] Tests : un cas par exemple du cours pour chaque règle codée (`tests/regles/`), partie et
       journal (`tests/simulateur/`), 500 mains entre bots.

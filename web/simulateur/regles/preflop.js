@@ -61,12 +61,11 @@ export function preflopDecision(hand, seat, level, legal) {
   const raisons = [];
   let type;
   if (sit.type === 'vs4bet') {
-    // Le cours s'arrête au 4-bet : on continue avec QQ+ et AK, à tapis (règle provisoire).
+    // C2.2 : si l'on relance encore votre sur-relance ou votre 4-bet, QQ+ et AK partent à tapis.
     type = has(RERAISE, code) ? 'allin' : 'fold';
     raisons.push(r('C2.2', has(RERAISE, code)
       ? `${shortCode(code)} fait partie de QQ+, AK : on continue, à tapis.`
       : `Face à une relance de plus, seules QQ+ et AK continuent : ${shortCode(code)} se couche.`));
-    raisons.push(r(null, 'Règle provisoire : le cours ne traite pas encore la relance d\'un 4-bet.'));
   } else {
     const d = decide(sit, code);
     type = d.action;
