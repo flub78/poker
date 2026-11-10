@@ -43,6 +43,10 @@ Ou, depuis la racine du dépôt : `bin/deploy.sh utilisateur@vps:/chemin/public_
 
 ## Vérifier
 
+`bin/tester.sh` (depuis la racine) lance tous les tests ; `bin/tester.sh --rapide` se limite aux tests unitaires.
+
+Les tests unitaires (`tests/`, lancés par `node --test`, sans dépendance) vérifient la logique des modules purs, ceux qui ne touchent pas à la page : classement des mains, ranges, cotes, outs. Un module importé par un test ne doit pas utiliser `document` ni `window` au chargement.
+
 `node tools/verifier_web.mjs` (depuis la racine) ouvre chaque page dans Chrome headless, en thème clair et sombre, y compris l'intérieur des exercices et des tests. Il signale les erreurs JavaScript, les fichiers introuvables, les boutons et liens peu lisibles (contraste WCAG AA) et les liens internes du cours sans cible.
 
 ## Organisation

@@ -20,6 +20,8 @@ Méthode progressive d'apprentissage du Texas Hold'em No-Limit en 6 niveaux, du 
 | `tools/cours_html.py`, `tools/cours_config.json` | Génèrent `web/cours/` (le cours de l'application) à partir de l'export HTML du Claude Doc |
 | `tools/decoder_export.py` | Décode un export de Claude Doc enregistré par Claude Code |
 | `tools/pdf_cours.mjs` | Fabrique le PDF du tutoriel en imprimant le cours (Chrome headless) : sauts de page, table des matières numérotée et cliquable, signets |
+| [`bin/tester.sh`](bin/tester.sh) | Lance tous les tests : tests unitaires (`tests/`, `node --test`) puis test de fumée ; `--rapide` pour les tests unitaires seuls |
+| `tests/` | Tests unitaires des modules JavaScript purs (sans dépendance) |
 | `tools/verifier_web.mjs` | Test de fumée de l'application : toutes les pages, thèmes clair et sombre ; erreurs, fichiers manquants, contraste |
 | `tools/chrome.mjs` | Serveur local et Chrome headless, communs aux deux scripts précédents (Node 22+, sans dépendance) |
 | [`bin/deploy.sh`](bin/deploy.sh) | Déploie `web/` avec rsync, numéro de version des fichiers tiré du commit |
