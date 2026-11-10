@@ -155,6 +155,6 @@ Le code renvoie au cours grâce au lien déjà en place (S-005).
 
 ## Documentation
 
-- [ ] `web/simulateur/README.md` et ligne dans le tableau des adresses de `web/README.md`.
+- [x] `web/simulateur/README.md` et ligne dans le tableau des adresses de `web/README.md`.
 - [ ] Section « Le simulateur » dans le mode d'emploi du cours (doc), puis `/publier-tutoriel`.
 - [ ] Nouveaux termes éventuels dans le glossaire, avec leur origine.
