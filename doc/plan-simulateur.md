@@ -31,10 +31,8 @@ Trois modes d'aide : **sans aide**, **Indice** (le coup que jouerait un bot de s
 web/simulateur/
 ├── niveau.js          onglet : point d'entrée chargé par js/app.js (#simulateur)
 ├── moteur/            JavaScript pur, sans DOM, testé sous Node
-│   ├── donne.js       distribution à partir d'une graine (paquet et rng de js/cards.js)
-│   ├── table.js       automate d'une main : blinds, tours d'enchères, actions légales
-│   ├── pots.js        pot principal et pots annexes
-│   └── abattage.js    attribution des pots (réutilise niveau-1/evaluator.js)
+│   ├── table.js       une main : donne (graine, cartes imposées), blinds, enchères, actions légales
+│   └── pots.js        pot principal, pots annexes, partage à l'abattage (niveau-1/evaluator.js)
 ├── regles/            une fonction par règle du cours, qui renvoie sa raison et sa section
 │   ├── preflop.js     ranges par position, relance, sur-relance (réutilise niveau-2)
 │   ├── cote.js        outs, cote du pot, équité requise (réutilise niveau-3)
@@ -71,19 +69,21 @@ Le code renvoie au cours grâce au lien déjà en place (S-005).
 
 ## Phase 1 — Moteur de jeu (sans interface)
 
-- [ ] Graine : réutiliser `rng(seed)` de `web/js/cards.js` (mulberry32, déjà là) ; tester que
+- [x] Graine : réutiliser `rng(seed)` de `web/js/cards.js` (mulberry32, déjà là) ; tester que
       même graine → même donne.
-- [ ] `donne.js` : paquet de 52 cartes, mélange de Fisher-Yates, distribution.
-- [ ] `table.js` : 6 sièges, bouton tournant, blinds, ordre de parole préflop et postflop.
-- [ ] Actions légales à chaque instant : se coucher, checker, suivre, miser, relancer (relance
+- [x] Donne (dans `table.js`) : paquet mélangé, distribution, cartes imposées (`preset`).
+- [x] `table.js` : de 2 à 6 sièges, blinds, ordre de parole préflop et postflop, tête-à-tête.
+      (Le bouton tournant d'une main à l'autre relève de la partie : phase 2.)
+- [x] Actions légales à chaque instant : se coucher, checker, suivre, miser, relancer (relance
       minimale = dernière relance), tapis.
-- [ ] Fin d'un tour d'enchères, passage de flop à turn puis river, main gagnée sans abattage.
-- [ ] `pots.js` : pots annexes avec plusieurs tapis de tailles différentes.
-- [ ] `abattage.js` : meilleure main, égalités, partage des pots (jeton indivisible au premier
+- [x] Fin d'un tour d'enchères, passage de flop à turn puis river, main gagnée sans abattage.
+- [x] `pots.js` : pots annexes avec plusieurs tapis de tailles différentes.
+- [x] Abattage (dans `pots.js`) : meilleure main, égalités, partage des pots (jeton indivisible au premier
       joueur après le bouton).
-- [ ] Tests de scénarios : une dizaine de mains écrites à la main (dont 3 avec pots annexes).
-- [ ] Tests de propriétés : 10 000 mains aléatoires jouées par des joueurs aléatoires ; à chaque
-      étape, total des jetons constant, aucun tapis négatif, aucune action illégale acceptée.
+- [x] Tests de scénarios : 15 mains écrites à la main, 5 tests de pots (`tests/moteur/`).
+- [x] Tests de propriétés : 10 000 mains aléatoires jouées par des joueurs aléatoires ; à chaque
+      étape, total des jetons constant, aucun tapis négatif, aucune action illégale acceptée ;
+      gagnants vérifiés à l'abattage. Contrôlé en introduisant deux bogues : tous deux détectés.
 
 ## Phase 2 — Table jouable et bots des niveaux 2 et 3
 
