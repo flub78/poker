@@ -118,6 +118,20 @@ try {
       await wait(300);
     }
     await check(t('#simulateur fin de main'));
+    // Mode Mentor : un coup hors des règles (suivre plutôt que relancer ou se coucher) ouvre la fenêtre d'analyse.
+    await page.eval(`localStorage.setItem('poker.simulateur.v1', JSON.stringify({ vitesse: 'rapide', aide: 'mentor' }))`);
+    await open('#simulateur');
+    let mentor = false;
+    for (let i = 0; i < 200 && !mentor; i++) {
+      mentor = await page.eval(`(() => { if (document.querySelector('dialog[open]')) return true;
+        const n = document.getElementById('sim-next'); if (n) { n.click(); return false; }
+        const b = [...document.querySelectorAll('.sim-buttons .btn')];
+        (b.find((x) => x.textContent.startsWith('Suivre')) || b.find((x) => x.textContent.startsWith('Checker')))?.click();
+        return !!document.querySelector('dialog[open]'); })()`);
+      await wait(200);
+    }
+    if (mentor) await check(t('#simulateur mentor'));
+    else report(t('#simulateur mentor'), 'la fenêtre du mentor ne s\'est pas ouverte');
 
     for (const lvl of LEVELS.filter((l) => l.ready)) {
       const base = `#niveau-${lvl.n}`;

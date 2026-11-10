@@ -148,7 +148,9 @@
   .sim-side .sim-actions { margin-top: 0; }
   .sim-side .sim-actions.done { flex-direction: column; align-items: stretch; }
   .sim-side .btn.primary { min-width: 0; width: 100%; }
-  .sim-side .sim-buttons .btn { flex: 1 1 45%; }
+  .sim-side .sim-buttons .btn { flex: 1 1 45%; padding: 0 10px; }
+  .sim-side .sim-buttons .sim-raise-btn { flex-basis: 100%; order: 3; }
+  .sim-side .sim-buttons .btn:last-child:not(.sim-raise-btn) { order: 4; }
   .sim-side .sim-journal { display: flex; flex-direction: column; min-height: 120px; flex: 1 1 auto; overflow: hidden; }
   .sim-side .sim-journal ol { overflow-y: auto; flex: 1 1 auto; min-height: 0; }
   .sim-side .sim-totals { flex: none; }
@@ -156,3 +158,26 @@
   /* Le journal est étroit : les libellés passent au-dessus des cartes. */
   .sim-side .sim-log-hand > span:first-child, .sim-side .sim-log-deal > span:first-child { min-width: 0; flex-basis: 100%; }
 }
+
+/* ---------- mentor ---------- */
+
+.sim-mentor {
+  width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow-y: auto;
+  border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px;
+  background: var(--surface); color: var(--ink); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+.sim-mentor::backdrop { background: rgba(0, 0, 0, 0.45); }
+.sim-mentor h2 { font-size: 1.15rem; margin: 0 0 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.sim-mentor h3 { font-size: 0.95rem; margin: 14px 0 4px; }
+.sim-mentor dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 0; }
+.sim-mentor dt { color: var(--quiet); }
+.sim-mentor dd { margin: 0; font-weight: 700; }
+.sim-reasons { margin: 0; padding-left: 1.2em; }
+.sim-reasons .comp-code { font-weight: 700; }
+.sim-mentor-buttons { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+.sim-verdict { font-size: 0.8rem; font-weight: 700; padding: 2px 10px; border-radius: 999px; border: 1px solid currentColor; }
+.sim-verdict.conforme, .sim-mentor-note.conforme { color: var(--good); background: var(--good-soft); }
+.sim-verdict.défendable, .sim-mentor-note.défendable { color: var(--warn); background: var(--warn-soft); }
+.sim-verdict.erreur, .sim-mentor-note.erreur { color: var(--bad); background: var(--bad-soft); }
+.sim-mentor-note { margin: 0 0 12px; padding: 8px 12px; border-radius: 8px; flex: none; }
+.sim-mentor-note strong { color: inherit; }
