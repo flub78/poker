@@ -21,6 +21,17 @@
 - **Déploiement** : `bin/deploy.sh <destination rsync>` (numéro de version des fichiers calculé
   depuis le commit).
 
+## Tests automatiques
+
+- `bin/tester.sh` lance tout : tests unitaires (`node --test`, dossier `tests/`) puis test de
+  fumée (`tools/verifier_web.mjs`). `bin/tester.sh --rapide` : tests unitaires seuls.
+- Toute modification d'un module JavaScript pur (logique sans DOM : évaluateur, ranges, cotes,
+  moteur et règles du simulateur) s'accompagne de ses tests dans `tests/`, à l'image du code
+  (`tests/existants/` pour les niveaux, `tests/moteur/`, `tests/regles/` pour le simulateur).
+- Les exemples chiffrés du cours sont de bons cas de test : cours et application restent d'accord.
+- `bin/tester.sh` passe avant chaque commit qui touche `web/` ou `tests/`.
+- Garder la logique séparée de l'affichage, pour qu'elle reste testable sous Node.
+
 ## Principes de rédaction du tutoriel
 
 1. **Étymologie systématique.** Chaque terme technique a son origine expliquée :

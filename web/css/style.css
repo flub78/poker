@@ -481,3 +481,12 @@ a.level-link.current:hover { background: var(--felt-ink); }
   .cours-body a[target="_blank"]::after { content: " (" attr(href) ")"; font-size: 8pt; color: var(--quiet); word-break: break-all; }
   .level-nav { display: none; }
 }
+
+/* bouton vers le simulateur, en tête des pages de niveau (js/shell.js) */
+.sim-invite {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px;
+  margin: 16px 0; padding: 12px 16px; border-radius: var(--radius);
+  background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--felt);
+}
+.sim-invite p { margin: 0; flex: 1 1 320px; }
+@media print { .sim-invite { display: none; } }

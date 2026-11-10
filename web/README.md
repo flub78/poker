@@ -16,6 +16,7 @@ Tout passe par `index.html` ; la partie après `#` choisit le niveau et l'onglet
 | `index.html#cours/niveau-3` | une page du cours (`introduction`, `mode-d-emploi`, `niveau-1` à `niveau-6`, `grille`, `ressources`, `glossaire`) |
 | `index.html#cours/niveau-3/c3-7-compter-les-mains-qui-vous-battent` | une section d'une page du cours |
 | `index.html#cours/imprimer` | tout le cours sur une page, pour l'impression (source du PDF) |
+| `index.html#simulateur` | le simulateur de table (lien « Table ») : vous contre 5 bots, avec indice ; voir [simulateur/README.md](simulateur/README.md) |
 | `index.html#profil` | le Profil (bouton à droite des niveaux) : prénom, résultats, changement d'appareil, sauvegarde, effacement |
 | `index.html#transfert/1.…` | lien de transfert reçu : page Profil, avec le résumé de ce qui arrive |
 
@@ -42,6 +43,10 @@ La page est alors à `https://domaine/poker/`. Aucune configuration serveur part
 Ou, depuis la racine du dépôt : `bin/deploy.sh utilisateur@vps:/chemin/public_html/poker/` (ajouter `--dry-run` pour simuler). `index.html` charge `css/style.css?v=…` et `js/app.js?v=…` ; le script remplace ce numéro par le commit courant, pour que les navigateurs ne gardent pas l'ancienne version en cache. Pour les autres fichiers JavaScript, un rechargement forcé (Ctrl+Maj+R) peut être nécessaire.
 
 ## Vérifier
+
+`bin/tester.sh` (depuis la racine) lance tous les tests ; `bin/tester.sh --rapide` se limite aux tests unitaires.
+
+Les tests unitaires (`tests/`, lancés par `node --test`, sans dépendance) vérifient la logique des modules purs, ceux qui ne touchent pas à la page : classement des mains, ranges, cotes, outs. Un module importé par un test ne doit pas utiliser `document` ni `window` au chargement.
 
 `node tools/verifier_web.mjs` (depuis la racine) ouvre chaque page dans Chrome headless, en thème clair et sombre, y compris l'intérieur des exercices et des tests. Il signale les erreurs JavaScript, les fichiers introuvables, les boutons et liens peu lisibles (contraste WCAG AA) et les liens internes du cours sans cible.
 

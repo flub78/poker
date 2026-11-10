@@ -1,6 +1,6 @@
 # Suggestions d'amélioration
 
-Mis à jour le 2026-11-09 (réalisation de S-001, S-003 à S-010, S-012 option A, S-013, S-014). Fiches classées par section ; index trié par rapport
+Mis à jour le 2026-11-10 (ajout de S-015 et S-016 ; avant : réalisation de S-001, S-003 à S-010, S-012 option A, S-013, S-014). Fiches classées par section ; index trié par rapport
 bénéfice/coût. Statuts : proposée · acceptée · en cours · faite · reportée · refusée.
 Règles de tenue et commandes : voir [`strategie_suggestions.md`](../strategie_suggestions.md).
 
@@ -10,6 +10,8 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 
 | ID | Section | Suggestion | Bénéfice | Coût | Rapport | Statut |
 |---|---|---|---|---|---|---|
+| S-016 | Méthodes | Tests automatiques systématiques : `node --test` sur les modules purs, commande unique `bin/tester.sh` | élevé | S | élevé | faite |
+| S-015 | Par fonctionnalité | Simulateur de table à 6 : bots des niveaux 2 à 6, Indice, Mentor, évaluation des décisions | élevé | L | moyen | acceptée |
 | S-012 | Architecture | Garder les progrès d'un appareil à l'autre : code de transfert (A), puis petit serveur PHP + fichiers JSON (B) | élevé | S puis M | élevé | A faite, B proposée |
 | S-014 | Tutoriel | Écrire dans le cours trois règles que l'application a dû fixer (c-bet sur flop apparié ou monotone, seuils des profils, catégories de range) | moyen | S | élevé | faite |
 | S-013 | Par fonctionnalité | Quiz préflop du niveau 2 en 2 séries de 10 (règle des 10 questions par série) | moyen | S | élevé | faite |
@@ -171,6 +173,25 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
   copie `web/`, remplace `?v=…` par le commit (suffixe `-modifie` si `web/` a des changements non
   commités), puis lance rsync. Essayé vers un dossier local ; pas encore vers le serveur.
 
+### S-016 · Tests automatiques systématiques
+- **Statut** : faite · **Date** : 2026-11-10 · **Origine** : préparation du simulateur
+- **Constat** : le seul test automatique est le test de fumée (S-007), qui vérifie l'affichage.
+  La logique (classement des mains, ranges, cotes, outs) n'est testée qu'à la main. Le simulateur
+  ajoute un moteur de jeu (pots annexes, relances) où une erreur passe inaperçue à l'œil.
+- **Proposition** : `node --test` (inclus dans Node 24, aucune dépendance) sur les modules
+  JavaScript purs, dans `tests/` ; `bin/tester.sh` enchaîne tests unitaires et test de fumée ;
+  règle dans `CLAUDE.md` : pas de module pur modifié sans ses tests.
+- **Bénéfices** : modifications sans crainte de régression ; les exemples du cours deviennent des
+  cas de test, donc cours et application restent d'accord.
+- **Coûts** : S pour l'outillage et les premiers tests rétroactifs ; ensuite, une part de chaque
+  développement.
+- **Rapport** : élevé.
+- **Premier pas** : phase 0 de [`plan-simulateur.md`](plan-simulateur.md). Vérifié : les modules
+  purs actuels s'importent sous Node sans modification.
+- **Décision** : 2026-11-10, acceptée avec le plan du simulateur et réalisée : `tests/` (21 tests
+  rétroactifs des niveaux 1 à 3), `bin/tester.sh`, règle dans `CLAUDE.md`. Reste en option :
+  intégration continue GitHub (tests unitaires seuls, le test de fumée demande Chrome).
+
 ## 4. Interface et parcours
 
 (voir aussi S-005 et S-006)
@@ -274,6 +295,25 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 - **Rapport** : élevé.
 - **Premier pas** : ajouter la ligne dans le doc, puis `/publier-tutoriel`.
 - **Décision** :
+
+### S-015 · Simulateur de table à 6 joueurs
+- **Statut** : acceptée · **Date** : 2026-11-10 · **Origine** : demande de l'utilisateur
+- **Constat** : l'application entraîne chaque compétence isolément ; rien ne les met en jeu
+  ensemble, dans une main complète, face à des adversaires.
+- **Proposition** : un onglet « Simulateur » : l'humain et 5 bots de niveaux 2 à 6 (mélangés
+  possibles) ; modes sans aide, Indice, Mentor (verdicts conforme / défendable / erreur, avec la
+  règle et la section du cours) ; évaluation des décisions en fin de partie. Tout dans le
+  navigateur, bots algorithmiques ; une IA ne ferait éventuellement que rédiger le commentaire.
+  Idées associées, intégrées au plan : chaque règle du cours écrite comme une fonction qui renvoie
+  sa raison (une seule source de vérité pour bots, indice, mentor et tests) ; donnes tirées
+  d'une graine, pour rejouer une main à l'identique.
+- **Bénéfices** : le joueur pratique tout le cours en situation ; retour immédiat et expliqué.
+- **Coûts** : L. Moteur de jeu (pots annexes), règles postflop des niveaux 4 à 6, règles
+  manquantes à écrire d'abord dans le cours.
+- **Rapport** : moyen (élevé pour les phases 1 à 3).
+- **Premier pas** : [`plan-simulateur.md`](plan-simulateur.md), phase 0 (S-016) puis phase 1.
+- **Décision** : 2026-11-10, acceptée. Pas de serveur ; Laraskel écarté pour cette
+  fonctionnalité (à reconsidérer seulement avec S-012 B ou un relais vers une IA).
 
 ## 6. Transverses
 

@@ -52,6 +52,7 @@ done
 echo
 echo "Accès direct :"
 printf '  %-10s http://%s:%s/web/#cours\n' "Cours" "${hosts[0]}" "$PORT"
+printf '  %-10s http://%s:%s/web/#simulateur\n' "Table" "${hosts[0]}" "$PORT"
 found=0
 for dir in "$ROOT"/web/niveau-*/; do
     [[ -f "$dir/niveau.js" ]] || continue
@@ -67,4 +68,14 @@ echo "Ctrl+C pour arrêter."
 echo
 
 cd "$ROOT"
-exec python3 -m http.server "$PORT" --bind "$HOST"
+# Serveur statique sans cache : après une modification, un simple rechargement suffit
+# (sinon le navigateur peut garder d'anciens modules JavaScript, dont l'adresse ne change pas).
+exec python3 -c '
+import sys
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+class NoCache(SimpleHTTPRequestHandler):
+    def end_headers(self):
+        self.send_header("Cache-Control", "no-store")
+        super().end_headers()
+ThreadingHTTPServer((sys.argv[2], int(sys.argv[1])), NoCache).serve_forever()
+' "$PORT" "$HOST"

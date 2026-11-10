@@ -6,6 +6,7 @@
 //            index.html#niveau-2/aide       onglet propre au niveau
 //            index.html#cours               le cours (tutoriel), accueil et table des matières
 //            index.html#cours/niveau-1      une page du cours (voir js/cours.js)
+//            index.html#simulateur          le simulateur de table (voir simulateur/simulateur.js)
 //            index.html#profil              prénom, résultats, transfert, sauvegarde (voir js/profil.js)
 //            index.html#transfert/<code>    lien de transfert reçu : page Profil
 // Sans niveau dans l'adresse, on reprend le dernier niveau ouvert (sinon le 1).
@@ -42,7 +43,7 @@ function profileIcon() {
 }
 
 // level : numéro du niveau affiché, ou null pour le cours et le profil (title donne alors le titre).
-// current : 'cours' ou 'profil' marque le bouton correspondant comme page courante.
+// current : 'cours', 'simulateur' ou 'profil' marque le bouton correspondant comme page courante.
 let lastHeader = null;
 function renderHeader(level, title, current = level ? null : 'cours') {
   lastHeader = [level, title, current];
@@ -67,6 +68,10 @@ function renderHeader(level, title, current = level ? null : 'cours') {
           class: `level-link cours-link${inCours ? ' current' : ''}`, href: '#cours',
           title: 'Le cours complet : sommaire', 'aria-current': inCours ? 'page' : false,
         }, 'Cours')),
+        h('li', { class: 'cours-li' }, h('a', {
+          class: `level-link cours-link${current === 'simulateur' ? ' current' : ''}`, href: '#simulateur',
+          title: 'Simulateur : une table à 6 joueurs contre des bots', 'aria-current': current === 'simulateur' ? 'page' : false,
+        }, 'Table')),
         LEVELS.map((l) => h('li', {},
         l.n === level
           ? h('span', { class: 'level-link current', 'aria-current': 'page', title: l.title, 'aria-label': `Niveau ${l.n}` }, label(l))
@@ -77,10 +82,24 @@ function renderHeader(level, title, current = level ? null : 'cours') {
 }
 
 // Feuille de style propre au niveau (facultative), chargée à côté de css/style.css.
-function levelStyle(level, def) {
+// href : chemin direct d'une feuille (simulateur), à la place de niveau-N/def.css.
+function levelStyle(level, def, href = null) {
   document.getElementById('level-css')?.remove();
-  if (!def.css) return;
-  document.head.append(h('link', { id: 'level-css', rel: 'stylesheet', href: `niveau-${level}/${def.css}` }));
+  if (!def.css && !href) return;
+  document.head.append(h('link', { id: 'level-css', rel: 'stylesheet', href: href || `niveau-${level}/${def.css}` }));
+}
+
+async function showSimulateur() {
+  renderHeader(null, 'Simulateur de table', 'simulateur');
+  levelStyle(0, {}, 'simulateur/simulateur.css');
+  try { await loadCours(); } catch { /* cours absent : indices sans lien */ }
+  try {
+    const { renderSimulateur } = await import('../simulateur/simulateur.js');
+    window.scrollTo(0, 0);
+    renderSimulateur(main);
+  } catch (err) {
+    clear(main).append(h('p', { class: 'form-message' }, `Impossible de charger le simulateur : ${err.message}`));
+  }
 }
 
 async function showCours() {
@@ -108,6 +127,7 @@ async function show() {
   document.onkeydown = null;   // posé par le cours (flèches gauche et droite)
   main.onclick = null;         // posé par la vue imprimable du cours
   if (/^#cours\b/.test(location.hash)) { showCours(); return; }
+  if (/^#simulateur\b/.test(location.hash)) { showSimulateur(); return; }
   const profil = /^#(?:profil|transfert)(?:\/(.+))?$/.exec(location.hash);
   if (profil) {
     renderHeader(null, 'Profil', 'profil');

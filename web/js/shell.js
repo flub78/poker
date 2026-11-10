@@ -77,6 +77,14 @@ export function startApp({ level, storageKey, tests, practices, manual = [], ext
     t.render(body);
   }
 
+  // Bouton vers le simulateur (index.html#simulateur), en tête des onglets Tests et Exercices.
+  function simInvite() {
+    return h('section', { class: 'sim-invite' },
+      h('p', {}, h('strong', {}, 'Mettre le cours en pratique : '),
+        'une table à 6 contre des bots qui appliquent les règles du cours, avec un indice à la demande.'),
+      h('a', { class: 'btn', href: '#simulateur' }, 'Jouer à la table'));
+  }
+
   // ---------- tableau de bord ----------
 
   function dashboard() {
@@ -102,6 +110,7 @@ export function startApp({ level, storageKey, tests, practices, manual = [], ext
         h('p', { class: 'meta' }, store.getPlayer() ? `Joueur : ${store.getPlayer()} · ` : '',
           h('a', { href: '#profil' }, store.getPlayer() ? 'Profil' : 'Indiquez votre prénom dans le Profil'),
           ' (sauvegarde, changement d\'appareil)')),
+      simInvite(),
       h('section', { class: `level-status ${levelOk ? 'ok' : ''}` },
         levelOk
           ? h('p', {}, h('strong', {}, `Niveau ${level} validé.`), ` Reportez la date dans votre carnet.`)
@@ -148,6 +157,7 @@ export function startApp({ level, storageKey, tests, practices, manual = [], ext
       h('section', { class: 'intro' },
         h('p', {}, 'Entraînez-vous autant que vous voulez avant de passer les tests. ',
           'La correction est immédiate et ', h('strong', {}, 'rien n\'est enregistré'), '.')),
+      simInvite(),
       ...[levelCompetences(level)].filter(Boolean),
       h('ul', { class: 'test-list' }, practices.map((px) => h('li', { class: 'test-card' },
         h('div', { class: 'test-head' }, h('span', { class: 'test-code' }, competenceNames(px.competences) || `Compétences ${px.competences}`)),
