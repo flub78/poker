@@ -16,6 +16,7 @@ Tout passe par `index.html` ; la partie après `#` choisit le niveau et l'onglet
 | `index.html#cours/niveau-3` | une page du cours (`introduction`, `mode-d-emploi`, `niveau-1` à `niveau-6`, `grille`, `ressources`, `glossaire`) |
 | `index.html#cours/niveau-3/c3-7-compter-les-mains-qui-vous-battent` | une section d'une page du cours |
 | `index.html#cours/imprimer` | tout le cours sur une page, pour l'impression (source du PDF) |
+| `index.html#simulateur` | le simulateur de table (lien « Table ») : vous contre 5 bots, avec indice ; voir [simulateur/README.md](simulateur/README.md) |
 | `index.html#profil` | le Profil (bouton à droite des niveaux) : prénom, résultats, changement d'appareil, sauvegarde, effacement |
 | `index.html#transfert/1.…` | lien de transfert reçu : page Profil, avec le résumé de ce qui arrive |
 

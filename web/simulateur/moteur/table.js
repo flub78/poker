@@ -133,7 +133,8 @@ export function act(hand, action) {
   const legal = legalActions(hand);
   if (!legal) throw new Error('La main est terminée.');
   const s = hand.seats[hand.toAct];
-  const entry = { street: hand.street, seat: s.seat, type: action.type };
+  // facing : la mise à hauteur de laquelle il fallait se mettre (0 : personne n'avait misé).
+  const entry = { street: hand.street, seat: s.seat, type: action.type, facing: hand.currentBet };
   switch (action.type) {
     case 'fold':
       s.folded = true;

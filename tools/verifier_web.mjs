@@ -1,6 +1,6 @@
 // Test de fumée de l'application web, dans Chrome headless, en thème clair puis sombre.
 //
-// Parcourt : chaque page du cours et la vue imprimable, chaque niveau prêt et tous ses onglets,
+// Parcourt : chaque page du cours et la vue imprimable, le simulateur, chaque niveau prêt et tous ses onglets,
 // l'intérieur de chaque exercice et de chaque test. Signale :
 //   - les erreurs JavaScript et les messages d'erreur de la console ;
 //   - les fichiers introuvables (réponse HTTP 400 ou plus, image non chargée) ;
@@ -104,6 +104,21 @@ try {
     await wait(400);
     await check(t('#profil'));
 
+    // Simulateur : la table au tour de l'humain, l'indice, puis la fin d'une main.
+    await open('#simulateur');
+    await page.eval(`localStorage.setItem('poker.simulateur.v1', JSON.stringify({ vitesse: 'rapide', aide: 'indice' }))`);
+    await open('#simulateur');
+    await page.waitFor(`!!document.querySelector('.sim-buttons, #sim-next')`, 20000);
+    await check(t('#simulateur'));
+    await page.eval(`[...document.querySelectorAll('.sim-buttons .btn')].find((b) => b.textContent.startsWith('Indice'))?.click()`);
+    await wait(200);
+    await check(t('#simulateur indice'));
+    for (let i = 0; i < 60 && !(await page.eval(`!!document.getElementById('sim-next')`)); i++) {
+      await page.eval(`[...document.querySelectorAll('.sim-buttons .btn')].find((b) => b.textContent.startsWith('Se coucher'))?.click()`);
+      await wait(300);
+    }
+    await check(t('#simulateur fin de main'));
+
     for (const lvl of LEVELS.filter((l) => l.ready)) {
       const base = `#niveau-${lvl.n}`;
       await open(base);
@@ -188,4 +203,4 @@ if (unique.length) {
   for (const p of unique) console.log(`  - ${p}`);
   process.exit(1);
 }
-console.log(`Aucun problème : ${views} vues vérifiées (cours, niveaux, onglets, exercices, tests ; thèmes clair et sombre).`);
+console.log(`Aucun problème : ${views} vues vérifiées (cours, simulateur, niveaux, onglets, exercices, tests ; thèmes clair et sombre).`);
