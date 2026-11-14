@@ -184,6 +184,13 @@ a.level-link:focus-visible { outline: 3px solid var(--felt-ink); outline-offset:
 .hand-list { padding-left: 1.6em; margin: 0; display: grid; gap: 14px; }
 .hand-item { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .hand-item select { min-width: 220px; }
+/* Test « Comparer deux mains » : deux mains côte à côte, la réponse dessous */
+.compare-item { gap: 10px 20px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.compare-hand { display: flex; align-items: center; gap: 8px; }
+.compare-label { font-weight: 600; min-width: 4.2em; }
+.review-compare { display: grid; gap: 6px; }
+.compare-practice { display: grid; gap: 12px; }
+.compare-practice .compare-hand { flex-wrap: wrap; }
 .review-compare p { margin: 2px 0 0; }
 
 /* nuts */

@@ -21,6 +21,7 @@ import { levelBadge, levelDot } from './niveau-couleur.js';
 import { h, clear } from './dom.js';
 import { LEVELS } from './config.js';
 import { createStore, mergeData, getPlayerName, setPlayerName } from './storage.js';
+import { requirements, levelProgress } from './validation.js';
 import { loadParties, mergeParties, clearParties } from '../simulateur/historique.js';
 import { loadAll as loadReflexes, mergeAll as mergeReflexes, resetAll as resetReflexes } from '../reflexes/stockage.js';
 
@@ -192,15 +193,16 @@ async function summaryBlock() {
   const rows = (await levels()).map((lvl) => {
     const data = lvl.store.exportData();
     const attempts = Object.values(data.tests).reduce((s, t) => s + (t.attempts?.length || 0), 0);
-    const states = lvl.def.tests.map((t) => lvl.store.status(t.id).state);
-    const done = states.filter((s) => s === 'validated').length;
+    const reqs = requirements(lvl.def.tests, (id) => lvl.store.status(id));
+    const states = reqs.map((r) => r.status.state);
+    const { done, total } = levelProgress(reqs);
     const manual = lvl.def.manual || [];
     const checked = manual.filter((m) => lvl.store.manualDate(m.id)).length;
     return h('tr', {},
       h('td', {}, levelDot(lvl.n), ' ', h('a', { href: `#niveau-${lvl.n}` }, `Niveau ${lvl.n}`), ` · ${lvl.title} `, levelBadge(lvl.n, { short: true })),
-      h('td', {}, `${done} / ${states.length}${manual.length ? ` · critères ${checked} / ${manual.length}` : ''}`),
+      h('td', {}, `${done} / ${total}${manual.length ? ` · critères ${checked} / ${manual.length}` : ''}`),
       h('td', {}, String(attempts)),
-      h('td', {}, lvl.def.tests.map((t, i) => `${t.code} : ${STATES[states[i]]}`).join(' ; ')));
+      h('td', {}, reqs.map((r, i) => `${r.test.code} : ${STATES[states[i]]}${r.required ? '' : ' (facultatif)'}`).join(' ; ')));
   });
   return h('section', { class: 'block' },
     h('h2', {}, 'Mes résultats'),

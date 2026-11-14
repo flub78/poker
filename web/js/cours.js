@@ -10,6 +10,7 @@
 import { h, clear, formatDate } from './dom.js';
 import { LEVELS } from './config.js';
 import { createStore } from './storage.js';
+import { requirements } from './validation.js';
 import { levelBadge, levelClass, levelDot, pageLevel, levelOf } from './niveau-couleur.js';
 
 const HOME = { id: 'accueil', short: 'Sommaire', title: 'Sommaire' };
@@ -186,7 +187,10 @@ async function fillGrid(body) {
     try {
       const def = (await import(`../niveau-${lvl.n}/niveau.js`)).default;
       const store = createStore(def.storageKey);
-      for (const ex of def.tests) tests.push({ level: lvl.n, code: ex.code, competences: competenceCodes(ex.competences), status: store.status(ex.id) });
+      // Un test facultatif pour ce joueur (js/validation.js) ne change pas ses compétences.
+      for (const { test: ex, status, required } of requirements(def.tests, (id) => store.status(id))) {
+        if (required) tests.push({ level: lvl.n, code: ex.code, competences: competenceCodes(ex.competences), status });
+      }
     } catch { /* niveau illisible : sa partie de la grille reste telle quelle */ }
   }
   const table = [...body.querySelectorAll('table')].find((t) => /Statut/.test(t.tHead?.textContent || ''));

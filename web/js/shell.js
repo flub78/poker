@@ -6,7 +6,9 @@
 //   level: 2,                          numéro du niveau
 //   storageKey: 'poker.niveau2.v1',    clé localStorage du niveau
 //   tests: [...],                      épreuves (modules { id, code, title, competences, rule, create,
-//                                        series?, pass? } : plusieurs séries, score additionné jugé sur pass)
+//                                        series?, pass?, since? } : plusieurs séries, score additionné jugé
+//                                        sur pass ; since 'AAAA-MM-JJ' = test ajouté après coup, facultatif
+//                                        pour qui avait déjà validé le niveau (js/validation.js))
 //   practices: [...],                  exercices (modules { id, title, competences, summary, settings, create })
 //   manual: [{ id, text }],            critères vérifiés à la table (moyennes, durées, volume de jeu) :
 //                                        cases à cocher, enregistrées avec leur date
@@ -18,6 +20,7 @@ import { h, clear, formatDate } from './dom.js';
 import { rng, newSeed } from './cards.js';
 import { CONFIG } from './config.js';
 import { createStore } from './storage.js';
+import { requirements, levelProgress } from './validation.js';
 import { reviewLinks, levelCompetences, competenceNames } from './cours.js';
 
 const STATE_LABEL = {
@@ -102,12 +105,12 @@ export function startApp({ level, storageKey, tests, practices, manual = [], ext
   function dashboard() {
     clear(main);
     setHash(base);
-    const statuses = tests.map((ex) => store.status(ex.id));
-    const done = statuses.filter((s) => s.state === 'validated').length;
+    const reqs = requirements(tests, (id) => store.status(id));
+    const { done, total, ok } = levelProgress(reqs);
     const checked = manual.filter((m) => store.manualDate(m.id)).length;
-    const levelOk = done === tests.length && checked === manual.length;
+    const levelOk = ok && checked === manual.length;
     const progress = [
-      tests.length ? `${plural(done, 'test')} validé${done > 1 ? 's' : ''} sur ${tests.length}` : null,
+      total ? `${plural(done, 'test')} validé${done > 1 ? 's' : ''} sur ${total}` : null,
       manual.length ? `${plural(checked, 'critère')} coché${checked > 1 ? 's' : ''} sur ${manual.length}` : null,
     ].filter(Boolean).join(' · ');
 
@@ -127,8 +130,7 @@ export function startApp({ level, storageKey, tests, practices, manual = [], ext
         levelOk
           ? h('p', {}, h('strong', {}, `Niveau ${level} validé.`), ` Reportez la date dans votre carnet.`)
           : h('p', {}, h('strong', {}, `${progress}.`), ' Le niveau est validé quand tout l\'est.')),
-      h('ul', { class: 'test-list' }, tests.map((ex, i) => {
-        const st = statuses[i];
+      h('ul', { class: 'test-list' }, reqs.map(({ test: ex, status: st, required }) => {
         return h('li', { class: 'test-card' },
           h('div', { class: 'test-head' },
             h('span', { class: 'test-code' }, ex.code),
@@ -136,6 +138,8 @@ export function startApp({ level, storageKey, tests, practices, manual = [], ext
           h('h2', {}, ex.title),
           h('p', { class: 'meta' }, `Compétences ${ex.competences} · Réussite : ${ex.rule}`),
           h('p', { class: 'meta' }, statusLine(st)),
+          required ? null : h('p', { class: 'meta' }, h('strong', {}, 'Facultatif pour vous'),
+            ` : test ajouté le ${formatDate(`${ex.since}T00:00:00`)}, après la validation de votre niveau. Il ne compte pas dans le bilan.`),
           reviewLinks(ex.competences),
           h('button', { type: 'button', class: 'btn', onclick: () => run(ex) },
             st.state === 'none' ? 'Commencer' : 'Refaire le test'));

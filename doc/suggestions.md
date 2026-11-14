@@ -1,6 +1,6 @@
 # Suggestions d'amélioration
 
-Mis à jour le 2026-11-11 (ajout de S-017 ; avant : ajout de S-015 et S-016 ; avant : réalisation de S-001, S-003 à S-010, S-012 option A, S-013, S-014). Fiches classées par section ; index trié par rapport
+Mis à jour le 2026-11-14 (S-022 faite ; avant : ajout de S-022 ; avant : ajout de S-017 ; avant : ajout de S-015 et S-016 ; avant : réalisation de S-001, S-003 à S-010, S-012 option A, S-013, S-014). Fiches classées par section ; index trié par rapport
 bénéfice/coût. Statuts : proposée · acceptée · en cours · faite · reportée · refusée.
 Règles de tenue et commandes : voir [`strategie_suggestions.md`](../strategie_suggestions.md).
 
@@ -10,6 +10,7 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 
 | ID | Section | Suggestion | Bénéfice | Coût | Rapport | Statut |
 |---|---|---|---|---|---|---|
+| S-022 | Par fonctionnalité | Exercice d'entraînement « Comparer deux mains » au niveau 1, sur le générateur du test 5 | moyen | S | élevé | faite |
 | S-021 | Système | Ordre des propositions d'un QCM dans le format d'échange de mentor | moyen | S | moyen | faite |
 | S-018 | Système | Identifiant stable des questions dans le format d'échange de mentor (colonne `reference`) | moyen | S | élevé | faite |
 | S-019 | Par fonctionnalité | Réflexes : progression dans le code de transfert | moyen | S | élevé | proposée |
@@ -319,6 +320,15 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 - **Premier pas** : [`plan-simulateur.md`](plan-simulateur.md), phase 0 (S-016) puis phase 1.
 - **Décision** : 2026-11-10, acceptée. Pas de serveur ; Laraskel écarté pour cette
   fonctionnalité (à reconsidérer seulement avec S-012 B ou un relais vers une IA).
+
+### S-022 · Exercice d'entraînement « Comparer deux mains » au niveau 1
+- **Statut** : faite (commit « Niveau 1 : test 5 et exercice « Comparer deux mains » ») · **Date** : 2026-11-14 · **Origine** : ajout du test 5 du niveau 1
+- **Constat** : le test 5 (comparer deux mains proches) n'a pas d'exercice correspondant dans
+  l'onglet Exercices : le joueur découvre ce type de question au moment d'être noté.
+- **Proposition** : un exercice qui réutilise `questions()` et `explanation()` de
+  `web/niveau-1/comparaison.js`, une question à la fois, correction immédiate.
+- **Bénéfices** : entraînement illimité avant le test ; aucune logique nouvelle.
+- **Coûts** : S (un fichier dans `practice/`, une ligne dans `niveau.js`).
 
 ## 6. Transverses
 
