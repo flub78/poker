@@ -16,6 +16,7 @@ import { startApp } from './shell.js';
 import { loadCours, coursPage, renderCours, renderPrint } from './cours.js';
 import { renderProfil } from './profil.js';
 import { getPlayerName } from './storage.js';
+import { levelBadge, levelClass, levelLabel, setPageLevel, pageLevel } from './niveau-couleur.js';
 
 const LAST_KEY = 'poker.dernierNiveau';
 const header = document.querySelector('.site-header .wrap');
@@ -44,9 +45,12 @@ function profileIcon() {
 
 // level : numéro du niveau affiché, ou null pour le cours et le profil (title donne alors le titre).
 // current : 'cours', 'simulateur' ou 'profil' marque le bouton correspondant comme page courante.
+// work : niveau de travail (code couleur : bandeau, pastille, boutons) ; par défaut level.
+// Une page du cours d'un niveau, ou le simulateur (votre niveau), en ont un aussi.
 let lastHeader = null;
-function renderHeader(level, title, current = level ? null : 'cours') {
-  lastHeader = [level, title, current];
+function renderHeader(level, title, current = level ? null : 'cours', work = level) {
+  lastHeader = [level, title, current, work];
+  setPageLevel(work);
   const inCours = current === 'cours';
   const name = getPlayerName();
   const info = LEVELS.find((l) => l.n === level);
@@ -60,6 +64,7 @@ function renderHeader(level, title, current = level ? null : 'cours') {
   clear(header).append(
     h('p', { class: 'kicker' }, 'Initiation au poker · Texas Hold\'em No-Limit'),
     h('h1', {}, level ? `Niveau ${level} : ${info.title.charAt(0).toLowerCase()}${info.title.slice(1)}` : title),
+    ...(work ? [h('p', { class: 'header-level' }, levelBadge(work))] : []),   // append natif : pas de null
     h('nav', { class: 'level-nav', 'aria-label': 'Niveaux' },
       h('span', { class: 'level-nav-title' }, 'Niveaux'),
       h('ul', {},
@@ -74,10 +79,10 @@ function renderHeader(level, title, current = level ? null : 'cours') {
         }, 'Table')),
         LEVELS.map((l) => h('li', {},
         l.n === level
-          ? h('span', { class: 'level-link current', 'aria-current': 'page', title: l.title, 'aria-label': `Niveau ${l.n}` }, label(l))
+          ? h('span', { class: `level-link ${levelClass(l.n)} current`, 'aria-current': 'page', title: `${l.title} (${levelLabel(l.n)})`, 'aria-label': `Niveau ${l.n}, ${l.rank.toLowerCase()}` }, label(l))
           : l.ready
-            ? h('a', { class: 'level-link', href: `#niveau-${l.n}`, title: l.title, 'aria-label': `Niveau ${l.n} : ${l.title}` }, label(l))
-            : h('span', { class: 'level-link soon', title: `${l.title} (à venir)`, 'aria-label': `Niveau ${l.n}, à venir` }, label(l))))),
+            ? h('a', { class: `level-link ${levelClass(l.n)}`, href: `#niveau-${l.n}`, title: `${l.title} (${levelLabel(l.n)})`, 'aria-label': `Niveau ${l.n}, ${l.rank.toLowerCase()} : ${l.title}` }, label(l))
+            : h('span', { class: `level-link ${levelClass(l.n)} soon`, title: `${l.title} (à venir)`, 'aria-label': `Niveau ${l.n}, à venir` }, label(l))))),
       profile));
 }
 
@@ -119,7 +124,7 @@ async function showCours() {
     return;
   }
   const page = coursPage(pageId);
-  renderHeader(null, page.title);
+  renderHeader(null, page.title, 'cours', pageLevel(page.id));
   renderCours(main, page.id, sectionId);
 }
 
@@ -153,5 +158,9 @@ async function show() {
 }
 
 window.addEventListener('hashchange', show);
+// Le simulateur annonce le niveau du joueur (réglage « Votre niveau ») : en-tête à sa couleur.
+window.addEventListener('niveau-travail', (e) => {
+  if (lastHeader?.[2] === 'simulateur') renderHeader(lastHeader[0], lastHeader[1], 'simulateur', e.detail);
+});
 window.addEventListener('profil-change', () => { if (lastHeader) renderHeader(...lastHeader); });   // prénom modifié
 show();

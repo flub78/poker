@@ -10,6 +10,8 @@
 import { h, clear, formatDate } from './dom.js';
 import { LEVELS } from './config.js';
 import { createStore } from './storage.js';
+import { requirements } from './validation.js';
+import { levelBadge, levelClass, levelDot, pageLevel, levelOf } from './niveau-couleur.js';
 
 const HOME = { id: 'accueil', short: 'Sommaire', title: 'Sommaire' };
 let content = null;
@@ -83,6 +85,35 @@ export function reviewLinks(competences) {
     links.map(([code, href], i) => [i ? ' · ' : '', h('a', { href }, code)]));
 }
 
+// Code couleur dans le texte généré du cours : marches de l'escalier des niveaux (« 3 · Probabilités »)
+// et tableau du code couleur (cellules « vert », « bleu »… d'un tableau dont l'en-tête a « Couleur »).
+function decorateLevels(body) {
+  for (const strong of body.querySelectorAll('.stairs .stair-head strong')) {
+    const n = /(\d+)/.exec(strong.textContent)?.[1];
+    if (!levelOf(n)) continue;
+    strong.closest('.stair').classList.add(levelClass(n));
+    strong.append(levelBadge(n, { short: true }));
+  }
+  for (const table of body.querySelectorAll('table')) {
+    const head = [...(table.tHead?.rows[0]?.cells || [])].map((c) => c.textContent.trim().toLowerCase());
+    const col = head.indexOf('couleur');
+    if (col < 0) continue;
+    for (const row of table.tBodies[0]?.rows || []) {
+      const n = /(\d+)/.exec(row.cells[0]?.textContent || '')?.[1];
+      const cell = row.cells[col];
+      if (levelOf(n) && cell) cell.prepend(h('span', { class: `niv-swatch ${levelClass(n)}`, 'aria-hidden': 'true' }));
+    }
+  }
+}
+
+// Bandeau en tête d'une page de niveau : pastille et rappel du code couleur.
+function levelBanner(n) {
+  const l = levelOf(n);
+  if (!l) return null;
+  return h('div', { class: 'cours-level' }, levelBadge(n),
+    h('p', {}, `Couleur du niveau : ${l.color}. Elle repère ce niveau dans tout le site.`));
+}
+
 // Toutes les pages, accueil compris, dans l'ordre de lecture.
 function allPages() {
   return [{ ...HOME, title: content.title }, ...content.pages];
@@ -114,9 +145,11 @@ function navBar(pages, i, where) {
 
 function tocView() {
   const levelPart = (p) => !p.annex;
-  const entry = (p) => h('li', {},
+  const entry = (p) => h('li', { class: levelClass(pageLevel(p.id)) || null },
     h('a', { class: 'toc-page', href: href(p) },
+      levelDot(pageLevel(p.id)),
       p.subtitle ? [h('span', { class: 'toc-num' }, p.short), ' ', p.subtitle] : p.title),
+    pageLevel(p.id) ? levelBadge(pageLevel(p.id), { short: true }) : null,
     p.sections.length
       ? h('ul', { class: 'toc-sections' }, p.sections.map((s) => h('li', {}, h('a', { href: href(p, s.id) }, s.title))))
       : null);
@@ -154,7 +187,10 @@ async function fillGrid(body) {
     try {
       const def = (await import(`../niveau-${lvl.n}/niveau.js`)).default;
       const store = createStore(def.storageKey);
-      for (const ex of def.tests) tests.push({ level: lvl.n, code: ex.code, competences: competenceCodes(ex.competences), status: store.status(ex.id) });
+      // Un test facultatif pour ce joueur (js/validation.js) ne change pas ses compétences.
+      for (const { test: ex, status, required } of requirements(def.tests, (id) => store.status(id))) {
+        if (required) tests.push({ level: lvl.n, code: ex.code, competences: competenceCodes(ex.competences), status });
+      }
     } catch { /* niveau illisible : sa partie de la grille reste telle quelle */ }
   }
   const table = [...body.querySelectorAll('table')].find((t) => /Statut/.test(t.tHead?.textContent || ''));
@@ -193,6 +229,7 @@ export function renderPrint(main) {
   const anchor = (p, s) => (s ? s : `partie-${p.id}`);
   const tocEntry = (p) => h('li', {},
     h('a', { class: 'toc-page', href: `#${anchor(p)}` },
+      levelDot(pageLevel(p.id)),
       h('span', { class: 'toc-text' }, p.title), h('span', { class: 'toc-pageno', 'data-for': anchor(p) })),
     p.sections.length ? h('ul', { class: 'toc-sections' }, p.sections.map((s) => h('li', {},
       h('a', { href: `#${s.id}` }, h('span', { class: 'toc-text' }, s.title), h('span', { class: 'toc-pageno', 'data-for': s.id }))))) : null);
@@ -204,7 +241,10 @@ export function renderPrint(main) {
     // #cours/<page>/<section> → #<section> ; #cours/<page> → #partie-<page>
     body.innerHTML = p.html.replace(/href="#cours\/([\w-]+)(?:\/([\w-]+))?"/g,
       (m, page, sec) => `href="#${sec || `partie-${page}`}"`);
-    return h('section', { class: 'print-part' }, h('h2', { id: anchor(p) }, p.title), body);
+    decorateLevels(body);
+    const n = pageLevel(p.id);
+    return h('section', { class: `print-part ${levelClass(n)}`.trim() }, h('h2', { id: anchor(p) }, p.title),
+      n ? h('div', { class: 'cours-level' }, levelBadge(n)) : null, body);
   });
 
   clear(main).append(h('div', { class: 'cours-print' },
@@ -250,11 +290,14 @@ export function renderCours(main, pageId, sectionId) {
   } else {
     body = h('article', { class: 'cours-body' });
     body.innerHTML = page.html;   // contenu généré à partir du doc, pas de saisie utilisateur
+    decorateLevels(body);
     if (page.sections.length > 1) {
       body.prepend(h('nav', { class: 'page-toc', 'aria-label': 'Dans cette page' },
         h('span', { class: 'page-toc-title' }, 'Dans cette page'),
         h('ul', {}, page.sections.map((s) => h('li', {}, h('a', { href: href(page, s.id) }, s.title))))));
     }
+    const banner = levelBanner(pageLevel(page.id));
+    if (banner) body.prepend(banner);
     const link = practiceLink(page);
     if (link) body.append(link);
     if (page.id === 'grille') fillGrid(body);

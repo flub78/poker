@@ -184,6 +184,14 @@ a.level-link:focus-visible { outline: 3px solid var(--felt-ink); outline-offset:
 .hand-list { padding-left: 1.6em; margin: 0; display: grid; gap: 14px; }
 .hand-item { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .hand-item select { min-width: 220px; }
+/* Test « Comparer deux mains » : deux mains côte à côte, la réponse dessous */
+.compare-item { gap: 10px 20px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.compare-hand { display: flex; align-items: center; gap: 8px; }
+.compare-label { font-weight: 600; min-width: 4.2em; }
+.review-compare { display: grid; gap: 6px; }
+.compare-practice { display: grid; gap: 12px; }
+.compare-practice .compare-hand { flex-wrap: wrap; }
+.review-compare p { margin: 2px 0 0; }
 
 /* nuts */
 .progress-line { display: flex; align-items: center; gap: 12px; color: var(--quiet); font-size: 0.9rem; margin-bottom: 12px; }
@@ -490,3 +498,108 @@ a.level-link.current:hover { background: var(--felt-ink); }
 }
 .sim-invite p { margin: 0; flex: 1 1 320px; }
 @media print { .sim-invite { display: none; } }
+
+/* ---------- code couleur des niveaux (js/niveau-couleur.js) ----------
+   vert débutant, bleu élémentaire, jaune intermédiaire, orange avancé, rouge expert, noir maître.
+   Mêmes teintes en thème clair, sombre et à l'impression : c'est une identité, pas un thème.
+   --niv-ink : texte posé sur la couleur (contraste ≥ 4,5). */
+:root {
+  --niv-1: #237a3d; --niv-1-ink: #ffffff;
+  --niv-2: #1e63c6; --niv-2-ink: #ffffff;
+  --niv-3: #f5c518; --niv-3-ink: #1f2328;
+  --niv-4: #f07c1a; --niv-4-ink: #1f2328;
+  --niv-5: #c62828; --niv-5-ink: #ffffff;
+  --niv-6: #16181b; --niv-6-ink: #ffffff;
+  --niv-ring: transparent;          /* contour du noir, visible seulement en sombre */
+}
+@media (prefers-color-scheme: dark) { :root { --niv-ring: #8a9199; } }
+@media print { :root { --niv-ring: transparent; } }
+
+.niv-1, body[data-niveau="1"] { --niv: var(--niv-1); --niv-on: var(--niv-1-ink); }
+.niv-2, body[data-niveau="2"] { --niv: var(--niv-2); --niv-on: var(--niv-2-ink); }
+.niv-3, body[data-niveau="3"] { --niv: var(--niv-3); --niv-on: var(--niv-3-ink); }
+.niv-4, body[data-niveau="4"] { --niv: var(--niv-4); --niv-on: var(--niv-4-ink); }
+.niv-5, body[data-niveau="5"] { --niv: var(--niv-5); --niv-on: var(--niv-5-ink); }
+.niv-6, body[data-niveau="6"] { --niv: var(--niv-6); --niv-on: var(--niv-6-ink); }
+/* bandes et bordures : la couleur elle-même, sauf le noir en thème sombre (invisible sur le fond) */
+[class*="niv-"], body[data-niveau] { --niv-edge: var(--niv); }
+@media (prefers-color-scheme: dark) {
+  .niv-6, body[data-niveau="6"] { --niv-edge: var(--niv-ring); }
+}
+@media print { .niv-6, body[data-niveau="6"] { --niv-edge: var(--niv); } }
+.lvl-dot.niv-6, .lvl-badge.niv-6, .stair.niv-6 { box-shadow: 0 0 0 1px var(--niv-ring); }
+
+/* pastille « Niveau 3 · Intermédiaire » */
+.lvl-badge {
+  display: inline-flex; align-items: center; gap: 0.4em; padding: 2px 10px; border-radius: 999px;
+  background: var(--niv); color: var(--niv-on); font-size: 0.85rem; font-weight: 700; line-height: 1.5;
+  vertical-align: middle; white-space: nowrap;
+  print-color-adjust: exact; -webkit-print-color-adjust: exact;
+}
+.lvl-dot { display: inline-block; width: 0.75em; height: 0.75em; border-radius: 50%; flex: none; background: var(--niv, currentColor);
+  print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+
+/* en-tête : bandeau à la couleur du niveau de travail, pastille sous le titre */
+/* liseré couleur du fond entre le tapis vert et la bande : le vert du niveau 1 reste visible */
+body[data-niveau] .site-header { box-shadow: 0 4px 0 var(--bg), 0 14px 0 var(--niv-edge); margin-bottom: 38px; }
+@media print { body[data-niveau] .site-header { box-shadow: none; } }
+.site-header .lvl-badge { font-size: 0.9rem; border: 1px solid rgba(255, 255, 255, 0.7); }
+
+/* boutons des niveaux : remplis à leur couleur ; le niveau courant porte un anneau blanc */
+.level-link.niv-1, .level-link.niv-2, .level-link.niv-3, .level-link.niv-4, .level-link.niv-5, .level-link.niv-6 {
+  background: var(--niv); color: var(--niv-on); border: 1px solid rgba(255, 255, 255, 0.7);
+}
+a.level-link[class*="niv-"]:hover { background: var(--niv); filter: brightness(1.12); }
+.level-link[class*="niv-"].current {
+  background: var(--niv); color: var(--niv-on); border-color: var(--felt-ink);
+  box-shadow: 0 0 0 3px var(--felt-ink); text-decoration: underline; text-underline-offset: 3px;
+}
+.level-link[class*="niv-"].soon { opacity: 0.5; }
+
+/* boutons pleins dans un niveau (tests, exercices, page du cours, table) : couleur du niveau */
+body[data-niveau] #app .btn:not(.secondary):not(.danger) { background: var(--niv); border-color: var(--niv); color: var(--niv-on); }
+body[data-niveau="6"] #app .btn:not(.secondary):not(.danger) { box-shadow: 0 0 0 1px var(--niv-ring); }
+
+/* repère latéral des blocs propres à un niveau */
+body[data-niveau] .level-competences, body[data-niveau] .test-card { border-left: 4px solid var(--niv-edge); }
+body[data-niveau] .cours-body h3 { border-left: 5px solid var(--niv-edge); padding-left: 10px; }
+.cours-level { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0 0 16px; }
+.cours-level p { margin: 0; color: var(--quiet); font-size: 0.9rem; }
+
+/* cours : sommaire, escalier, tableau du code couleur, vue imprimable */
+.toc-page .lvl-dot { margin-right: 0.45em; vertical-align: 0.05em; }
+.toc .lvl-badge { margin-left: 8px; font-size: 0.75rem; }
+.stair[class*="niv-"] { border-left: 8px solid var(--niv-edge); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+.stairs li:last-child .stair[class*="niv-"] { border: 1px solid var(--line); border-left: 8px solid var(--niv-edge); background: var(--bg); }
+.stair .lvl-badge { margin-left: 8px; font-size: 0.75rem; }
+.stair-head strong { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 0; }
+.niv-swatch { display: inline-block; width: 1.4em; height: 1em; border-radius: 4px; margin-right: 0.5em; vertical-align: -0.12em;
+  background: var(--niv); box-shadow: 0 0 0 1px var(--line); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+.print-part[class*="niv-"] > h2 { border-left: 10px solid var(--niv-edge); padding-left: 12px; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+.print-part[class*="niv-"] .cours-body h3 { border-left: 5px solid var(--niv-edge); padding-left: 10px; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+.print-part > .cours-level { margin-top: -4px; }
+
+/* simulateur : votre niveau et celui des bots */
+.sim-level[class*="niv-"] { background: var(--niv); color: var(--niv-on); border-radius: 999px; padding: 0 8px; font-weight: 700; }
+.header-level { margin: 8px 0 0; }
+
+/* ---------- Réflexes (reflexes/reflexes.js) : répétition espacée ---------- */
+.leitner-boxes { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 12px; }
+.leitner-box { flex: 1 1 64px; display: flex; flex-direction: column; align-items: center; padding: 8px 4px;
+  border: 1px solid var(--line); border-radius: 8px; background: var(--bg); font-size: 0.85rem; color: var(--quiet); }
+.leitner-box .n { font-size: 1.4rem; font-weight: 700; color: var(--ink); }
+.leitner-box.fresh { background: var(--accent-soft); }
+.leitner-box.mastered { background: var(--good-soft); }
+.leitner-state.ok { border-color: var(--good); }
+.leitner-stage { max-width: 640px; }
+.leitner-figure { margin: 8px 0 12px; }
+.leitner-figure img { display: block; max-width: 100%; height: auto; max-height: 60vh; border-radius: 10px; }
+.leitner-question { font-size: 1.15rem; font-weight: 600; margin: 8px 0 12px; }
+.leitner-answer { margin-bottom: 12px; }
+.leitner-answer .feedback { margin: 0 0 12px; }
+.leitner-number-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.leitner-number { width: 8em; font: inherit; font-size: 1.1rem; padding: 8px 10px; border: 1px solid var(--line);
+  border-radius: 8px; background: var(--surface); color: var(--ink); }
+.leitner-answer .feedback a, .leitner-stage .feedback a { color: var(--accent); }
+.choice-btn.right:disabled { opacity: 1; background: var(--good-soft); color: var(--good); border-color: var(--good); }
+.choice-btn.wrong:disabled { opacity: 1; background: var(--bad-soft); color: var(--bad); border-color: var(--bad); }
