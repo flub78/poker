@@ -1,6 +1,7 @@
 // Test de fumée de l'application web, dans Chrome headless, en thème clair puis sombre.
 //
-// Parcourt : chaque page du cours et la vue imprimable, le simulateur, chaque niveau prêt et tous ses onglets,
+// Parcourt : chaque page du cours et la vue imprimable, le simulateur, chaque niveau prêt et tous ses onglets
+//   (dont une séance entière de Réflexes),
 // l'intérieur de chaque exercice et de chaque test. Signale :
 //   - les erreurs JavaScript et les messages d'erreur de la console ;
 //   - les fichiers introuvables (réponse HTTP 400 ou plus, image non chargée) ;
@@ -53,7 +54,7 @@ const CHECK = `(async () => {
   // « null » ou « undefined » affichés : une valeur vide passée à append (natif) au lieu de h()
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   for (let n = walker.nextNode(); n; n = walker.nextNode()) {
-    if (/\b(null|undefined|NaN)\b/.test(n.textContent) && n.parentElement?.offsetParent) out.push('texte suspect : « ' + n.textContent.trim().slice(0, 60) + ' »');
+    if (/\\b(null|undefined|NaN)\\b/.test(n.textContent) && n.parentElement?.offsetParent) out.push('texte suspect : « ' + n.textContent.trim().slice(0, 60) + ' »');
   }
   for (const img of document.images) {
     img.loading = 'eager';
@@ -155,6 +156,58 @@ try {
           await wait(400);
           await check(t(`${hash} ${what} ${i + 1}`));
         }
+      }
+      // Réflexes : une séance entière (question, correction, reprise, bilan), puis on efface.
+      await open(`${base}/reflexes`, 800);
+      if (await page.eval(`[...document.querySelectorAll('button')].some((b) => b.textContent === 'Commencer la séance')`)) {
+        await page.eval(`[...document.querySelectorAll('button')].find((b) => b.textContent === 'Commencer la séance').click()`);
+        // Faux une fois sur deux au premier passage (reprise des erreurs) ; en reprise, la bonne
+        // réponse lue dans la correction précédente. Contrôle complet des 3 premières questions.
+        await page.eval('window.__bonnes = {}');
+        let k = 0;
+        for (; k < 80 && await page.eval(`!!document.querySelector('.leitner-question')`); k++) {
+          await wait(120);
+          if (k < 3) await check(t(`${base}/reflexes question ${k + 1}`));
+          await page.eval(`(() => {
+            // énoncé + image : des questions différentes peuvent avoir le même énoncé
+            const q = document.querySelector('.leitner-question').textContent + (document.querySelector('.leitner-figure img')?.getAttribute('src') || '');
+            const known = (window.__bonnes ??= {})[q];   // vidé par le rechargement (interruption)
+            const zone = document.querySelector('.leitner-answer');
+            const see = [...zone.querySelectorAll('button')].find((b) => b.textContent === 'Voir la réponse');
+            if (see) see.click();
+            const num = zone.querySelector('.leitner-number');
+            if (num) { num.value = known ?? (${k % 2} ? '123456' : '1'); zone.querySelector('.btn').click(); }
+            else {
+              const c = [...zone.querySelectorAll('.choice-btn')];
+              (c.find((b) => b.textContent === known) || c[${k % 2} ? c.length - 1 : 0]).click();
+            }
+            const right = zone.querySelector('.choice-btn.right')?.textContent
+              ?? /Réponse : ([−\\d,]+)/.exec(document.querySelector('.leitner-stage .feedback')?.textContent || '')?.[1]?.replace('−', '-');
+            if (right) window.__bonnes[q] = right;
+          })()`);
+          await wait(80);
+          if (k < 3) await check(t(`${base}/reflexes correction ${k + 1}`));
+          if (k === 2) {
+            // Interruption : on recharge la page, la séance doit se reprendre là où elle en était.
+            const before = await page.eval(`JSON.parse(localStorage.getItem('poker.reflexes.v1')).suites['${lvl.n}'].current.todo.length`);
+            await open(`${base}/reflexes`, 800);
+            await check(t(`${base}/reflexes séance interrompue`));
+            const resume = await page.eval(`(() => { const b = [...document.querySelectorAll('button')].find((x) => x.textContent === 'Reprendre la séance');
+              if (b) b.click(); return !!b; })()`);
+            if (!resume) { report(t(`${base}/reflexes`), 'pas de bouton « Reprendre la séance » après une interruption'); break; }
+            await wait(150);
+            const left = await page.eval(`JSON.parse(localStorage.getItem('poker.reflexes.v1')).suites['${lvl.n}'].current.todo.length`);
+            if (left !== before) report(t(`${base}/reflexes`), `reprise : ${before} questions restantes avant, ${left} après`);
+            continue;
+          }
+          await page.eval(`[...document.querySelectorAll('.btn.primary')].find((b) => /Suivant|Terminer/.test(b.textContent)).click()`);
+        }
+        await wait(150);
+        if (!await page.eval(`/terminée/.test(document.querySelector('.exercise-head h2')?.textContent || '')`)) {
+          report(t(`${base}/reflexes`), `séance non terminée après ${k} réponses`);
+        }
+        await check(t(`${base}/reflexes bilan`));
+        await page.eval(`localStorage.removeItem('poker.reflexes.v1')`);
       }
     }
   }

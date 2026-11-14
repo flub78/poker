@@ -11,6 +11,7 @@ Tout passe par `index.html` ; la partie après `#` choisit le niveau et l'onglet
 | `index.html` | le dernier niveau ouvert dans ce navigateur (sinon le niveau 1) |
 | `index.html#niveau-2` | l'onglet Tests du niveau 2 |
 | `index.html#niveau-2/exercices` | l'onglet Exercices du niveau 2 |
+| `index.html#niveau-2/reflexes` | l'onglet Réflexes du niveau 2 : questions courtes en répétition espacée (voir « Réflexes » plus bas) |
 | `index.html#niveau-2/aide` | un onglet propre au niveau (ici l'Aide-mémoire) |
 | `index.html#cours` | le cours : accueil et table des matières |
 | `index.html#cours/niveau-3` | une page du cours (`introduction`, `mode-d-emploi`, `niveau-1` à `niveau-6`, `grille`, `ressources`, `glossaire`) |
@@ -65,11 +66,18 @@ web/
 │   ├── cours.js            le cours : sommaire, pages, navigation précédent / suivant (flèches du clavier aussi)
 │   ├── profil.js           page Profil : prénom, résumé, code de transfert, fichier, effacement
 │   ├── serie.js            séries de questions (10 au plus), une à la fois : makeTest, makePractice (niveaux 3 à 6)
-│   ├── config.js           chemin des cartes, écart de jours, liste des niveaux (LEVELS)
+│   ├── config.js           chemin des cartes, écart de jours, liste des niveaux (LEVELS : titre, rang, couleur)
 │   ├── shell.js            onglets, tableau de bord, passage d'un test, correction, exercices, export
 │   ├── dom.js              construction du DOM
+│   ├── niveau-couleur.js   code couleur des niveaux : pastilles, points, niveau de travail de la page (body data-niveau)
 │   ├── cards.js            paquet, tirage reproductible (graine), affichage des cartes
 │   └── storage.js          historique des tentatives (localStorage), règle des 3 jours, fusion
+├── reflexes/               onglet Réflexes de chaque niveau (répétition espacée, méthode Leitner)
+│   ├── banque/             banque exportée par mentor, déposée telle quelle (questions.csv, images/, banque.json)
+│   ├── banque.js           lecture du CSV au format mentor, verdict d'une réponse (module pur)
+│   ├── leitner.js          boîtes, séances, introduction des questions, reprise des erreurs (module pur)
+│   ├── stockage.js         progression dans le navigateur (poker.reflexes.v1), une suite par niveau
+│   └── reflexes.js         l'écran : état des boîtes, séance, correction, bilan
 ├── niveau-1/
 │   ├── niveau.js           définition du niveau : tests, exercices
 │   ├── index.html          redirection vers ../index.html#niveau-1
@@ -123,6 +131,30 @@ Les modules d'un niveau importent le code commun par `../js/…` (ou `../../js/�
 **Un exercice d'entraînement** exporte `{ id, title, competences, summary, settings, create(rand, settings, report) }`. `settings` décrit les listes déroulantes (`{ id, label, default, options: [{ value, label }] }`) ; changer une option relance l'exercice. `create` renvoie un objet avec `render(root)` et appelle `report(ok)` après chaque réponse pour mettre à jour le compteur.
 
 Chaque tentative enregistre sa graine aléatoire : on peut régénérer exactement les mêmes questions pour une revue.
+
+## Réflexes
+
+Chaque niveau a un onglet **Réflexes** : des questions courtes, à réponse immédiate, souvent sur une image de main ou de tableau (« Qui gagne ? », « UTG, A♠ J♦ : que faites-vous ? », « Outs pour la couleur ? »). Elles reviennent par **répétition espacée** (méthode Leitner) :
+
+- 5 boîtes ; chaque séance pose la boîte 1 et **une seule boîte haute**, en rotation : à la séance *n*, la boîte 2 + *v*, où *v* est le nombre de fois que *n* est divisible par 2 (boîte 2 une séance sur deux, boîte 3 une sur quatre, boîte *k* une sur 2^(k−1) ; si la boîte calculée dépasse la 5e, seule la boîte 1 est posée). La charge reste régulière ;
+- juste : la question monte d'une boîte ; juste dans la boîte 5 : maîtrisée ; faux : elle recule d'une boîte, et revient en boîte 1 au second échec de suite ;
+- seule la première réponse d'une séance compte ; une erreur est reposée en fin de séance jusqu'à être réussie ;
+- au début d'une séance, la boîte 1 est complétée jusqu'à 10 questions avec des nouvelles.
+- une séance interrompue (page quittée, onglet changé) se **reprend** : on continue ses questions restantes, avec le même numéro de séance. **Nouvelle séance** abandonne le reste et avance le numéro, donc les boîtes posées. La séance en cours est enregistrée après chaque réponse (`current` dans la suite).
+
+Ce sont les règles du module Leitner de **mentor** (son PRD, §7), pour qu'une question se comporte pareil dans les deux applications. Clavier : chiffres 1 à 9 (0 pour le dixième) pour les choix, V ou F pour vrai ou faux, Entrée pour passer à la suite.
+
+**La banque de questions** est éditée dans mentor, jamais ici. On l'exporte de mentor (archive ZIP au format d'échange des banques : `questions.csv`, `images/`, `banque.json`), puis :
+
+```bash
+bin/installer-banque.sh export-mentor.zip     # remplace web/reflexes/banque/ et lance les tests unitaires
+```
+
+Les questions du niveau *N* sont celles dont le **thème** commence par « Niveau *N* ». Types lus : QCM, vrai / faux, auto-évaluation, valeur numérique ; les autres sont écartés. La progression est rattachée à la **référence** de la question (colonne `reference` du format mentor, ici l'ID du brouillon : `N1-13`) : corriger un énoncé dans mentor ne fait rien perdre. Une question sans référence est rattachée à son type et à son énoncé, et repart de zéro si l'énoncé change. La progression enregistrée avant les références est reprise automatiquement à l'ouverture de l'onglet. Un QCM non mélangé s'affiche dans l'ordre de la colonne `ordre` (les dix combinaisons dans l'ordre du classement, « A · B · Partage ») : la position du bouton devient un repère.
+
+La première banque a été amorcée depuis le cours : `doc/leitner/questions.md` (brouillon lisible, niveaux 1 à 6), `tools/leitner_images.mjs` (images), `tools/leitner_export.py` (ZIP au format mentor).
+
+La progression est enregistrée dans le navigateur (clé `poker.reflexes.v1`), avec les autres résultats : sauvegarde dans un fichier et effacement par le Profil. Le code de transfert ne la contient pas encore.
 
 ## Résultats
 

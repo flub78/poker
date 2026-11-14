@@ -51,6 +51,7 @@ export function startApp({ level, storageKey, tests, practices, manual = [], ext
   const TABS = [
     { id: 'tests', label: 'Tests', hash: base, view: dashboard },
     { id: 'exercices', label: 'Exercices', hash: `${base}/exercices`, view: exercisesHome },
+    { id: 'reflexes', label: 'Réflexes', hash: `${base}/reflexes`, view: reflexesView },
     ...extraTabs.map((t) => ({ id: t.id, label: t.label, hash: `${base}/${t.id}`, view: () => extraView(t) })),
   ];
 
@@ -75,6 +76,17 @@ export function startApp({ level, storageKey, tests, practices, manual = [], ext
     const body = h('div', {});
     main.append(body);
     t.render(body);
+  }
+
+  // Réflexes : questions courtes en répétition espacée (reflexes/reflexes.js, chargé à la demande).
+  function reflexesView() {
+    clear(main);
+    setHash(`${base}/reflexes`);
+    const body = h('div', {});
+    main.append(tabs('reflexes'), body);
+    import('../reflexes/reflexes.js')
+      .then((m) => { if (body.isConnected) m.renderReflexes(body, level); })
+      .catch((err) => body.append(h('p', { class: 'form-message' }, `Impossible de charger les Réflexes : ${err.message}`)));
   }
 
   // Bouton vers le simulateur (index.html#simulateur), en tête des onglets Tests et Exercices.

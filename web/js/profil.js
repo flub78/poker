@@ -4,7 +4,7 @@
 //   - le résumé des résultats par niveau ;
 //   - le code de transfert vers un autre appareil (envoyer, recevoir) ;
 //   - les parties jouées au simulateur (simulateur/historique.js) ;
-//   - la sauvegarde dans un fichier (exporter, importer), parties du simulateur comprises ;
+//   - la sauvegarde dans un fichier (exporter, importer), parties du simulateur et Réflexes compris ;
 //   - l'effacement des résultats.
 //
 // Adresses : #profil                 la page
@@ -17,10 +17,12 @@
 // m : critères vérifiés à la table, cochés (date en secondes).
 // Transfert et import de fichier passent par la fusion (storage.js, mergeData) : on ajoute les
 // tentatives manquantes, rien n'est jamais remplacé.
+import { levelBadge, levelDot } from './niveau-couleur.js';
 import { h, clear } from './dom.js';
 import { LEVELS } from './config.js';
 import { createStore, mergeData, getPlayerName, setPlayerName } from './storage.js';
 import { loadParties, mergeParties, clearParties } from '../simulateur/historique.js';
+import { loadAll as loadReflexes, mergeAll as mergeReflexes, resetAll as resetReflexes } from '../reflexes/stockage.js';
 
 const VERSION = '1';
 const FILE_FORMAT = 'poker-resultats';
@@ -126,7 +128,7 @@ export const transferLink = (code) => `${location.origin}${location.pathname}#tr
 async function exportFile() {
   const niveaux = {};
   for (const lvl of await levels()) niveaux[lvl.n] = lvl.store.exportData();
-  const json = JSON.stringify({ format: FILE_FORMAT, version: 1, joueur: getPlayerName(), date: new Date().toISOString(), niveaux, simulateur: loadParties() }, null, 2);
+  const json = JSON.stringify({ format: FILE_FORMAT, version: 1, joueur: getPlayerName(), date: new Date().toISOString(), niveaux, simulateur: loadParties(), reflexes: loadReflexes() }, null, 2);
   const a = h('a', {
     href: URL.createObjectURL(new Blob([json], { type: 'application/json' })),
     download: `poker-resultats-${new Date().toISOString().slice(0, 10)}.json`,
@@ -140,7 +142,7 @@ async function exportFile() {
 async function readFile(text) {
   let data;
   try { data = JSON.parse(text); } catch { throw new Error('ce n\'est pas un fichier JSON'); }
-  if (data?.format === FILE_FORMAT && typeof data.niveaux === 'object') return { player: data.joueur || '', byLevel: data.niveaux, parties: data.simulateur || [] };
+  if (data?.format === FILE_FORMAT && typeof data.niveaux === 'object') return { player: data.joueur || '', byLevel: data.niveaux, parties: data.simulateur || [], reflexes: data.reflexes || null };
   if (data && typeof data.tests === 'object') {
     const ids = Object.keys(data.tests);
     const lvl = (await levels()).find((l) => ids.length && ids.every((id) => l.def.tests.some((t) => t.id === id)));
@@ -195,7 +197,7 @@ async function summaryBlock() {
     const manual = lvl.def.manual || [];
     const checked = manual.filter((m) => lvl.store.manualDate(m.id)).length;
     return h('tr', {},
-      h('td', {}, h('a', { href: `#niveau-${lvl.n}` }, `Niveau ${lvl.n}`), ` · ${lvl.title}`),
+      h('td', {}, levelDot(lvl.n), ' ', h('a', { href: `#niveau-${lvl.n}` }, `Niveau ${lvl.n}`), ` · ${lvl.title} `, levelBadge(lvl.n, { short: true })),
       h('td', {}, `${done} / ${states.length}${manual.length ? ` · critères ${checked} / ${manual.length}` : ''}`),
       h('td', {}, String(attempts)),
       h('td', {}, lvl.def.tests.map((t, i) => `${t.code} : ${STATES[states[i]]}`).join(' ; ')));
@@ -215,7 +217,7 @@ function partiesBlock() {
   const rows = list.slice(0, 15).map((p) => h('tr', {},
     h('td', {}, new Date(p.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })),
     h('td', {}, String(p.hands)),
-    h('td', {}, String(p.level)),
+    h('td', {}, levelDot(p.level), ' ', String(p.level)),
     h('td', {}, p.decisions ? `${Math.round((100 * p.conforme) / p.decisions)} %` : '—'),
     h('td', {}, String(p.erreur)),
     h('td', {}, `${p.vpip} % / ${p.pfr} %`),
@@ -361,7 +363,10 @@ function fileBlock() {
       const done = await mergeLevels(got.byLevel, true);
       if (!getPlayerName() && got.player) { setPlayerName(got.player); notify(); }
       const added = done.rows.reduce((s, r) => s + r.added, 0) + (mergeParties(got.parties || []) || 0);
-      status.textContent = `${file.name} : ${plural(added, 'résultat')} ajouté${added > 1 ? 's' : ''} (ceux déjà présents sont conservés).`;
+      const suites = got.reflexes ? mergeReflexes(got.reflexes) : 0;
+      if (suites === false) throw new Error('le navigateur bloque l\'enregistrement (navigation privée ?)');
+      status.textContent = `${file.name} : ${plural(added, 'résultat')} ajouté${added > 1 ? 's' : ''} (ceux déjà présents sont conservés)`
+        + (suites ? ` ; Réflexes : ${plural(suites, 'niveau')} repris (la progression la plus avancée est gardée).` : '.');
       const summary = main().querySelector('.summary')?.closest('.block');
       if (summary) summary.replaceWith(await summaryBlock());
       main().querySelector('.sim-parties')?.replaceWith(partiesBlock());
@@ -371,7 +376,7 @@ function fileBlock() {
   };
   return h('section', { class: 'block' },
     h('h2', {}, 'Sauvegarde dans un fichier'),
-    h('p', {}, 'Un fichier JSON avec tous les niveaux et les parties du simulateur. L\'import ajoute ce qui manque ; ',
+    h('p', {}, 'Un fichier JSON avec tous les niveaux, les parties du simulateur et la progression des Réflexes. L\'import ajoute ce qui manque ; ',
       'il accepte aussi les anciens fichiers d\'un seul niveau.'),
     h('div', { class: 'practice-actions' },
       h('button', { type: 'button', class: 'btn secondary', onclick: exportFile }, 'Exporter mes résultats'),
@@ -383,13 +388,14 @@ function fileBlock() {
 function resetBlock() {
   return h('section', { class: 'block' },
     h('h2', {}, 'Effacer'),
-    h('p', {}, 'Efface les résultats de tous les niveaux et les parties du simulateur dans ce navigateur. Le prénom est conservé.'),
+    h('p', {}, 'Efface les résultats de tous les niveaux, les parties du simulateur et la progression des Réflexes dans ce navigateur. Le prénom est conservé.'),
     h('button', {
       type: 'button', class: 'btn danger',
       onclick: async () => {
         if (!confirm('Effacer les résultats de tous les niveaux ? Cette action est définitive. Pensez à exporter avant.')) return;
         for (const lvl of await levels()) lvl.store.reset();
         clearParties();
+        resetReflexes();
         renderProfil(main());
       },
     }, 'Effacer tous mes résultats'));

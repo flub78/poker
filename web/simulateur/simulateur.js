@@ -3,6 +3,7 @@
 import { h, clear } from '../js/dom.js';
 import { cardImg, backImg } from '../js/cards.js';
 import { competenceHref } from '../js/cours.js';
+import { levelBadge, levelClass, levelLabel } from '../js/niveau-couleur.js';
 import { evaluate, describe } from '../niveau-1/evaluator.js';
 import { legalActions } from './moteur/table.js';
 import { newGame, startHand, replayHand, playBot, play, humanToAct, botToAct, gameOver, HUMAN } from './partie.js';
@@ -132,7 +133,16 @@ export function renderSimulateur(main) {
 
   // ---------- dessin ----------
 
+  // Niveau du joueur → en-tête à sa couleur (js/app.js écoute « niveau-travail »).
+  let announced = null;
+  function announceLevel() {
+    if (announced === settings.humanLevel) return;
+    announced = settings.humanLevel;
+    window.dispatchEvent(new CustomEvent('niveau-travail', { detail: settings.humanLevel }));
+  }
+
   function render() {
+    announceLevel();
     if (view === 'evaluation') { renderEvaluation(); return; }
     const hand = game.hand;
     const pos = positions(hand);
@@ -149,7 +159,7 @@ export function renderSimulateur(main) {
             hand.replay ? h('span', { class: 'sim-replay' }, `Main n° ${hand.no} rejouée : elle ne compte pas`)
               : h('span', {}, `Main n° ${game.handNo}${game.maxHands ? ` sur ${game.maxHands}` : ''}`),
             h('span', {}, STREET_LABEL[hand.street]),
-            h('span', {}, `Votre niveau : ${settings.humanLevel}`)),
+            h('span', {}, 'Votre niveau : ', levelBadge(settings.humanLevel))),
           h('div', { class: 'sim-table', role: 'group', 'aria-label': 'Table de poker' },
             game.players.map((p, i) => seatView(i, pos)),
             hand.seats.map((s, i) => (s.bet > 0 ? h('div', { class: `sim-bet sim-bet-${i}` }, bbText(s.bet, hand.bb)) : null)),
@@ -182,7 +192,7 @@ export function renderSimulateur(main) {
       h('div', { class: 'sim-cards' }, cards),
       h('div', { class: 'sim-stack' },
         h('span', {}, bbText(s.stack, hand.bb)),
-        p.human ? null : h('span', { class: 'sim-level', title: `Joue au niveau ${playLevel(p.level)}` }, `niv. ${p.level}`)),
+        p.human ? null : h('span', { class: `sim-level ${levelClass(p.level)}`, title: `Joue au niveau ${playLevel(p.level)} (${levelLabel(p.level)})` }, `niv. ${p.level}`)),
       h('div', { class: 'sim-last' }, lastAction(i)));
   }
 

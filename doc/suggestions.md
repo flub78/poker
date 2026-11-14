@@ -1,6 +1,6 @@
 # Suggestions d'amélioration
 
-Mis à jour le 2026-11-10 (ajout de S-015 et S-016 ; avant : réalisation de S-001, S-003 à S-010, S-012 option A, S-013, S-014). Fiches classées par section ; index trié par rapport
+Mis à jour le 2026-11-11 (ajout de S-017 ; avant : ajout de S-015 et S-016 ; avant : réalisation de S-001, S-003 à S-010, S-012 option A, S-013, S-014). Fiches classées par section ; index trié par rapport
 bénéfice/coût. Statuts : proposée · acceptée · en cours · faite · reportée · refusée.
 Règles de tenue et commandes : voir [`strategie_suggestions.md`](../strategie_suggestions.md).
 
@@ -10,6 +10,11 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 
 | ID | Section | Suggestion | Bénéfice | Coût | Rapport | Statut |
 |---|---|---|---|---|---|---|
+| S-021 | Système | Ordre des propositions d'un QCM dans le format d'échange de mentor | moyen | S | moyen | faite |
+| S-018 | Système | Identifiant stable des questions dans le format d'échange de mentor (colonne `reference`) | moyen | S | élevé | faite |
+| S-019 | Par fonctionnalité | Réflexes : progression dans le code de transfert | moyen | S | élevé | proposée |
+| S-020 | Par fonctionnalité | Réflexes : chronomètre facultatif (10 s), comme mentor §7.7 | moyen | S | moyen | proposée |
+| S-017 | Transverses | Réparer le contrôle « null / undefined / NaN affichés » du test de fumée, qui ne voyait rien | moyen | S | élevé | faite |
 | S-016 | Méthodes | Tests automatiques systématiques : `node --test` sur les modules purs, commande unique `bin/tester.sh` | élevé | S | élevé | faite |
 | S-015 | Par fonctionnalité | Simulateur de table à 6 : bots des niveaux 2 à 6, Indice, Mentor, évaluation des décisions | élevé | L | moyen | acceptée |
 | S-012 | Architecture | Garder les progrès d'un appareil à l'autre : code de transfert (A), puis petit serveur PHP + fichiers JSON (B) | élevé | S puis M | élevé | A faite, B proposée |
@@ -317,7 +322,46 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 
 ## 6. Transverses
 
-(performances, sécurité, qualité : aucune suggestion pour l'instant)
+### S-017 · Réparer le contrôle « null / undefined / NaN affichés » du test de fumée
+- **Statut** : faite (commit à venir) · **Date** : 2026-11-11 · **Origine** : code couleur des niveaux
+- **Constat** : un « null » s'affichait sous le titre du sommaire du cours, du Profil et des pages
+  du cours sans niveau (`append` natif dans l'en-tête de `app.js`). `tools/verifier_web.mjs` a un
+  contrôle prévu pour ça, mais il passait sans rien voir : l'expression régulière est écrite dans
+  une chaîne de gabarit (`CHECK`), où `\b` devient le caractère « retour arrière ». Le contrôle
+  n'a donc jamais rien pu trouver depuis sa création.
+- **Proposition** : écrire `\\b` dans la chaîne, comme `\\d` pour le contraste.
+- **Bénéfices** : le contrôle fonctionne enfin ; il attrape une erreur visible et récurrente.
+- **Coûts** : S. Deux caractères.
+- **Rapport** : élevé.
+- **Décision** : 2026-11-11, faite à la demande. Vérifiée en remettant volontairement le « null »
+  dans l'en-tête : le test de fumée le signale, puis passe une fois l'en-tête corrigé.
+
+### S-018 · Identifiant stable des questions dans le format d'échange de mentor
+- **Statut** : faite (mentor : PRD banques 0.3, lot B1.1 ; poker : commit à venir) · **Date** : 2026-11-11 · **Origine** : lecteur des Réflexes
+- **Constat** : le CSV de mentor n'a pas d'identifiant de question. Poker rattache donc la progression au type et à l'énoncé : corriger un énoncé dans mentor remet la question à zéro. Pour que les énoncés restent uniques, l'export ajoute l'ID du brouillon (« Quelle main ? (N1-13) »), visible par l'étudiant.
+- **Proposition** : une colonne facultative `reference` dans le format d'échange de mentor (PRD banques §8), conservée à l'import et à l'export ; poker l'utilise comme identifiant quand elle existe.
+- **Bénéfices** : progression conservée après une correction ; plus d'ID dans les énoncés.
+- **Coûts** : S dans mentor (une colonne, avant l'étape B5) ; S dans poker.
+- **Rapport** : élevé.
+
+### S-019 · Réflexes : progression dans le code de transfert
+- **Statut** : proposée · **Date** : 2026-11-11 · **Origine** : lecteur des Réflexes
+- **Constat** : la progression des Réflexes est dans la sauvegarde en fichier, pas dans le code de transfert.
+- **Proposition** : ajouter les suites au code (boîte par question, compacte), fusion par `mergeSuites`.
+- **Bénéfices** : changer d'appareil sans perdre ses boîtes. **Coûts** : S. **Rapport** : élevé.
+
+### S-020 · Réflexes : chronomètre facultatif
+- **Statut** : proposée · **Date** : 2026-11-11 · **Origine** : lecteur des Réflexes
+- **Constat** : le but est la réponse immédiate, mais rien ne mesure le temps.
+- **Proposition** : chronomètre facultatif de 10 s par question (règles de mentor §7.7 : sans réponse à temps, la question est fausse).
+- **Bénéfices** : entraîne vraiment le réflexe. **Coûts** : S. **Rapport** : moyen.
+
+### S-021 · Ordre des propositions d'un QCM dans le format d'échange de mentor
+- **Statut** : faite (mentor : PRD banques 0.3, lot B1.1 ; poker : commit à venir) · **Date** : 2026-11-11 · **Origine** : question « Quelle est cette combinaison ? » des Réflexes
+- **Constat** : le CSV de mentor range la bonne réponse, puis les mauvaises ; l'ordre d'affichage voulu est perdu. Avec `melange` à `non`, la bonne réponse sortait donc toujours en premier (défaut corrigé dans poker en mélangeant tout). Or certaines listes ont un ordre utile : les 10 combinaisons dans l'ordre du classement, « A · B · Partage », « Relancer · Suivre · Se coucher ».
+- **Proposition** : dans mentor, une colonne facultative `ordre` (liste des propositions dans l'ordre d'affichage), utilisée quand `melange` vaut `non` ; poker la lit de même.
+- **Bénéfices** : listes stables, plus rapides à lire ; la position du bouton devient un repère (réflexe).
+- **Coûts** : S dans mentor (format et affichage QCM), S dans poker. **Rapport** : moyen.
 
 ## 7. Idées pour d'autres projets
 
