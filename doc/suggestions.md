@@ -1,6 +1,6 @@
 # Suggestions d'amélioration
 
-Mis à jour le 2026-11-15 (note sur S-015 ; avant : S-023 et S-024 faites ; avant : ajout de S-023 ; avant : S-022 faite ; avant : ajout de S-022 ; avant : ajout de S-017 ; avant : ajout de S-015 et S-016 ; avant : réalisation de S-001, S-003 à S-010, S-012 option A, S-013, S-014). Fiches classées par section ; index trié par rapport
+Mis à jour le 2026-11-15 (ajout de S-025 ; avant : note sur S-015 ; avant : S-023 et S-024 faites ; avant : ajout de S-023 ; avant : S-022 faite ; avant : ajout de S-022 ; avant : ajout de S-017 ; avant : ajout de S-015 et S-016 ; avant : réalisation de S-001, S-003 à S-010, S-012 option A, S-013, S-014). Fiches classées par section ; index trié par rapport
 bénéfice/coût. Statuts : proposée · acceptée · en cours · faite · reportée · refusée.
 Règles de tenue et commandes : voir [`strategie_suggestions.md`](../strategie_suggestions.md).
 
@@ -23,6 +23,7 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 | S-013 | Par fonctionnalité | Quiz préflop du niveau 2 en 2 séries de 10 (règle des 10 questions par série) | moyen | S | élevé | faite |
 | S-010 | Tutoriel | Corriger l'écart de VPIP du test du niveau 2 (18–26 % ou 12–20 %) | moyen | S | élevé | faite |
 | S-024 | Par fonctionnalité | Sous-niveaux cumulatifs du niveau 2 (2.0 à 2.5) pour les exercices, les Réflexes et le simulateur | élevé | M | élevé | faite |
+| S-025 | Tutoriel | Étymologie à la première utilisation : la garder, ou s'appuyer sur les liens vers le glossaire | moyen | S | élevé | proposée |
 | S-023 | Tutoriel | Renvoyer vers l'annexe « Grille des mains à colorier » là où le cours demande de colorier la grille | faible | S | élevé | faite |
 | S-011 | Tutoriel | Ajouter C3.7 à la grille d'auto-évaluation | faible | S | élevé | proposée |
 | S-002 | Système | Remplacer le carnet PDF par la progression enregistrée dans l'application | élevé | M | moyen | proposée |
@@ -303,6 +304,22 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 - **Rapport** : élevé.
 - **Premier pas** : ajouter la ligne dans le doc, puis `/publier-tutoriel`.
 - **Décision** :
+
+### S-025 · Étymologie à la première utilisation, maintenant que le texte renvoie au glossaire
+- **Statut** : proposée · **Date** : 2026-11-15 · **Origine** : liens automatiques vers le glossaire
+- **Constat** : le principe 1 de CLAUDE.md demande l'origine de chaque terme deux fois, dans le
+  glossaire et entre parenthèses à sa première utilisation. Les 38 termes ajoutés au glossaire le
+  2026-11-15 (brelan, full, tour d'enchères, flop sec…) n'ont pas encore leur parenthèse dans le
+  texte. Depuis que chaque terme renvoie à sa ligne du glossaire, la parenthèse fait doublon et
+  alourdit les phrases.
+- **Proposition** : deux options. A : ajouter les 38 parenthèses manquantes (règle actuelle).
+  B : réserver la parenthèse aux termes anglais et aux sigles (sens littéral utile à la lecture),
+  et laisser l'étymologie des mots français au glossaire, joignable d'un clic.
+- **Bénéfices** : A, cohérence avec la règle ; B, texte plus court, une seule source pour
+  l'étymologie.
+- **Coûts** : S. A, 38 retouches du doc ; B, modifier le principe 1 de CLAUDE.md.
+- **Rapport** : élevé.
+- **Premier pas** : choisir A ou B.
 
 ### S-023 · Renvoyer vers la grille à colorier depuis le cours
 - **Statut** : faite (2026-11-15, commit à venir) · **Date** : 2026-11-15 · **Origine** : ajout de l'annexe « Grille des mains à colorier »

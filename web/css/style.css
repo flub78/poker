@@ -394,6 +394,11 @@ a.level-link.current:hover { background: var(--felt-ink); }
 .cours-body li > p { margin: 0 0 4px; }
 .cours-body ul, .cours-body ol { padding-left: 1.4em; }
 .cours-body a:not(.btn) { color: var(--accent); }   /* les boutons gardent leurs couleurs */
+/* lien vers le glossaire : discret, pour ne pas hacher le texte */
+.cours-body a.gl { color: inherit; text-decoration: underline dotted var(--quiet); text-underline-offset: 3px; }
+.cours-body a.gl:hover { color: var(--accent); text-decoration-color: var(--accent); }
+.cours-body tr[id] { scroll-margin-top: 16px; }
+.cours-body tr.cible td { background: var(--accent-soft); }
 .cours-body ul:has(input[type="checkbox"]) { list-style: none; padding-left: 0.2em; }
 .cours-body li:has(> input[type="checkbox"]) { display: flex; gap: 8px; align-items: baseline; }
 .page-toc { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 20px; }
