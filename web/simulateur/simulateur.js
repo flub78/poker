@@ -9,8 +9,9 @@ import { evaluate, describe } from '../niveau-1/evaluator.js';
 import { legalActions } from './moteur/table.js';
 import { newGame, startHand, replayHand, playBot, play, humanToAct, botToAct, gameOver, HUMAN } from './partie.js';
 import { evaluateGame, afText, pctText } from './evaluation.js';
+import { MIN_HANDS, profile } from './lecture.js';
 import { summarize, saveParty } from './historique.js';
-import { decider, BOT_LEVELS, playLevel } from './bots.js';
+import { decider, BOT_CHOICES, playLevel, isProfil, PROFILS, botLabel } from './bots.js';
 import { handLog } from './journal.js';
 import { judge, actionLabel, VERDICTS } from './mentor.js';
 import { positions, bbText, potTotal } from './positions.js';
@@ -197,8 +198,18 @@ export function renderSimulateur(main) {
       h('div', { class: 'sim-cards' }, cards),
       h('div', { class: 'sim-stack' },
         h('span', {}, bbText(s.stack, hand.bb)),
-        p.human ? null : h('span', { class: `sim-level ${levelClass(p.level)}`, title: `Joue au niveau ${playLevel(p.level)} (${levelLabel(p.level)})` }, `niv. ${p.level}`)),
-      h('div', { class: 'sim-last' }, lastAction(i)));
+        p.human ? null : isProfil(p.level)
+          ? h('span', { class: 'sim-level', title: `${PROFILS[p.level].nom} : ${PROFILS[p.level].profil}, ${PROFILS[p.level].resume} (C5.4)` }, PROFILS[p.level].nom.toLowerCase())
+          : h('span', { class: `sim-level ${levelClass(p.level)}`, title: `Joue au niveau ${playLevel(p.level)} (${levelLabel(p.level)})` }, `niv. ${p.level}`)),
+      h('div', { class: 'sim-last' }, lastAction(i)),
+      settings.voirCartes && !p.human ? h('div', { class: 'sim-read', title: 'Lecture du joueur (C5.4), affichée en mode entraînement' }, readText(i)) : null);
+  }
+
+  // Ce que la table sait du joueur : VPIP et AF, puis son profil après 30 mains (lecture.js).
+  function readText(i) {
+    const st = game.reads.stats(i);
+    if (st.hands < MIN_HANDS) return `${st.hands} main${st.hands > 1 ? 's' : ''} observée${st.hands > 1 ? 's' : ''}`;
+    return `VPIP ${pctText(st.vpip)} · AF ${afText(st.af)} · ${profile(st)}`;
   }
 
   function lastAction(i) {
@@ -302,7 +313,8 @@ export function renderSimulateur(main) {
       h('p', { class: 'sim-hint-title' }, `Indice (règles du niveau ${hint.rules}) : `, h('strong', {}, actionLabel(hint.action, game.hand, legal))),
       reasonList(hint.raisons),
       settings.humanLevel === 1 ? h('p', { class: 'meta' }, 'Au niveau 1, l\'indice applique le sous-niveau 2.0, « Le filet » : la liste UTG avant le flop, le schéma simple après. Le niveau 1 apprend les règles du jeu ; la stratégie commence au niveau 2.') : null,
-      settings.humanLevel > 4 ? h('p', { class: 'meta' }, 'Les règles des niveaux 5 et 6 arrivent bientôt : l\'indice applique celles du niveau 4.') : null);
+      settings.humanLevel === 5 ? h('p', { class: 'meta' }, 'Niveau 5 : ajustements au profil observé de chaque adversaire (C5.4), avantage de range (C5.3), range adverse à la river (C5.1).') : null,
+      settings.humanLevel === 6 ? h('p', { class: 'meta' }, 'Niveau 6 : contre un adversaire sans profil marqué, défense minimale (MDF) et bluffs de river équilibrés ; contre un profil marqué, les ajustements du niveau 5. Le solveur, lui, reste hors de l\'application (C6.2).') : null);
   }
 
   function journalPanel() {
@@ -341,7 +353,7 @@ export function renderSimulateur(main) {
         h('thead', {}, h('tr', {}, h('th', {}, 'Joueur'), h('th', {}, 'Niveau'), h('th', {}, 'Gains'),
           game.keepStacks ? h('th', {}, 'Recaves') : null)),
         h('tbody', {}, game.players.map((p, i) => h('tr', {},
-          h('td', {}, p.name), h('td', {}, p.human ? `${p.level} (vous)` : String(p.level)),
+          h('td', {}, p.name), h('td', {}, p.human ? `${p.level} (vous)` : isProfil(p.level) ? PROFILS[p.level].nom : String(p.level)),
           h('td', {}, `${game.totals[i] > 0 ? '+' : game.totals[i] < 0 ? '−' : ''}${bbText(Math.abs(game.totals[i]), game.bb)}`),
           game.keepStacks ? h('td', {}, String(game.rebuys[i])) : null)))));
   }
@@ -386,7 +398,7 @@ export function renderSimulateur(main) {
       reasonList(d.why),
       h('button', { class: 'btn secondary', onclick: () => replay(d.hand) }, 'Rejouer cette main')));
     const rows = ev.players.map((p) => h('tr', { class: p.human ? 'you' : '' },
-      h('td', {}, p.name), h('td', {}, `${p.level} (jugé au ${p.judgedRules})`),
+      h('td', {}, p.name), h('td', {}, `${isProfil(p.level) ? PROFILS[p.level].nom : p.level} (jugé au ${p.judgedRules})`),
       h('td', {}, String(p.decisions)), h('td', {}, p.score === null ? '—' : pctText(p.score)),
       h('td', {}, String(p.counts.défendable)), h('td', {}, String(p.counts.erreur)),
       h('td', {}, pctText(p.stats.vpip)), h('td', {}, pctText(p.stats.pfr)), h('td', {}, afText(p.stats.af)),
@@ -404,7 +416,7 @@ export function renderSimulateur(main) {
             String(ev.players.find((p) => !p.human)?.judgedAt), ', le plus haut disponible. Les jetons gagnés mesurent surtout la chance sur si peu de mains.')),
         h('h3', {}, 'Vos erreurs les plus coûteuses'),
         ev.worst.length ? h('ol', { class: 'sim-worst-list' }, worst) : h('p', {}, 'Aucune erreur : bravo.'),
-        ev.worst.some((d) => d.ev === null) ? h('p', { class: 'meta' }, 'L\'espérance perdue ne se calcule que pour suivre ou jeter un tirage (C3.6) ; sinon, le montant indiqué est celui qui était en jeu.') : null,
+        ev.worst.some((d) => d.ev === null) ? h('p', { class: 'meta' }, 'L\'espérance perdue ne se calcule que pour suivre ou jeter un tirage (C3.6), ou une paire face à une mise à la river au niveau 5 (C5.1) ; sinon, le montant indiqué est celui qui était en jeu.') : null,
         h('h3', {}, 'Tous les joueurs'),
         h('div', { class: 'table-wrap' }, h('table', { class: 'summary sim-eval-table' },
           h('thead', {}, h('tr', {}, ['Joueur', 'Niveau', 'Décisions', 'Conformes', 'Défendables', 'Erreurs', 'VPIP', 'PFR', 'AF', 'Profil', 'Gains'].map((t) => h('th', {}, t)))),
@@ -438,9 +450,9 @@ export function renderSimulateur(main) {
             onchange: (e) => { settings.graine = e.target.value.trim(); saveSettings(settings); } }))),
       h('p', { class: 'meta' }, 'Nombre de mains, tapis et graine : appliqués à la prochaine partie. Une même graine redonne les mêmes cartes.'),
       h('p', { class: 'meta' }, 'Tapis conservés : un joueur à zéro se recave de 100 BB à la main suivante. Les conseils supposent des tapis d\'environ 100 BB.'),
-      h('p', { class: 'meta' }, 'Niveau des adversaires (pour l\'instant 2 à 4 ; les niveaux 5 et 6 viendront ensuite). Appliqué à la prochaine partie.'),
+      h('p', { class: 'meta' }, 'Adversaires : un niveau du cours (2 à 6), ou un profil de C5.4 à exploiter (rock, calling station, maniaque). Appliqué à la prochaine partie.'),
       h('div', { class: 'settings' }, game.players.slice(1).map((p, k) => select(p.name, settings.botLevels[k],
-        BOT_LEVELS.map((n) => [n, `Niveau ${n}`]), (v) => { settings.botLevels[k] = Number(v); saveSettings(settings); }))),
+        BOT_CHOICES.map((n) => [n, botLabel(n)]), (v) => { settings.botLevels[k] = /^\d+$/.test(v) ? Number(v) : v; saveSettings(settings); }))),
       h('button', { class: 'btn secondary', onclick: () => { clearTimeout(timer); newGameFromSettings(); } }, 'Nouvelle partie'));
   }
 

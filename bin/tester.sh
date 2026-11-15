@@ -2,7 +2,7 @@
 # Lance tous les tests automatiques du projet.
 #   1. tests unitaires (node --test) : modules JavaScript purs, dans tests/ ;
 #   2. partie de contrôle des bots (tools/controle_bots.mjs) : aucun niveau ne perd contre le
-#      précédent (environ 20 s) ;
+#      précédent, ni ne gagne moins que lui contre une table de profils faibles (environ 2 min) ;
 #   3. test de fumée (tools/verifier_web.mjs) : toutes les pages dans Chrome headless.
 #
 # Usage : bin/tester.sh            les trois

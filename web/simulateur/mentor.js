@@ -97,6 +97,18 @@ export function judge(hand, action, advice, legal) {
   }
 
   // Après le flop.
+  // Niveau 5, à la river : une paire face à une mise, jugée sur la range adverse estimée (C5.1).
+  if (f.beaten !== undefined && (action.type === 'call' || action.type === 'fold')) {
+    const gap = f.beaten - f.needed;
+    const rg = f.range;
+    const facts = `Range estimée : forte ${pts(rg.forte)}, moyenne ${pts(rg.moyenne)}, bluff ${pts(rg.bluff)} ; votre main en bat ${pts(f.beaten)}, pour ${pts(f.needed)} requis`;
+    if (Math.abs(gap) < 5) {
+      return out('défendable', r('C5.1', `${facts} : l'écart est faible, les deux choix se valent presque.`));
+    }
+    return action.type === 'call'
+      ? out('erreur', r('C5.1', `${facts} : il manque ${pts(-gap)}, ce call perd de l'argent en moyenne.`))
+      : out('erreur', r('C5.1', `${facts} : vous avez ${pts(gap)} de marge, payer est rentable.`));
+  }
   if (f.equity !== undefined && (action.type === 'call' || action.type === 'fold')) {
     const gap = f.equity - f.needed;
     const facts = `${f.outs} outs, environ ${pts(f.equity)} d'équité pour ${pts(f.needed)} requis`;

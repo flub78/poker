@@ -1,6 +1,6 @@
 # Suggestions d'amélioration
 
-Mis à jour le 2026-11-15 (ajout de S-025 ; avant : note sur S-015 ; avant : S-023 et S-024 faites ; avant : ajout de S-023 ; avant : S-022 faite ; avant : ajout de S-022 ; avant : ajout de S-017 ; avant : ajout de S-015 et S-016 ; avant : réalisation de S-001, S-003 à S-010, S-012 option A, S-013, S-014). Fiches classées par section ; index trié par rapport
+Mis à jour le 2026-11-15 (ajout de S-026 ; avant : ajout de S-025 ; avant : note sur S-015 ; avant : S-023 et S-024 faites ; avant : ajout de S-023 ; avant : S-022 faite ; avant : ajout de S-022 ; avant : ajout de S-017 ; avant : ajout de S-015 et S-016 ; avant : réalisation de S-001, S-003 à S-010, S-012 option A, S-013, S-014). Fiches classées par section ; index trié par rapport
 bénéfice/coût. Statuts : proposée · acceptée · en cours · faite · reportée · refusée.
 Règles de tenue et commandes : voir [`strategie_suggestions.md`](../strategie_suggestions.md).
 
@@ -23,6 +23,7 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 | S-013 | Par fonctionnalité | Quiz préflop du niveau 2 en 2 séries de 10 (règle des 10 questions par série) | moyen | S | élevé | faite |
 | S-010 | Tutoriel | Corriger l'écart de VPIP du test du niveau 2 (18–26 % ou 12–20 %) | moyen | S | élevé | faite |
 | S-024 | Par fonctionnalité | Sous-niveaux cumulatifs du niveau 2 (2.0 à 2.5) pour les exercices, les Réflexes et le simulateur | élevé | M | élevé | faite |
+| S-026 | Par fonctionnalité | Comprendre pourquoi le niveau 4 ne gagne pas plus que le 3 contre des profils faibles | moyen | S | élevé | proposée |
 | S-025 | Tutoriel | Étymologie à la première utilisation : la garder, ou s'appuyer sur les liens vers le glossaire | moyen | S | élevé | proposée |
 | S-023 | Tutoriel | Renvoyer vers l'annexe « Grille des mains à colorier » là où le cours demande de colorier la grille | faible | S | élevé | faite |
 | S-011 | Tutoriel | Ajouter C3.7 à la grille d'auto-évaluation | faible | S | élevé | proposée |
@@ -304,6 +305,22 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 - **Rapport** : élevé.
 - **Premier pas** : ajouter la ligne dans le doc, puis `/publier-tutoriel`.
 - **Décision** :
+
+### S-026 · Le niveau 4 ne gagne pas plus que le 3 contre des profils faibles
+- **Statut** : proposée · **Date** : 2026-11-15 · **Origine** : partie de contrôle, partie 2 (étape 6 du plan des niveaux 5 et 6)
+- **Constat** : contre la table rock, station, maniaque, rock, station (50 000 mains), le niveau 3
+  gagne +74 BB/100 et le niveau 4 +71 (−2,5 ± 2,7). Le niveau 4 apporte la c-bet, la texture et le
+  SPR, mais rien n'y gagne contre ces joueurs. Piste : face à une relance, top paire se couche
+  quand le SPR dépasse 3 ; or le maniaque relance top paire, tirages et paires moyennes.
+- **Proposition** : mesurer, par règle du niveau 4, ce qu'elle gagne ou perd contre chaque profil
+  (comme `facts.ajustement` pour le niveau 5), puis décider s'il manque une règle au cours (par
+  exemple dans le niveau 4) ou si l'écart est normal (le niveau 4 vise les joueurs corrects).
+- **Bénéfices** : une progression des niveaux qui se voit aussi contre des joueurs faibles ;
+  peut-être une règle du cours à préciser.
+- **Coûts** : S. Une mesure, puis une décision.
+- **Rapport** : élevé.
+- **Premier pas** : compter les décisions du niveau 4 par règle (`raisons[0].code`) et le gain
+  associé, contre le maniaque.
 
 ### S-025 · Étymologie à la première utilisation, maintenant que le texte renvoie au glossaire
 - **Statut** : proposée · **Date** : 2026-11-15 · **Origine** : liens automatiques vers le glossaire

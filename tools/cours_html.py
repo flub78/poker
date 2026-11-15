@@ -18,6 +18,8 @@ de configuration JSON (par défaut tools/cours_config.json) :
                     Chaque ligne du tableau du glossaire reçoit un id (g-<terme>). Dans chaque
                     section (h3) des autres pages, la première occurrence de chaque terme devient
                     un lien vers sa ligne (jamais dans un titre, une tête de tableau ou un lien).
+                    Dans le glossaire, les définitions (colonne « Sens ») renvoient de même aux
+                    autres termes, une fois par ligne.
                     Forme de base : le terme avant sa parenthèse, pluriel en s/x accepté ;
                     `formes` ajoute synonymes et conjugaisons, `exclure` liste les expressions
                     où un mot du glossaire a un autre sens (« même couleur », « ce tableau »).
@@ -149,7 +151,7 @@ def glossary_terms(page_html, spec):
             base = re.split(r" \(", term)[0]
             forms = ([] if " / " in base else [base]) + extra.pop(term, [])
             terms.append((gid, forms))
-        return f'<tr id="{gid}"{m.group(1)}>{m.group(2)}</tr>'
+        return f'<tr id="{gid}"{m.group(1) or ""}>{m.group(2)}</tr>'
     page_html = re.sub(r"<tr( [^>]*)?>(.*?)</tr>", row, page_html, flags=re.S)
     if extra:
         sys.exit(f"Erreur : glossaire, « formes » pour des termes absents du tableau : {', '.join(extra)}")
@@ -168,9 +170,11 @@ def form_pattern(form):
     return pat
 
 
-def link_glossary(body, terms, page_id, spec):
+def link_glossary(body, terms, page_id, spec, glossary=False):
     """Remplace la première occurrence de chaque terme du glossaire, dans chaque section (h3),
-    par un lien vers sa ligne. Jamais dans un titre, un lien existant ou une expression exclue."""
+    par un lien vers sa ligne. Jamais dans un titre, un lien existant ou une expression exclue.
+    glossary=True : le glossaire lui-même ; seule la colonne « Sens » (2e) est liée, une fois par
+    ligne, et jamais vers la ligne où l'on est."""
     groups = []
     for i, (gid, forms) in enumerate(terms):
         for f in forms:
@@ -182,14 +186,24 @@ def link_glossary(body, terms, page_id, spec):
     excl_rx = re.compile("|".join(excl), re.I) if excl else None
 
     out, seen, skip = [], set(), 0
+    row, cell = None, 0
     for tok in re.split(r"(<[^>]+>)", body):
         if tok.startswith("<"):
             tag = re.match(r"</?(\w+)", tok)
             name = tag.group(1).lower() if tag else ""
+            opening = not tok.startswith("</")
             if name in ("a", "h1", "h2", "h3", "h4", "th"):
-                skip += -1 if tok.startswith("</") else 1
-            if name == "h3" and not tok.startswith("</"):
+                skip += 1 if opening else -1
+            if name == "h3" and opening:
                 seen = set()          # nouvelle section
+            if glossary and name == "tr" and opening:
+                m = re.search(r'id="([^"]+)"', tok)
+                row, cell, seen = (m.group(1) if m else None), 0, set()
+            if glossary and name == "td" and opening:
+                cell += 1
+            out.append(tok)
+            continue
+        if glossary and (cell != 2 or row is None):
             out.append(tok)
             continue
         if skip or not tok.strip():
@@ -200,7 +214,7 @@ def link_glossary(body, terms, page_id, spec):
         pos, parts = 0, []
         for m in rx.finditer(text):
             gid = terms[int(m.lastgroup[1:].split("_")[0])][0]
-            if gid in seen or any(a < m.end() and m.start() < b for a, b in blocked):
+            if gid in seen or gid == row or any(a < m.end() and m.start() < b for a, b in blocked):
                 continue
             seen.add(gid)
             parts += [html.escape(text[pos:m.start()], quote=False),
@@ -305,7 +319,9 @@ def main(src, config_path):
             body, done = stairs(body, spec)
             if done:
                 stairs_done.add(spec["titre"])
-        if terms and p["id"] not in gspec.get("pages_sans_liens", []) + [gspec["page"]]:
+        if terms and p["id"] == gspec["page"]:
+            body = link_glossary(body, terms, gspec["page"], gspec, glossary=True)
+        elif terms and p["id"] not in gspec.get("pages_sans_liens", []):
             body = link_glossary(body, terms, gspec["page"], gspec)
         p["html"] = color_suits(body).strip()
 

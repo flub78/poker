@@ -14,13 +14,18 @@ SPR) ; niveaux 5 et 6 : pour l'instant les règles du niveau 4.
 | --- | --- |
 | `simulateur.js`, `simulateur.css` | L'écran : table, boutons (raccourcis F, C, R, I, Entrée), indice, journal, bilan, réglages |
 | `partie.js` | Suite de mains : bouton qui tourne, 100 BB à chaque main ou tapis conservés (recave à zéro), gains cumulés, décisions jugées, mains rejouables (graine par main) |
-| `bots.js` | `decider(main, siège, niveau)` → `{ action, raisons, facts }` : sert aux bots, à l'indice et au mentor |
+| `bots.js` | `decider(main, siège, niveau)` (niveau 2 à 4, ou un profil : `'rock'`, `'station'`, `'maniaque'`) → `{ action, raisons, facts }` : sert aux bots, à l'indice et au mentor |
 | `evaluation.js` | Évaluation de la partie : verdicts par joueur, coût des erreurs, VPIP, PFR, AF, profils (C5.4), commentaires |
 | `historique.js` | Parties terminées, gardées dans le navigateur ; page Profil |
 | `mentor.js` | `judge(main, coup, conseil, actions légales)` → verdict (conforme, défendable, erreur) et explications |
 | `regles/preflop.js` | Grille du niveau 2 (C2.2), tailles (C2.2, C2.3), cotes implicites des petites paires (C3.4) |
 | `regles/postflop.js` | Après le flop : schéma du niveau 2 (C2.3), outs et cote du pot au niveau 3 (C3.2, C3.3) |
 | `regles/force.js` | Classe d'une main (forte, top paire, paire, rien) et outs |
+| `lecture.js` | Lecture des joueurs (C5.4) : VPIP, PFR, AF, profil après 30 mains ; tenue au fil de la partie (`game.reads`, `hand.reads`) |
+| `regles/niveau5.js` | Niveau 5 : ajustements par profil observé (C5.4), avantage de range (C5.3), paiement à la river selon la range (C5.1) ; le reste est le niveau 4 |
+| `regles/niveau6.js` | Niveau 6 : contre un inconnu, défense minimale (MDF, C6.1) et bluffs de river équilibrés ; sinon le niveau 5 |
+| `regles/range.js` | Range adverse à la river (C5.1) : forte / moyenne / bluff, part de la range battue ; formule de Chen |
+| `regles/profils.js` | Bots à profil de C5.4, à exploiter : rock (serré-passif), calling station (large-passif), maniaque (large-agressif) |
 | `positions.js` | Positions (BTN, SB, BB, UTG, MP, CO), montants en BB |
 | `journal.js` | Le journal d'une main en français |
 | `moteur/` | Les règles du jeu (ci-dessous) |

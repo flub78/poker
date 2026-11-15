@@ -59,11 +59,12 @@ image à lire, une décision. Pas de liste à réciter.
 | N1-05 | VF | | | Une double paire bat un brelan. | Faux | C'est l'inverse. | C1.3 |
 | N1-06 | VF | | | Une quinte bat un brelan. | Vrai | Quinte 6e, brelan 7e. | C1.3 |
 | N1-07 | VF | | | Une quinte flush bat un carré. | Vrai | Quinte flush 2e, carré 3e. | C1.3 |
-| N1-08 | QCM | | | Laquelle de ces trois combinaisons est la plus forte ? [Full · Couleur · Quinte] | Full | Full > couleur > quinte. | C1.3 |
+| N1-08 | QCM | | | Laquelle de ces trois combinaisons est la plus forte ? [Full · Couleur · Quinte] | Full | Full > couleur > quinte : « Qui Court Fatigue », de la plus faible à la plus forte. | C1.3 |
 | N1-09 | QCM | | | Laquelle de ces trois combinaisons est la plus faible ? [Brelan · Quinte · Double paire] | Double paire | | C1.3 |
 | N1-10 | VF | | | L'As peut servir de carte basse dans la quinte A-2-3-4-5. | Vrai | La « quinte basse ». | C1.3 |
 | N1-11 | VF | | | Q-K-A-2-3 est une quinte, l'As faisant le lien entre le Roi et le 2. | Faux | La quinte ne « tourne » pas autour de l'As. | C1.3 |
 | N1-12 | VF | | | Deux joueurs ont la même combinaison : la carte annexe la plus haute (le kicker) les départage. | Vrai | La carte annexe la plus haute gagne. | C1.3 |
+| N1-69 | QCM | | | Pourquoi la couleur bat-elle la quinte ? [Elle est plus rare · Elle contient des cartes plus hautes · Elle se forme plus souvent] | Elle est plus rare | 5 108 couleurs contre 10 200 quintes : plus c'est rare, plus c'est fort. Dans une quinte, chaque carte peut être de n'importe quelle couleur. Ordre : « Qui Court Fatigue », quinte < couleur < full. | C1.3 |
 
 ### Nommer une main (C1.3) — une image de 5 cartes
 
