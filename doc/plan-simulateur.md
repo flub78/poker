@@ -161,6 +161,53 @@ confirme, reprend le coup du mentor ou annule.
 - [ ] Niveau 5 : range adverse estimée d'après les actions, adaptation au profil observé des
       autres bots.
 - [ ] Niveau 6 : défense minimale (MDF), part de bluffs équilibrée, exploitation des profils.
+
+Plan des niveaux 5 et 6 (2026-11-15), dans l'ordre. Les règles sont celles du cours (« Règles du
+niveau 5 / 6 ») ; un vrai bot GTO (solveur) est hors de portée et n'est pas visé.
+
+1. [x] **Bots à profil (C5.4)** : rock (serré-passif), calling station (large-passif), maniaque
+       (large-agressif), en caricatures simples (`regles/profils.js`). Sans eux, un bot de niveau 5
+       joue comme le 4 (« profil inconnu ou serré-agressif : niveau 4 sans changement »).
+       Choix dans les réglages ; test : leurs statistiques sur une longue partie tombent dans le
+       bon profil de C5.4. Fait le 2026-11-15 (`tests/regles/profils.test.js`). Sur 4 000 mains à
+       une table « niveau 4, 2 rocks, 2 stations, 1 maniaque », le niveau 4 gagne environ
+       +65 BB/100 et le maniaque perd environ −200 BB/100.
+2. [x] **Profils observés en cours de partie** : VPIP et AF de chaque adversaire au fil des mains
+       (`playerStats`), profil après 30 mains (`lecture.js`). Fait le 2026-11-15 : `game.reads`,
+       posé sur chaque main (`hand.reads`) ; affiché sous chaque adversaire en mode entraînement
+       (cartes visibles) seulement, car le test du niveau 5 demande de classer soi-même.
+3. [x] **Ajustements du niveau 5 par profil** : voler les blinds d'un serré-passif, ne jamais
+       bluffer un large-passif et miser 3/4 du pot pour la valeur, payer un large-agressif jusqu'à
+       la river ; c-bet de 1/3 avec toute la range quand le tableau favorise la sienne (C5.3).
+       Fait le 2026-11-15 (`regles/niveau5.js`, `tests/regles/niveau5.test.js`). Choix du
+       simulateur, absents du cours : avantage de range = flop à deux cartes de 10 ou plus ;
+       « vol » seulement si aucun joueur large ne reste à parler derrière le CO ; « parole avec
+       top paire » contre un maniaque seulement en tête-à-tête. Mesure sur 20 000 mains : le
+       niveau 5 gagne 35 à 47 BB/100 de plus que le 4 aux tables de profils, autant que lui contre
+       des bots du niveau 4.
+4. [x] **Range adverse à la river** (C5.1) : catégories forte / moyenne / bluff selon la ligne
+       jouée ; payer si la part de bluffs dépasse l'équité requise (C3.3). Mentor et évaluation
+       au niveau 5.
+       Fait le 2026-11-15 (`regles/range.js`). Range avant le flop = les meilleures mains
+       (formule de Chen) en proportion du PFR ou du VPIP observé ; un call au flop ou au turn
+       suppose une paire, un tirage ou deux cartes hautes ; à la river, chaque main est pondérée
+       par la chance que ce profil la mise. Le bot paie si sa main bat assez de la range (les
+       bluffs et les mains moyennes plus faibles). Contre un maniaque, sa règle passe avant.
+       Mentor (C5.1, verdict défendable à moins de 5 points) et espérance perdue (évaluation).
+       Les trois choix de l'étape 3 sont écrits dans les « Règles du niveau 5 » du cours.
+5. [x] **Niveau 6** (`defense.js`) : MDF face à une mise (classer sa main dans sa propre range,
+       mécanique de l'étape 4), bluffs de river à la fréquence de l'équité requise adverse ;
+       contre un profil marqué, ajustements du niveau 5.
+       Fait le 2026-11-15 (`regles/niveau6.js`, `tests/regles/niveau6.test.js`). Sa range : les
+       listes du niveau 2 selon son action avant le flop, filtrées par ses calls. MDF : seulement
+       pour ne pas jeter une main que le niveau 5 jette (on ne jette jamais ce que le 5 joue).
+       Bluffs de river à 2/3 du pot : 2 pour 5 mises de valeur, sans paire, tirages ratés d'abord.
+       Choix (2026-11-15) : serré-agressif = profil marqué. Contre les bots 4 et 5, qui bluffent
+       peu, la MDF perdait 3 BB/100 (partie de contrôle) à 9 BB/100 ; le jeu équilibré ne vise
+       plus que les inconnus. Écrit dans les « Règles du niveau 6 » du cours. La partie de
+       contrôle tient maintenant la lecture des joueurs, comme une partie.
+6. [x] **Partie de contrôle** : chaque niveau contre une table de profils faibles (le niveau N doit
+       y gagner au moins autant que le N−1) ; le niveau 6 ne doit pas perdre contre le 5.
 - [ ] Pour chaque niveau : lister les règles manquantes dans le cours, les y écrire (D8), puis les coder.
       Fait pour les niveaux 1 à 6 côté cours (« Règles du niveau N », 2026-11-15) ; codé jusqu'au niveau 4.
 - [x] Tests : un cas par exemple du cours (`tests/regles/`) ; partie de contrôle
@@ -170,6 +217,12 @@ confirme, reprend le coup du mentor ou annule.
       mains vont au flop entre bots serrés), et le niveau 3 ne se distingue pas du 2 (600 000 mains :
       −0,03 ± 0,05 BB/100). Niveau 4 contre 3 : +0,15 ± 0,07 BB/100 à 600 000 mains. Un niveau 4
       saboté (il paie toutes les mises) est détecté à t = −37.
+       Fait le 2026-11-15 (`tools/controle_bots.mjs`, partie 2) : 50 000 mains par niveau, mêmes
+       cartes et mêmes adversaires (rock, station, maniaque, rock, station) ; échec si le niveau N
+       gagne nettement moins que le N−1 (t ≤ −2). Résultat : niveau 2 +67, 3 +74, 4 +71, 5 +98,
+       6 +98 BB/100. Le 3 gagne plus que le 2 (t = +2,7), le 5 beaucoup plus que le 4 (t = +8,4) ;
+       le 4 ne fait pas mieux que le 3 (−2,5 ± 2,7) ; le 6 joue comme le 5 contre ces profils
+       marqués, comme prévu. Durée de la partie de contrôle : environ 1 min 45.
 
 ## Phase 6 — Option : commentaire rédigé par une IA
 

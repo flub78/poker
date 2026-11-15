@@ -25,9 +25,9 @@ const texte = (d) => d.raisons.map((x) => x.texte).join(' ');
 // Le CO (5) relance à 5, la BB (2) paie : flop, pot 11, la BB parle la première.
 const coVsBB = (holes, board, stack) => play(table(holes, board, stack), F, F, R(5), F, F, C);
 
-test('niveau 4 disponible pour les bots ; les niveaux 5 et 6 jouent comme le 4', () => {
-  assert.deepEqual(BOT_LEVELS, [2, 3, 4]);
-  assert.equal(playLevel(6), 4);
+test('niveaux 2 à 6 disponibles pour les bots', () => {
+  assert.deepEqual(BOT_LEVELS, [2, 3, 4, 5, 6]);
+  assert.equal(playLevel(7), 6);
   assert.equal(playLevel(1), 2);
 });
 

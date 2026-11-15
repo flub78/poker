@@ -6,12 +6,13 @@
 // Chaque décision (humain et bots) est jugée au moment où elle est jouée et rangée dans
 // game.decisions, pour l'évaluation de fin de partie (evaluation.js). Chaque main a sa graine :
 // replayHand() la redonne à l'identique (mêmes cartes, même bouton) ; une main rejouée ne compte
-// ni dans les gains ni dans l'évaluation.
+// ni dans les gains, ni dans l'évaluation, ni dans la lecture des joueurs (game.reads).
 import { newHand, act, legalActions } from './moteur/table.js';
 import { decider } from './bots.js';
 import { judge } from './mentor.js';
 import { costOf, judgeLevel, judgeStep } from './evaluation.js';
 import { positions } from './positions.js';
+import { createReads } from './lecture.js';
 import { rng, int } from '../js/cards.js';
 
 export const NAMES = ['Vous', 'Alix', 'Camille', 'Sacha', 'Dominique', 'Charlie'];
@@ -34,6 +35,7 @@ export function newGame({ botLevels = [2, 3, 2, 3, 2], humanLevel = 2, humanStep
     deals: [],                            // { no, seed, button, stacks, rebuys } de chaque main, pour la rejouer
     finished: [],                         // { no, replay, hand } des mains terminées
     decisions: [],
+    reads: createReads(6),                // statistiques de chaque joueur au fil des mains (lecture.js)
   };
 }
 
@@ -42,6 +44,7 @@ function deal(game, { no, seed, button, stacks, rebuys }, replay) {
   game.hand.no = no;
   game.hand.rebuys = rebuys;              // sièges recavés au début de cette main
   game.hand.replay = replay;
+  game.hand.reads = game.reads;           // ce que les bots savent des autres joueurs (niveau 5)
   return game.hand;
 }
 
@@ -86,6 +89,7 @@ export function play(game, action, meta = {}) {
     if (!hand.replay) {
       hand.result.net.forEach((x, i) => { game.totals[i] += x; });
       game.stacks = hand.seats.map((x) => x.stack);
+      game.reads.add(hand);
     }
   }
   return hand;

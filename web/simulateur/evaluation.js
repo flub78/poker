@@ -6,9 +6,10 @@
 //                      sous-niveau : étape de la grille, js/sous-niveaux.js) ;
 //   les bots         : les règles du niveau de référence (le plus haut disponible), pour montrer
 //                      ce qu'un niveau de plus apporte.
-import { BOT_LEVELS, playLevel } from './bots.js';
+import { BOT_LEVELS, playLevel, isProfil, PROFILS } from './bots.js';
 import { evCall } from '../niveau-3/odds.js';
 import { potTotal } from './positions.js';
+import { playerStats, profile } from './lecture.js';
 import { STEPS, FULL } from '../niveau-2/strategy.js';
 
 export const REFERENCE_LEVEL = Math.max(...BOT_LEVELS);
@@ -22,7 +23,7 @@ export const judgeRules = (player) => (player.human && player.level < 2 ? STEPS[
 // Coût d'un coup : { stake, ev }.
 //   stake : jetons engagés par le coup (pour un « se coucher » : le pot abandonné) ;
 //   ev    : espérance de gain perdue par rapport au coup conseillé, quand elle se calcule
-//           (suivre ou se coucher face à une mise, avec une équité connue : C3.6).
+//           (suivre ou se coucher face à une mise, avec une équité connue : C3.6, C5.1).
 export function costOf(hand, action, advice, legal) {
   const s = hand.seats[hand.toAct];
   const pot = potTotal(hand);
@@ -31,46 +32,19 @@ export function costOf(hand, action, advice, legal) {
       : action.type === 'fold' ? pot : 0;
   let ev = null;
   const f = advice.facts || {};
-  if (f.equity !== undefined && action.type !== advice.action.type
+  // Équité connue : celle d'un tirage (C3.2), ou la part de la range adverse battue à la river (C5.1).
+  const equity = f.equity ?? f.beaten;
+  if (equity !== undefined && action.type !== advice.action.type
     && ['call', 'fold'].includes(action.type) && ['call', 'fold'].includes(advice.action.type)) {
-    ev = Math.abs(evCall(f.equity, pot, legal.toCall));
+    ev = Math.abs(evCall(equity, pot, legal.toCall));
   }
   return { stake, ev };
 }
 
 // ---------- statistiques (C5.4) ----------
 
-// hands : mains terminées. Renvoie { hands, vpip, pfr, af } (pourcentages, AF en rapport ;
-// af = null sans aucun call ni mise après le flop, Infinity sans call).
-export function playerStats(hands, seat) {
-  let dealt = 0; let vpip = 0; let pfr = 0; let aggr = 0; let calls = 0;
-  for (const hand of hands) {
-    if (!hand.seats[seat]?.dealt) continue;
-    dealt++;
-    const mine = hand.history.filter((e) => e.seat === seat);
-    const pre = mine.filter((e) => e.street === 'preflop');
-    if (pre.some((e) => e.type === 'call' || e.type === 'raise')) vpip++;
-    if (pre.some((e) => e.type === 'raise')) pfr++;
-    for (const e of mine) {
-      if (e.street === 'preflop') continue;
-      if (e.type === 'raise') aggr++;
-      if (e.type === 'call') calls++;
-    }
-  }
-  const pct = (n) => (dealt ? (100 * n) / dealt : 0);
-  const af = calls ? aggr / calls : aggr ? Infinity : null;
-  return { hands: dealt, vpip: pct(vpip), pfr: pct(pfr), af };
-}
-
-// Profil selon les repères de C5.4 : serré VPIP < 25 %, large > 35 % ; passif AF < 1,5, agressif > 2,5.
-export function profile({ vpip, af }) {
-  const width = vpip < 25 ? 'serré' : vpip > 35 ? 'large' : null;
-  const style = af === null ? null : af < 1.5 ? 'passif' : af > 2.5 ? 'agressif' : null;
-  if (width && style) return `${width}-${style}`;
-  if (width) return `${width}, agressivité moyenne`;
-  if (style) return `${style}, nombre de mains moyen`;
-  return 'entre les profils';
-}
+// playerStats et profile : lecture.js (aussi utilisés pendant la partie par le niveau 5).
+export { playerStats, profile };
 
 export const afText = (af) => (af === null ? '—' : af === Infinity ? '∞' : String(Math.round(af * 10) / 10).replace('.', ','));
 export const pctText = (x) => `${String(Math.round(x)).replace('.', ',')} %`;
@@ -135,7 +109,8 @@ function comments(human, players, game) {
   }
   const bots = players.filter((p) => !p.human).map((p) => {
     const main = p.byRule[0] ? `, surtout ${p.byRule[0].code}` : '';
-    return `${p.name} (niveau ${p.level}) : ${p.counts.erreur} erreur${p.counts.erreur > 1 ? 's' : ''} sur ${p.decisions} décisions au regard des règles du niveau ${p.judgedAt}${main} ; profil ${p.profile}.`;
+    const who = isProfil(p.level) ? `${PROFILS[p.level].nom}, profil voulu ${PROFILS[p.level].profil}` : `niveau ${p.level}`;
+    return `${p.name} (${who}) : ${p.counts.erreur} erreur${p.counts.erreur > 1 ? 's' : ''} sur ${p.decisions} décisions au regard des règles du niveau ${p.judgedAt}${main} ; profil ${p.profile}.`;
   });
   return { you, bots };
 }

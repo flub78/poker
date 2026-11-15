@@ -49,6 +49,7 @@
 .sim-stack { display: flex; justify-content: center; gap: 8px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .sim-level { font-size: 0.75rem; opacity: 0.9; align-self: center; }
 .sim-last { font-size: 0.8rem; min-height: 1.25em; }
+.sim-read { font-size: 0.72rem; opacity: 0.85; }
 
 .sim-bet {
   position: absolute; padding: 1px 8px; border-radius: 999px; font-size: 0.8rem; font-weight: 700;
