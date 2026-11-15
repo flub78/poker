@@ -26,7 +26,8 @@ const report = (where, what) => problems.push(`${where} : ${what}`);
 // --- liens internes du cours (sans navigateur) ---
 const targets = new Set(['#cours', '#cours/imprimer', ...cours.pages.flatMap((p) => [`#cours/${p.id}`,
   ...p.sections.map((s) => `#cours/${p.id}/${s.id}`),
-  ...[...p.html.matchAll(/<tr id="([^"]+)"/g)].map(([, id]) => `#cours/${p.id}/${id}`)])]);   // lignes du glossaire
+  // lignes du glossaire, paragraphes à titre en gras (renvoi « Face à une relance » (C2.2))
+  ...[...p.html.matchAll(/<(?:tr|p) id="([^"]+)"/g)].map(([, id]) => `#cours/${p.id}/${id}`)])]);
 for (const p of cours.pages) {
   for (const [, href] of p.html.matchAll(/href="(#[^"]*)"/g)) {
     if (!targets.has(href)) report(`cours/${p.id}`, `lien interne sans cible ${href}`);

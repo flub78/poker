@@ -30,6 +30,9 @@ colorier (classe grille-mains : cases carrées, paires / assorties / dépareill�
 Le script remplace aussi ce que l'export ne sait pas rendre hors de Claude Docs :
 - les liens internes du doc (#<id de bloc>), résolus par le texte du lien (« C3.7 », ou le titre
   d'une grande partie) ;
+- les renvois écrits en texte : « C2.2 » devient un lien vers la section, et dans « Face à une
+  relance » (C2.2) le titre entre guillemets mène au paragraphe de C2.2 qui commence par ce titre
+  en gras (id <section>--<titre>) ;
 - la mention de l'auteur, les listes déroulantes (statut de la grille), la date.
 Les symboles ♥ ♦ sont colorés en rouge, ♠ ♣ en noir, toujours affichés en texte (jamais en émoji).
 
@@ -107,7 +110,7 @@ def image_size(path):
 def stairs(body, spec):
     """Remplace le tableau qui suit le titre `spec['titre']` par une figure en escalier."""
     m = None
-    for t in re.finditer(r"<p><strong>([^<]*)</strong></p>\s*<div class=\"table-wrap\"><table>.*?<tbody>(.*?)</tbody></table></div>",
+    for t in re.finditer(r"<p(?: [^>]*)?><strong>([^<]*)</strong></p>\s*<div class=\"table-wrap\"><table>.*?<tbody>(.*?)</tbody></table></div>",
                          body, re.S):
         if plain(t.group(1)) == spec["titre"]:
             m = t
@@ -225,6 +228,73 @@ def link_glossary(body, terms, page_id, spec, glossary=False):
     return "".join(out)
 
 
+def lead_anchors(body, section_ids):
+    """Paragraphes qui commencent par un titre en gras (« <strong>Face à une relance.</strong> … ») :
+    chacun reçoit un id <section>--<titre>, pour qu'un renvoi « Face à une relance » (C2.2) y mène.
+    Renvoie (html, {(id de section, slug du titre): id})."""
+    anchors, current = {}, None
+    out = []
+    for part in re.split(r'(<h3 id="[^"]+">)', body):
+        m = re.match(r'<h3 id="([^"]+)">', part)
+        if m:
+            current = m.group(1)
+            out.append(part)
+            continue
+
+        def para(m):
+            if current is None or current not in section_ids:
+                return m.group(0)
+            key = slug(plain(m.group(1)).rstrip(" .:"))
+            aid = f"{current}--{key}"
+            anchors[(current, key)] = aid
+            return f'<p id="{aid}"><strong>{m.group(1)}</strong>'
+        out.append(re.sub(r"<p><strong>(.*?)</strong>", para, part, flags=re.S))
+    return "".join(out), anchors
+
+
+CODE_RX = re.compile(r"(?:«\s*(?P<q>[^«»<]+?)\s*»(?P<sep>\s*\(\s*|\s*,\s*))?(?<![\w.])(?P<c>C\d\.\d)(?![\w.]\w)")
+
+
+def link_codes(body, codes, anchors, page_title):
+    """Renvois en texte vers une section (« C2.2 », « Face à une relance » (C2.2)) → liens.
+    Le code mène à la section ; un titre entre guillemets qui précède le code mène au paragraphe
+    de cette section qui commence par ce titre en gras. Jamais dans un titre, une tête de tableau
+    ou un lien existant."""
+    out, skip = [], 0
+    for tok in re.split(r"(<[^>]+>)", body):
+        if tok.startswith("<"):
+            tag = re.match(r"</?(\w+)", tok)
+            if tag and tag.group(1).lower() in ("a", "h1", "h2", "h3", "h4", "th"):
+                skip += -1 if tok.startswith("</") else 1
+            out.append(tok)
+            continue
+        if skip or "C" not in tok:
+            out.append(tok)
+            continue
+        text = html.unescape(tok)
+        pos, parts = 0, []
+        for m in CODE_RX.finditer(text):
+            code = m.group("c")
+            if code not in codes:
+                sys.exit(f"Erreur : renvoi « {code} » ({page_title}) sans section correspondante.")
+            href = codes[code]
+            parts.append(html.escape(text[pos:m.start()], quote=False))
+            if m.group("q"):
+                quote = f"« {m.group('q')} »"
+                aid = anchors.get((href.rsplit("/", 1)[1], slug(m.group("q"))))
+                if aid:
+                    page = href.split("/")[1]
+                    parts.append(f'<a href="#cours/{page}/{aid}">{html.escape(quote, quote=False)}</a>')
+                else:                 # citation (« des As forts »), pas un titre : texte inchangé
+                    parts.append(html.escape(text[m.start():m.start("sep")], quote=False))
+                parts.append(html.escape(m.group("sep"), quote=False))
+            parts.append(f'<a href="{href}">{code}</a>')
+            pos = m.end()
+        parts.append(html.escape(text[pos:], quote=False))
+        out.append("".join(parts))
+    return "".join(out)
+
+
 def main(src, config_path):
     cfg = json.loads(Path(config_path).read_text(encoding="utf-8"))
     out_dir = ROOT / cfg["sortie"]
@@ -273,6 +343,14 @@ def main(src, config_path):
         for s in p["sections"]:
             index[s["title"].split(" ")[0]] = index[s["title"]] = f"#cours/{p['id']}/{s['id']}"
 
+    # renvois en texte (« C2.2 ») : le code de chaque section, et les paragraphes à titre en gras
+    codes = {s["title"].split(" ")[0]: f"#cours/{p['id']}/{s['id']}"
+             for p in pages for s in p["sections"] if re.fullmatch(r"C\d\.\d", s["title"].split(" ")[0])}
+    anchors = {}
+    for p in pages:
+        p["html"], found = lead_anchors(p["html"], {codes[c].rsplit("/", 1)[1] for c in codes})
+        anchors.update(found)
+
     gspec = cfg.get("glossaire")
     terms = []
     if gspec:
@@ -294,6 +372,7 @@ def main(src, config_path):
                 return f'<a href="{target}">{text}</a>'
             return f'<a href="{href}" target="_blank" rel="noopener">{text}</a>'
         body = re.sub(r"<a ([^>]*)>(.*?)</a>", link, body, flags=re.S)
+        body = link_codes(body, codes, anchors, p["title"])
 
         def img(m):
             blob, alt = m.group(1), m.group(2)

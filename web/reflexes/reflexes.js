@@ -8,7 +8,7 @@
 // sous-niveau choisi et des précédents (js/sous-niveaux.js). Une suite par niveau, enregistrée dans
 // le navigateur (stockage.js) : changer de sous-niveau garde la progression de chaque question.
 import { h, clear } from '../js/dom.js';
-import { competenceHref } from '../js/cours.js';
+import { competenceHref, competenceTitle } from '../js/cours.js';
 import { readBank, verdict, expected, legacyIds } from './banque.js';
 import { questionsFor } from '../js/sous-niveaux.js';
 import { DEFAULTS, planSession, startSession, recordAnswer, createRun, resumable, summary, boxesDue, renameItems } from './leitner.js';
@@ -38,15 +38,25 @@ function nextPlan(suite, questions) {
   return { suite, plan: null };            // tout est maîtrisé
 }
 
-// « Cours : C1.3. » à la fin de l'explication → lien vers la section du cours.
+// « Cours : C1.3. » à la fin de l'explication → lien vers la section du cours qui explique la
+// réponse, avec son titre ; un autre code cité dans l'explication (« voir C3.3 ») devient un lien aussi.
 function explanation(text) {
   const m = /\s*Cours\s*:\s*(C\d+\.\d+)\.?\s*$/.exec(text || '');
   const body = m ? text.slice(0, m.index) : text;
   const href = m ? competenceHref(m[1]) : null;
+  const title = m ? competenceTitle(m[1]) : null;
   return [
-    body ? h('p', {}, body) : null,
-    m ? h('p', { class: 'meta' }, 'Revoir dans le cours : ', href ? h('a', { href }, m[1]) : m[1]) : null,
+    body ? h('p', {}, linkCodes(body)) : null,
+    m ? h('p', { class: 'meta' }, 'Revoir dans le cours : ',
+      href ? h('a', { href }, title ? `${m[1]} · ${title}` : m[1]) : m[1]) : null,
   ];
+}
+
+function linkCodes(text) {
+  return text.split(/(\bC\d+\.\d+\b)/).map((part, i) => {
+    const href = i % 2 ? competenceHref(part) : null;
+    return href ? h('a', { href }, part) : part;
+  });
 }
 
 function boxesView(sum) {

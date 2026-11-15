@@ -41,6 +41,15 @@ export function competenceHref(code) {
   return null;
 }
 
+// Titre de la section d'une compétence, sans son code : 'C2.2' → 'Les mains de départ' (null sans cours).
+export function competenceTitle(code) {
+  for (const p of content?.pages || []) {
+    const s = p.sections.find((x) => x.title.startsWith(`${code} `));
+    if (s) return s.title.slice(code.length + 1);
+  }
+  return null;
+}
+
 // Objectif et compétences d'un niveau, tirés du cours (null si le cours n'est pas chargé).
 export function levelInfo(n) {
   const page = content?.pages.find((p) => p.id === `niveau-${n}`);
