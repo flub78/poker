@@ -22,7 +22,7 @@ Trois modes d'aide : **sans aide**, **Indice** (le coup que jouerait un bot de s
 | D6 | Évaluation | Porte sur les décisions : écarts aux règles, perte d'espérance estimée. Les jetons sont affichés, pas notés. |
 | D7 | Indice et mentor | Le même calcul : `decider(situation, niveau)` renvoie `{ action, montant, raisons[] }`. |
 | D8 | Règles | Une règle dont le bot a besoin et que le cours ne donne pas est d'abord écrite dans le cours (comme pour S-014), puis codée. |
-| D9 | Tapis | Chaque main commence à 100 grosses blinds pour tous (pas d'élimination) ; blinds 1/2. |
+| D9 | Tapis | Par défaut, chaque main commence à 100 grosses blinds pour tous (pas d'élimination) ; blinds 1/2. Réglage « Tapis conservés » : chacun garde son tapis d'une main à l'autre, un joueur à zéro se recave de 100 BB à la main suivante. |
 | D10 | Reproductibilité | Toute donne vient d'un générateur aléatoire à **graine** : une main se rejoue à l'identique. |
 
 ## Architecture
@@ -92,6 +92,7 @@ Le code renvoie au cours grâce au lien déjà en place (S-005).
       aide (Indice ou sans aide), vitesse, cartes des bots visibles ou non. Enregistrés dans le navigateur.
 - [x] Réglages restants : nombre de mains d'une partie et graine (faits avec la phase 4).
 - [x] Partie (`partie.js`) : bouton qui tourne, 100 BB à chaque main, gains cumulés.
+- [x] Réglage « Tapis » : 100 BB à chaque main ou tapis conservés avec recave à zéro (D9).
 - [x] Vue de la table : 6 sièges, cartes (`web/cartes/`), pot, mises, bouton dealer, joueur actif.
 - [x] Boutons de l'humain (raccourcis F, C, R, I, Entrée) : seules les actions légales sont actives ; montant de relance avec
       raccourcis (1/3, 1/2, 2/3 du pot, pot, tapis).
@@ -154,13 +155,21 @@ confirme, reprend le coup du mentor ou annule.
 
 ## Phase 5 — Bots des niveaux 4 à 6
 
-- [ ] Niveau 4 : raison de miser (valeur, bluff ou aucune), texture du flop, taille de c-bet, SPR.
+- [x] Niveau 4 : raison de miser (valeur, bluff ou aucune), texture du flop, taille de c-bet, SPR
+      (`regles/postflop4.js`, d'après les « Règles du niveau 4 » du cours ; 2026-11-15). Partie de
+      contrôle : voir la ligne Tests.
 - [ ] Niveau 5 : range adverse estimée d'après les actions, adaptation au profil observé des
       autres bots.
 - [ ] Niveau 6 : défense minimale (MDF), part de bluffs équilibrée, exploitation des profils.
 - [ ] Pour chaque niveau : lister les règles manquantes dans le cours, les y écrire (D8), puis les coder.
-- [ ] Tests : un cas par exemple du cours ; partie de contrôle où les bots du niveau N battent
-      ceux du niveau N−1 sur 10 000 mains (sinon une règle est mal codée).
+      Fait pour les niveaux 1 à 6 côté cours (« Règles du niveau N », 2026-11-15) ; codé jusqu'au niveau 4.
+- [x] Tests : un cas par exemple du cours (`tests/regles/`) ; partie de contrôle
+      `tools/controle_bots.mjs`, lancée par `bin/tester.sh` (2026-11-15). Méthode duplicate (mêmes cartes,
+      places inversées), 200 000 mains par placement : échec si un niveau perd nettement contre le
+      précédent (t ≤ −2). « N bat N−1 » ne peut pas être exigé : 10 000 mains ne mesurent rien (9 % des
+      mains vont au flop entre bots serrés), et le niveau 3 ne se distingue pas du 2 (600 000 mains :
+      −0,03 ± 0,05 BB/100). Niveau 4 contre 3 : +0,15 ± 0,07 BB/100 à 600 000 mains. Un niveau 4
+      saboté (il paie toutes les mises) est détecté à t = −37.
 
 ## Phase 6 — Option : commentaire rédigé par une IA
 

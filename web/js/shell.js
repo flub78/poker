@@ -22,6 +22,7 @@ import { CONFIG } from './config.js';
 import { createStore } from './storage.js';
 import { requirements, levelProgress } from './validation.js';
 import { reviewLinks, levelCompetences, competenceNames } from './cours.js';
+import { subLevelsOf, currentSubLevel, setSubLevel, subLevelLabel } from './sous-niveaux.js';
 
 const STATE_LABEL = {
   none: 'Non tenté',
@@ -86,10 +87,24 @@ export function startApp({ level, storageKey, tests, practices, manual = [], ext
     clear(main);
     setHash(`${base}/reflexes`);
     const body = h('div', {});
-    main.append(tabs('reflexes'), body);
+    main.append(...[tabs('reflexes'), subLevelBar(reflexesView), body].filter(Boolean));
     import('../reflexes/reflexes.js')
-      .then((m) => { if (body.isConnected) m.renderReflexes(body, level); })
+      .then((m) => { if (body.isConnected) m.renderReflexes(body, level, currentSubLevel(level)?.step ?? null); })
       .catch((err) => body.append(h('p', { class: 'form-message' }, `Impossible de charger les Réflexes : ${err.message}`)));
+  }
+
+  // Choix du sous-niveau (js/sous-niveaux.js), pour un niveau découpé en étapes : en tête des
+  // exercices et des Réflexes ; le simulateur lit le même choix. refresh : vue à redessiner.
+  function subLevelBar(refresh) {
+    const list = subLevelsOf(level);
+    if (!list) return null;
+    const cur = currentSubLevel(level);
+    return h('section', { class: 'sublevel-bar' },
+      h('label', { class: 'setting' }, 'Sous-niveau',
+        h('select', { onchange: (e) => { setSubLevel(level, e.target.value); refresh(); } },
+          list.map((s) => h('option', { value: s.code, selected: s.code === cur.code }, subLevelLabel(s))))),
+      h('p', { class: 'meta' }, `Exercices, Réflexes et simulateur suivent la stratégie de l'étape ${cur.step} du cours `,
+        `(« Pour retenir la grille »), en reprenant les étapes précédentes. Passez à la suivante après 19 sur 20 à « Quelle décision ? ».`));
   }
 
   // Bouton vers le simulateur (index.html#simulateur), en tête des onglets Tests et Exercices.
@@ -170,6 +185,7 @@ export function startApp({ level, storageKey, tests, practices, manual = [], ext
     setHash(`${base}/exercices`);
     main.append(
       tabs('exercices'),
+      ...[subLevelBar(exercisesHome)].filter(Boolean),
       h('section', { class: 'intro' },
         h('p', {}, 'Entraînez-vous autant que vous voulez avant de passer les tests. ',
           'La correction est immédiate et ', h('strong', {}, 'rien n\'est enregistré'), '.')),
@@ -204,13 +220,15 @@ export function startApp({ level, storageKey, tests, practices, manual = [], ext
         h('h2', {}, px.title),
         h('p', { class: 'meta' }, `${competenceNames(px.competences) || `Compétences ${px.competences}`} · ${px.summary}`),
         reviewLinks(px.competences)),
+      ...[subLevelBar(() => practice(px, settings))].filter(Boolean),
       h('div', { class: 'settings' }, px.settings.map((s) => h('label', { class: 'setting' }, s.label,
         h('select', { onchange: (e) => practice(px, { ...settings, [s.id]: e.target.value }) },
           s.options.map((o) => h('option', { value: o.value, selected: settings[s.id] === o.value }, o.label)))))),
       counter,
       body,
     );
-    const instance = px.create(rng(newSeed()), settings, (ok) => {
+    const sub = currentSubLevel(level);
+    const instance = px.create(rng(newSeed()), sub ? { ...settings, step: sub.step } : settings, (ok) => {
       done++;
       if (ok) good++;
       update();

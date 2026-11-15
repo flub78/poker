@@ -6,7 +6,7 @@ Méthode progressive d'apprentissage du Texas Hold'em No-Limit en 6 niveaux, du 
 
 | Fichier | Description |
 | --- | --- |
-| [`doc/initiation-poker-tutoriel.pdf`](doc/initiation-poker-tutoriel.pdf) | Le tutoriel complet, imprimé depuis le cours de l'application : règles, stratégie, probabilités, exercices, tests de passage, ressources, glossaire, avec table des matières (37 pages) |
+| [`doc/initiation-poker-tutoriel.pdf`](doc/initiation-poker-tutoriel.pdf) | Le tutoriel complet, imprimé depuis le cours de l'application : règles, stratégie, probabilités, exercices, tests de passage, ressources, glossaire, avec table des matières (43 pages) |
 | [`doc/carnet-progression-poker.pdf`](doc/carnet-progression-poker.pdf) | Carnet de progression individuel, formulaire PDF à remplir (10 pages) |
 | [`doc/suggestions.md`](doc/suggestions.md) | Suggestions d'amélioration du projet, avec bénéfices et coûts, classées par rapport bénéfice/coût |
 | [`strategie_suggestions.md`](strategie_suggestions.md) | Comment les suggestions sont produites : consignes, commandes `/suggestions` et `/audit-suggestions` (dans `.claude/skills/`), revues à créer |
@@ -24,8 +24,9 @@ Méthode progressive d'apprentissage du Texas Hold'em No-Limit en 6 niveaux, du 
 | `tools/cours_html.py`, `tools/cours_config.json` | Génèrent `web/cours/` (le cours de l'application) à partir de l'export HTML du Claude Doc |
 | `tools/decoder_export.py` | Décode un export de Claude Doc enregistré par Claude Code |
 | `tools/pdf_cours.mjs` | Fabrique le PDF du tutoriel en imprimant le cours (Chrome headless) : sauts de page, table des matières numérotée et cliquable, signets |
-| [`bin/tester.sh`](bin/tester.sh) | Lance tous les tests : tests unitaires (`tests/`, `node --test`) puis test de fumée ; `--rapide` pour les tests unitaires seuls |
+| [`bin/tester.sh`](bin/tester.sh) | Lance tous les tests : tests unitaires (`tests/`, `node --test`), partie de contrôle des bots, puis test de fumée ; `--rapide` pour les tests unitaires seuls |
 | `tests/` | Tests unitaires des modules JavaScript purs (sans dépendance) |
+| `tools/controle_bots.mjs` | Partie de contrôle du simulateur : chaque niveau de bot contre le précédent, mêmes cartes places inversées ; échec si un niveau perd nettement |
 | `tools/verifier_web.mjs` | Test de fumée de l'application : toutes les pages, thèmes clair et sombre ; erreurs, fichiers manquants, contraste |
 | `tools/chrome.mjs` | Serveur local et Chrome headless, communs aux deux scripts précédents (Node 22+, sans dépendance) |
 | [`bin/deploy.sh`](bin/deploy.sh) | Déploie `web/` avec rsync, numéro de version des fichiers tiré du commit |

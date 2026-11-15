@@ -1,4 +1,4 @@
-// Décisions après le flop, niveaux 2 et 3.
+// Décisions après le flop, niveaux 2 et 3 (niveau 4 : postflop4.js).
 //
 // Niveau 2 — le schéma de C2.3 « Après le flop, en attendant le niveau 4 » :
 //   personne n'a misé : top paire ou mieux → miser la moitié du pot ; sinon checker ;
@@ -9,11 +9,13 @@
 import { handClass, outs } from './force.js';
 import { ruleOf24 } from '../../niveau-3/odds.js';
 import { bbText, potTotal } from '../positions.js';
+import { postflop4Decision } from './postflop4.js';
 
 const r = (code, texte) => ({ code, texte });
 const pctText = (x) => `${String(Math.round(x)).replace('.', ',')} %`;
 
 export function postflopDecision(hand, seat, level, legal) {
+  if (level >= 4) return postflop4Decision(hand, seat, legal);
   const s = hand.seats[seat];
   const { cls, text } = handClass(s.hole, hand.board);
   const pot = potTotal(hand);

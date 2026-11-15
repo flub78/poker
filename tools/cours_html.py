@@ -14,9 +14,20 @@ de configuration JSON (par défaut tools/cours_config.json) :
     escaliers       tableaux à dessiner en escalier : { titre, prefixe, legende }. Le tableau
                     suit un paragraphe en gras égal à `titre` ; colonnes : étape, objectif,
                     durée, test pour passer à l'étape suivante.
+    glossaire       liens vers le glossaire : { page, pages_sans_liens, ignorer, formes, exclure }.
+                    Chaque ligne du tableau du glossaire reçoit un id (g-<terme>). Dans chaque
+                    section (h3) des autres pages, la première occurrence de chaque terme devient
+                    un lien vers sa ligne (jamais dans un titre, une tête de tableau ou un lien).
+                    Forme de base : le terme avant sa parenthèse, pluriel en s/x accepté ;
+                    `formes` ajoute synonymes et conjugaisons, `exclure` liste les expressions
+                    où un mot du glossaire a un autre sens (« même couleur », « ce tableau »).
+
+Un tableau dont la ligne de tête est « (vide) A K Q J T 9 … 2 » devient une grille des mains à
+colorier (classe grille-mains : cases carrées, paires / assorties / dépareillées repérées).
 
 Le script remplace aussi ce que l'export ne sait pas rendre hors de Claude Docs :
-- les liens internes du doc (#<id de bloc>), résolus par le texte du lien (« C3.7 ») ;
+- les liens internes du doc (#<id de bloc>), résolus par le texte du lien (« C3.7 », ou le titre
+  d'une grande partie) ;
 - la mention de l'auteur, les listes déroulantes (statut de la grille), la date.
 Les symboles ♥ ♦ sont colorés en rouge, ♠ ♣ en noir, toujours affichés en texte (jamais en émoji).
 
@@ -54,6 +65,27 @@ def color_suits(fragment):
         text = re.sub(r"([♠♣])︎?", "<span class=\"suit black\">\\1︎</span>", text)
         return ">" + text + "<"
     return re.sub(r">([^<]+)<", repl, fragment)
+
+
+RANKS = "AKQJT98765432"
+
+
+def hand_grids(body):
+    """Tableau 13 × 13 des mains (en-têtes A … 2) : grille à colorier, cases carrées.
+    Ligne de tête et première colonne en <th>, chaque case marquée paire / assortie / dépareillée."""
+    head = "<thead><tr><th></th>" + "".join(f"<th>{r}</th>" for r in RANKS) + "</tr></thead>"
+
+    def cell(m):
+        text = m.group(1)
+        kind = "paire" if len(text) == 2 and text[0] == text[1] else "assortie" if text.endswith("s") else "depareillee"
+        return f'<td class="{kind}">{text}</td>'
+
+    def grid(m):
+        rows = re.sub(r"<tr><td><strong>([A-Z0-9])</strong></td>", r'<tr><th scope="row">\1</th>', m.group(1))
+        rows = re.sub(r"<td>([AKQJT2-9]{2}s?)</td>", cell, rows)
+        cols = "".join(f'<th scope="col">{r}</th>' for r in RANKS)
+        return f'<table class="grille-mains"><thead><tr><th></th>{cols}</tr></thead><tbody>{rows}</tbody></table>'
+    return re.sub(r"<table>" + re.escape(head) + r"<tbody>(.*?)</tbody></table>", grid, body, flags=re.S)
 
 
 def image_size(path):
@@ -99,6 +131,86 @@ def stairs(body, spec):
     return body[:m.start()] + figure + body[m.end():], True
 
 
+def glossary_terms(page_html, spec):
+    """Lit le tableau du glossaire : pose un id sur chaque ligne (g-<terme>) et renvoie
+    (html avec ids, [(id, [formes])]). La forme de base est le terme avant sa parenthèse ;
+    `formes` en ajoute (synonymes, conjugaisons, pluriels irréguliers)."""
+    extra = dict(spec.get("formes", {}))
+    ignored = set(spec.get("ignorer", []))
+    terms = []
+
+    def row(m):
+        cells = re.findall(r"<t[dh][^>]*>(.*?)</t[dh]>", m.group(2), re.S)
+        if not cells or m.group(2).lstrip().startswith("<th"):
+            return m.group(0)
+        term = plain(cells[0])
+        gid = "g-" + slug(term)
+        if term not in ignored:
+            base = re.split(r" \(", term)[0]
+            forms = ([] if " / " in base else [base]) + extra.pop(term, [])
+            terms.append((gid, forms))
+        return f'<tr id="{gid}"{m.group(1)}>{m.group(2)}</tr>'
+    page_html = re.sub(r"<tr( [^>]*)?>(.*?)</tr>", row, page_html, flags=re.S)
+    if extra:
+        sys.exit(f"Erreur : glossaire, « formes » pour des termes absents du tableau : {', '.join(extra)}")
+    return page_html, terms
+
+
+def form_pattern(form):
+    """Une forme → expression régulière : espaces souples, pluriel en s/x facultatif.
+    Les sigles (tout en majuscules) respectent la casse, le reste non."""
+    words = [re.escape(w) for w in form.replace("’", "'").split()]
+    pat = r"[\s ]+".join(words).replace("'", "['’]")
+    if not form[-1] in "sx" and form[-1].isalpha():
+        pat += "[sx]?"
+    if form == form.upper() and any(c.isalpha() for c in form):
+        return f"(?-i:{pat})"
+    return pat
+
+
+def link_glossary(body, terms, page_id, spec):
+    """Remplace la première occurrence de chaque terme du glossaire, dans chaque section (h3),
+    par un lien vers sa ligne. Jamais dans un titre, un lien existant ou une expression exclue."""
+    groups = []
+    for i, (gid, forms) in enumerate(terms):
+        for f in forms:
+            groups.append((len(f), f"(?P<t{i}_{len(groups)}>{form_pattern(f)})"))
+    groups.sort(key=lambda g: -g[0])
+    W = r"[^\W_]"   # lettre ou chiffre (accents compris)
+    rx = re.compile(rf"(?<!{W})(?:{'|'.join(g for _, g in groups)})(?!{W}|-{W})", re.I)
+    excl = [form_pattern(e).removesuffix("[sx]?") for e in spec.get("exclure", [])]
+    excl_rx = re.compile("|".join(excl), re.I) if excl else None
+
+    out, seen, skip = [], set(), 0
+    for tok in re.split(r"(<[^>]+>)", body):
+        if tok.startswith("<"):
+            tag = re.match(r"</?(\w+)", tok)
+            name = tag.group(1).lower() if tag else ""
+            if name in ("a", "h1", "h2", "h3", "h4", "th"):
+                skip += -1 if tok.startswith("</") else 1
+            if name == "h3" and not tok.startswith("</"):
+                seen = set()          # nouvelle section
+            out.append(tok)
+            continue
+        if skip or not tok.strip():
+            out.append(tok)
+            continue
+        text = html.unescape(tok)
+        blocked = [m.span() for m in excl_rx.finditer(text)] if excl_rx else []
+        pos, parts = 0, []
+        for m in rx.finditer(text):
+            gid = terms[int(m.lastgroup[1:].split("_")[0])][0]
+            if gid in seen or any(a < m.end() and m.start() < b for a, b in blocked):
+                continue
+            seen.add(gid)
+            parts += [html.escape(text[pos:m.start()], quote=False),
+                      f'<a class="gl" href="#cours/{page_id}/{gid}">{html.escape(m.group(0), quote=False)}</a>']
+            pos = m.end()
+        parts.append(html.escape(text[pos:], quote=False))
+        out.append("".join(parts))
+    return "".join(out)
+
+
 def main(src, config_path):
     cfg = json.loads(Path(config_path).read_text(encoding="utf-8"))
     out_dir = ROOT / cfg["sortie"]
@@ -140,10 +252,18 @@ def main(src, config_path):
                       "annex": bool(spec.get("annexe")), "sections": subs, "html": body})
 
     # index des sections, pour résoudre les liens internes par leur texte (« C3.7 »)
+    # (un lien peut aussi viser une grande partie par son titre : « Grille des mains à colorier »)
     index = {}
     for p in pages:
+        index[plain(p["title"])] = f"#cours/{p['id']}"
         for s in p["sections"]:
             index[s["title"].split(" ")[0]] = index[s["title"]] = f"#cours/{p['id']}/{s['id']}"
+
+    gspec = cfg.get("glossaire")
+    terms = []
+    if gspec:
+        gpage = next(p for p in pages if p["id"] == gspec["page"])
+        gpage["html"], terms = glossary_terms(gpage["html"], gspec)
 
     used_blobs = set()
     stairs_done = set()
@@ -178,11 +298,15 @@ def main(src, config_path):
             body = re.sub(r'<figure data-embed="[^"]*">.*?</figure>', "", body, flags=re.S)
         body = re.sub(r'<span data-atom="enum"[^>]*>(.*?)</span>', r'<span class="chip">\1</span>', body)
         body = re.sub(r'<span data-atom="mention"[^>]*>.*?</span>', author, body)
-        body = body.replace("<table>", '<div class="table-wrap"><table>').replace("</table>", "</table></div>")
+        body = hand_grids(body)
+        body = re.sub(r"<table( [^>]*)?>", r'<div class="table-wrap"><table\1>', body)
+        body = body.replace("</table>", "</table></div>")
         for spec in cfg.get("escaliers", []):
             body, done = stairs(body, spec)
             if done:
                 stairs_done.add(spec["titre"])
+        if terms and p["id"] not in gspec.get("pages_sans_liens", []) + [gspec["page"]]:
+            body = link_glossary(body, terms, gspec["page"], gspec)
         p["html"] = color_suits(body).strip()
 
     for spec in cfg.get("escaliers", []):

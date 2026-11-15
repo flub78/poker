@@ -1,4 +1,6 @@
-// Une partie : suite de mains à 6, le bouton tourne, chaque main repart de 100 BB (décision D9).
+// Une partie : suite de mains à 6, le bouton tourne. Tapis (décision D9) : par défaut, chaque main
+// repart de 100 BB ; avec keepStacks, chacun garde son tapis d'une main à l'autre, et un joueur
+// à zéro se recave de 100 BB au début de la main suivante (personne n'est éliminé).
 // Le siège 0 est l'humain (en bas de l'écran) ; les sièges suivent le sens du jeu.
 //
 // Chaque décision (humain et bots) est jugée au moment où elle est jouée et rangée dans
@@ -8,7 +10,7 @@
 import { newHand, act, legalActions } from './moteur/table.js';
 import { decider } from './bots.js';
 import { judge } from './mentor.js';
-import { costOf, judgeLevel } from './evaluation.js';
+import { costOf, judgeLevel, judgeStep } from './evaluation.js';
 import { positions } from './positions.js';
 import { rng, int } from '../js/cards.js';
 
@@ -17,23 +19,28 @@ export const HUMAN = 0;
 
 // botLevels : niveaux des 5 bots (sièges 1 à 5). seed : graine de la partie (au hasard si absente).
 // maxHands : nombre de mains de la partie (0 : sans limite).
-export function newGame({ botLevels = [2, 3, 2, 3, 2], humanLevel = 2, seed = null, maxHands = 0, bb = 2, stackBB = 100 } = {}) {
+// humanStep : sous-niveau 2.N de l'humain (étape N de la grille) quand il joue au niveau 2 ; null sinon.
+// keepStacks : tapis conservés d'une main à l'autre, recave à zéro (false : 100 BB à chaque main).
+export function newGame({ botLevels = [2, 3, 2, 3, 2], humanLevel = 2, humanStep = null, seed = null, maxHands = 0, bb = 2, stackBB = 100, keepStacks = false } = {}) {
   const s = seed ?? Math.floor(Math.random() * 2 ** 31);
   const rand = rng(s);
   return {
-    seed: s, rand, bb, stack: stackBB * bb, humanLevel, maxHands,
-    players: NAMES.map((name, i) => ({ name, human: i === HUMAN, level: i === HUMAN ? humanLevel : botLevels[i - 1] })),
+    seed: s, rand, bb, stack: stackBB * bb, humanLevel, maxHands, keepStacks,
+    stacks: Array(6).fill(stackBB * bb), // tapis en fin de dernière main jouée (keepStacks)
+    rebuys: Array(6).fill(0),             // nombre de recaves de chaque joueur
+    players: NAMES.map((name, i) => ({ name, human: i === HUMAN, level: i === HUMAN ? humanLevel : botLevels[i - 1], step: i === HUMAN ? humanStep : null })),
     button: int(0, 5, rand) - 1,          // le premier startHand avance le bouton d'un siège
     handNo: 0, hand: null, totals: Array(6).fill(0),
-    deals: [],                            // { no, seed, button } de chaque main, pour la rejouer
+    deals: [],                            // { no, seed, button, stacks, rebuys } de chaque main, pour la rejouer
     finished: [],                         // { no, replay, hand } des mains terminées
     decisions: [],
   };
 }
 
-function deal(game, { no, seed, button }, replay) {
-  game.hand = newHand({ stacks: game.players.map(() => game.stack), button, sb: game.bb / 2, bb: game.bb, rand: rng(seed) });
+function deal(game, { no, seed, button, stacks, rebuys }, replay) {
+  game.hand = newHand({ stacks: stacks.slice(), button, sb: game.bb / 2, bb: game.bb, rand: rng(seed) });
   game.hand.no = no;
+  game.hand.rebuys = rebuys;              // sièges recavés au début de cette main
   game.hand.replay = replay;
   return game.hand;
 }
@@ -41,7 +48,10 @@ function deal(game, { no, seed, button }, replay) {
 export function startHand(game) {
   game.button = (game.button + 1) % game.players.length;
   game.handNo++;
-  const d = { no: game.handNo, seed: Math.floor(game.rand() * 2 ** 31), button: game.button };
+  const rebuys = game.keepStacks ? game.stacks.flatMap((x, i) => (x > 0 ? [] : [i])) : [];
+  rebuys.forEach((i) => { game.rebuys[i]++; });
+  const stacks = game.keepStacks ? game.stacks.map((x) => (x > 0 ? x : game.stack)) : game.players.map(() => game.stack);
+  const d = { no: game.handNo, seed: Math.floor(game.rand() * 2 ** 31), button: game.button, stacks, rebuys };
   game.deals.push(d);
   return deal(game, d, false);
 }
@@ -73,7 +83,10 @@ export function play(game, action, meta = {}) {
   const hand = game.hand;
   if (hand.done) {
     game.finished.push({ no: hand.no, replay: hand.replay, hand });
-    if (!hand.replay) hand.result.net.forEach((x, i) => { game.totals[i] += x; });
+    if (!hand.replay) {
+      hand.result.net.forEach((x, i) => { game.totals[i] += x; });
+      game.stacks = hand.seats.map((x) => x.stack);
+    }
   }
   return hand;
 }
@@ -82,7 +95,7 @@ function record(game, action, meta) {
   const hand = game.hand;
   const seat = hand.toAct;
   const legal = legalActions(hand);
-  const advice = decider(hand, seat, judgeLevel(game.players[seat]));
+  const advice = decider(hand, seat, judgeLevel(game.players[seat]), judgeStep(game.players[seat]));
   const j = judge(hand, action, advice, legal);
   game.decisions.push({
     hand: hand.no, replay: hand.replay, seat, street: hand.street, pos: positions(hand)[seat],

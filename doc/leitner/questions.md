@@ -23,6 +23,20 @@ image à lire, une décision. Pas de liste à réciter.
   « bandeau » est un court texte affiché sur l'image (position, action adverse, mise, rue).
   Vide : question sans image.
 - **Thème** = le niveau ; la colonne **Section** renvoie au cours.
+- **Sous-niveau** (niveau 2 seulement) : l'étape de « Pour retenir la grille » (C2.2) où la question
+  entre ; le thème exporté devient « Niveau 2.N — nom » (table ci-dessous). Les sous-niveaux sont
+  cumulatifs : au sous-niveau 2.3, l'application pose les questions de 2.0 à 2.3 (`web/js/sous-niveaux.js`).
+  Une question n'entre qu'à une étape où sa réponse est déjà celle de la grille complète (vérifié
+  avec `decide` de `niveau-2/strategy.js`), pour qu'elle reste juste aux étapes suivantes.
+
+| Sous-niveau | Nom |
+|---|---|
+| 2.0 | Le filet |
+| 2.1 | Le bouton |
+| 2.2 | Paires et As |
+| 2.3 | Le reste du CO |
+| 2.4 | Suivre une relance |
+| 2.5 | Grille complète |
 - **ID** = la `reference` de la question dans mentor : stable, jamais montrée à l'étudiant ; ne pas
   la changer (mentor met à jour la question, poker garde la progression).
 - **QCM** : les choix s'affichent dans l'ordre des crochets (colonne `ordre`, sans mélange).
@@ -124,89 +138,118 @@ image à lire, une décision. Pas de liste à réciter.
 
 ### Position (C2.1)
 
-| ID | Type | Cartes | Image | Question | Réponse | Pourquoi | Section |
-|---|---|---|---|---|---|---|---|
-| N2-01 | QCM | | | À une table de 6 joueurs, quelle est la meilleure position ? [UTG · CO · BTN · BB] | BTN | Il parle en dernier après le flop. | C2.1 |
-| N2-02 | QCM | | | Quelle place se trouve juste avant le bouton ? [MP · CO · SB] | CO | | C2.1 |
-| N2-03 | QCM | | | Quelle position parle en premier avant le flop ? [UTG · SB · BTN] | UTG | « Sous le canon ». | C2.1 |
-| N2-04 | QCM | | | Quelle position parle en premier après le flop, si elle est encore en jeu ? [SB · UTG · BTN] | SB | Les blinds sont hors position. | C2.1 |
-| N2-05 | VF | | | Plus on parle tôt avant le flop, plus on doit jouer de mains. | Faux | C'est l'inverse. | C2.1 |
+| ID | Type | Cartes | Image | Question | Réponse | Pourquoi | Section | Sous-niveau |
+|---|---|---|---|---|---|---|---|---|
+| N2-01 | QCM | | | À une table de 6 joueurs, quelle est la meilleure position ? [UTG · CO · BTN · BB] | BTN | Il parle en dernier après le flop. | C2.1 | 2.0 |
+| N2-02 | QCM | | | Quelle place se trouve juste avant le bouton ? [MP · CO · SB] | CO | | C2.1 | 2.0 |
+| N2-03 | QCM | | | Quelle position parle en premier avant le flop ? [UTG · SB · BTN] | UTG | « Sous le canon ». | C2.1 | 2.0 |
+| N2-04 | QCM | | | Quelle position parle en premier après le flop, si elle est encore en jeu ? [SB · UTG · BTN] | SB | Les blinds sont hors position. | C2.1 | 2.0 |
+| N2-05 | VF | | | Plus on parle tôt avant le flop, plus on doit jouer de mains. | Faux | C'est l'inverse. | C2.1 | 2.0 |
 
 ### Notation des mains de départ (C2.2)
 
-| ID | Type | Cartes | Image | Question | Réponse | Pourquoi | Section |
-|---|---|---|---|---|---|---|---|
-| N2-06 | AUTO | Main `AS 7S` | Vos deux cartes : A♠ 7♠. | Comment s'écrit cette main en notation courte ? | A7s | Même couleur → « s ». | C2.2 |
-| N2-07 | AUTO | Main `AS 7D` | Vos deux cartes : A♠ 7♦. | Comment s'écrit cette main en notation courte ? | A7 | Couleurs différentes. | C2.2 |
-| N2-08 | AUTO | Main `TH 9H` | Vos deux cartes : 10♥ 9♥. | Comment s'écrit cette main en notation courte ? | T9s | T = 10. | C2.2 |
-| N2-09 | AUTO | Main `6C 6H` | Vos deux cartes : 6♣ 6♥. | Comment s'écrit cette main en notation courte ? | 66 | | C2.2 |
-| N2-10 | VF | | | La notation 77+ comprend la paire de 6 (66). | Faux | 77+ = 77 à AA. | C2.2 |
-| N2-11 | VF | | | La notation AJ+ comprend AT (As-10). | Faux | AJ+ = AJ, AQ, AK. | C2.2 |
-| N2-12 | VF | | | La notation ATs+ comprend AKs (As-Roi assortis). | Vrai | ATs, AJs, AQs, AKs. | C2.2 |
+| ID | Type | Cartes | Image | Question | Réponse | Pourquoi | Section | Sous-niveau |
+|---|---|---|---|---|---|---|---|---|
+| N2-06 | AUTO | Main `AS 7S` | Vos deux cartes : A♠ 7♠. | Comment s'écrit cette main en notation courte ? | A7s | Même couleur → « s ». | C2.2 | 2.0 |
+| N2-07 | AUTO | Main `AS 7D` | Vos deux cartes : A♠ 7♦. | Comment s'écrit cette main en notation courte ? | A7 | Couleurs différentes. | C2.2 | 2.0 |
+| N2-08 | AUTO | Main `TH 9H` | Vos deux cartes : 10♥ 9♥. | Comment s'écrit cette main en notation courte ? | T9s | T = 10. | C2.2 | 2.0 |
+| N2-09 | AUTO | Main `6C 6H` | Vos deux cartes : 6♣ 6♥. | Comment s'écrit cette main en notation courte ? | 66 | | C2.2 | 2.0 |
+| N2-10 | VF | | | La notation 77+ comprend la paire de 6 (66). | Faux | 77+ = 77 à AA. | C2.2 | 2.0 |
+| N2-11 | VF | | | La notation AJ+ comprend AT (As-10). | Faux | AJ+ = AJ, AQ, AK. | C2.2 | 2.0 |
+| N2-12 | VF | | | La notation ATs+ comprend AKs (As-Roi assortis). | Vrai | ATs, AJs, AQs, AKs. | C2.2 | 2.0 |
 
 ### Ouvrir ou non (C2.2) — personne n'a relancé ; réponse : Relancer / Se coucher
 
-| ID | Type | Cartes | Image | Question | Réponse | Pourquoi | Section |
-|---|---|---|---|---|---|---|---|
-| N2-13 | QCM | UTG · Main `AS JD` | Vos deux cartes : A♠ J♦ ; bandeau : « UTG ». | Personne n'a relancé ; vous êtes UTG (premier à parler) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | AJ+. | C2.2 |
-| N2-14 | QCM | UTG · Main `KD JC` | Vos deux cartes : K♦ J♣ ; bandeau : « UTG ». | Personne n'a relancé ; vous êtes UTG (premier à parler) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Se coucher | KJ seulement assorti. | C2.2 |
-| N2-15 | QCM | UTG · Main `KH JH` | Vos deux cartes : K♥ J♥ ; bandeau : « UTG ». | Personne n'a relancé ; vous êtes UTG (premier à parler) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | KJs+. | C2.2 |
-| N2-16 | QCM | UTG · Main `6S 6D` | Vos deux cartes : 6♠ 6♦ ; bandeau : « UTG ». | Personne n'a relancé ; vous êtes UTG (premier à parler) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Se coucher | 77+ en UTG. | C2.2 |
-| N2-17 | QCM | UTG · Main `AS TD` | Vos deux cartes : A♠ 10♦ ; bandeau : « UTG ». | Personne n'a relancé ; vous êtes UTG (premier à parler) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Se coucher | AT seulement assorti. | C2.2 |
-| N2-18 | QCM | UTG · Main `AH 3C` | Vos deux cartes : A♥ 3♣ ; bandeau : « UTG ». | Personne n'a relancé ; vous êtes UTG (premier à parler) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Se coucher | Erreur classique : « tout As ». | C2.4 |
-| N2-19 | QCM | MP · Main `KS QD` | Vos deux cartes : K♠ Q♦ ; bandeau : « MP ». | Personne n'a relancé ; vous êtes en milieu de table (MP) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | KQ. | C2.2 |
-| N2-20 | QCM | CO · Main `AS 7S` | Vos deux cartes : A♠ 7♠ ; bandeau : « CO ». | Personne n'a relancé ; vous êtes au CO (juste avant le bouton) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | A2s+. | C2.2 |
-| N2-21 | QCM | CO · Main `AS 7D` | Vos deux cartes : A♠ 7♦ ; bandeau : « CO ». | Personne n'a relancé ; vous êtes au CO (juste avant le bouton) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Se coucher | Dépareillé : AT au moins. | C2.2 |
-| N2-22 | QCM | CO · Main `6C 6H` | Vos deux cartes : 6♣ 6♥ ; bandeau : « CO ». | Personne n'a relancé ; vous êtes au CO (juste avant le bouton) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | 55+. | C2.2 |
-| N2-23 | QCM | CO · Main `4S 4H` | Vos deux cartes : 4♠ 4♥ ; bandeau : « CO ». | Personne n'a relancé ; vous êtes au CO (juste avant le bouton) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Se coucher | 55+ au CO. | C2.2 |
-| N2-24 | QCM | CO · Main `QH JD` | Vos deux cartes : Q♥ J♦ ; bandeau : « CO ». | Personne n'a relancé ; vous êtes au CO (juste avant le bouton) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | QJ. | C2.2 |
-| N2-25 | QCM | CO · Main `KS 9S` | Vos deux cartes : K♠ 9♠ ; bandeau : « CO ». | Personne n'a relancé ; vous êtes au CO (juste avant le bouton) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | K9s+. | C2.2 |
-| N2-26 | QCM | CO · Main `KH 9D` | Vos deux cartes : K♥ 9♦ ; bandeau : « CO ». | Personne n'a relancé ; vous êtes au CO (juste avant le bouton) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Se coucher | K9 seulement assorti. | C2.2 |
-| N2-27 | QCM | CO · Main `9S 8S` | Vos deux cartes : 9♠ 8♠ ; bandeau : « CO ». | Personne n'a relancé ; vous êtes au CO (juste avant le bouton) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Se coucher | Au CO, T9s est la plus basse. | C2.2 |
-| N2-28 | QCM | BTN · Main `2S 2D` | Vos deux cartes : 2♠ 2♦ ; bandeau : « BTN ». | Personne n'a relancé ; vous êtes au bouton (BTN) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | Toutes les paires. | C2.2 |
-| N2-29 | QCM | BTN · Main `AH 3C` | Vos deux cartes : A♥ 3♣ ; bandeau : « BTN ». | Personne n'a relancé ; vous êtes au bouton (BTN) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | Tous les As au bouton. | C2.2 |
-| N2-30 | QCM | BTN · Main `7S 6S` | Vos deux cartes : 7♠ 6♠ ; bandeau : « BTN ». | Personne n'a relancé ; vous êtes au bouton (BTN) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | Assorties connectées jusqu'à 76s. | C2.2 |
-| N2-31 | QCM | BTN · Main `6S 5S` | Vos deux cartes : 6♠ 5♠ ; bandeau : « BTN ». | Personne n'a relancé ; vous êtes au bouton (BTN) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Se coucher | 76s est la dernière. | C2.2 |
-| N2-32 | QCM | BTN · Main `QH TD` | Vos deux cartes : Q♥ 10♦ ; bandeau : « BTN ». | Personne n'a relancé ; vous êtes au bouton (BTN) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | Deux cartes de 10 ou plus. | C2.2 |
-| N2-33 | QCM | BTN · Main `KH 9D` | Vos deux cartes : K♥ 9♦ ; bandeau : « BTN ». | Personne n'a relancé ; vous êtes au bouton (BTN) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Se coucher | K9 seulement assorti. | C2.2 |
-| N2-34 | QCM | BTN · Main `JS 9S` | Vos deux cartes : J♠ 9♠ ; bandeau : « BTN ». | Personne n'a relancé ; vous êtes au bouton (BTN) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Se coucher | Pas dans la liste du bouton. | C2.2 |
-| N2-35 | QCM | SB · Main `AS 5S` | Vos deux cartes : A♠ 5♠ ; bandeau : « SB ». | Personne n'a relancé ; vous êtes en petite blind (SB) avec cette main. Que faites-vous ? [Relancer · Suivre · Se coucher] | Relancer | SB = liste du CO ; elle ne suit jamais. | C2.2 |
-| N2-36 | QCM | BB, personne n'a relancé · Main `KD 7C` | Vos deux cartes : K♦ 7♣ ; bandeau : « BB, personne n'a relancé ». | Personne n'a relancé ; vous êtes en grosse blind (BB) avec cette main. Que faites-vous ? [Relancer · Checker · Se coucher] | Checker | Gratuit : on ne jette pas. | C2.2 |
-| N2-37 | VF | | | Avant le flop, il est parfois bon d'entrer dans le pot en suivant simplement la grosse blind (limp). | Faux | Toujours en relançant. | C2.3 |
-| N2-38 | NUM | | | Personne n'est encore entré dans le pot : à combien de BB ouvrez-vous ? | 2,5 | | C2.3 |
-| N2-39 | NUM | | | Un joueur a déjà suivi (limp) : à combien de BB ouvrez-vous ? | 3,5 | 2,5 + 1 par suiveur. | C2.3 |
-| N2-40 | QCM | | | Au bouton, quelle part environ des mains de départ ouvrez-vous ? [9 % · 17 % · 29 %] | 29 % | UTG 9 %, CO 17 %. | C2.2 |
+| ID | Type | Cartes | Image | Question | Réponse | Pourquoi | Section | Sous-niveau |
+|---|---|---|---|---|---|---|---|---|
+| N2-13 | QCM | UTG · Main `AS JD` | Vos deux cartes : A♠ J♦ ; bandeau : « UTG ». | Personne n'a relancé ; vous êtes UTG (premier à parler) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | AJ+. | C2.2 | 2.0 |
+| N2-14 | QCM | UTG · Main `KD JC` | Vos deux cartes : K♦ J♣ ; bandeau : « UTG ». | Personne n'a relancé ; vous êtes UTG (premier à parler) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Se coucher | KJ seulement assorti. | C2.2 | 2.0 |
+| N2-15 | QCM | UTG · Main `KH JH` | Vos deux cartes : K♥ J♥ ; bandeau : « UTG ». | Personne n'a relancé ; vous êtes UTG (premier à parler) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | KJs+. | C2.2 | 2.0 |
+| N2-16 | QCM | UTG · Main `6S 6D` | Vos deux cartes : 6♠ 6♦ ; bandeau : « UTG ». | Personne n'a relancé ; vous êtes UTG (premier à parler) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Se coucher | 77+ en UTG. | C2.2 | 2.0 |
+| N2-17 | QCM | UTG · Main `AS TD` | Vos deux cartes : A♠ 10♦ ; bandeau : « UTG ». | Personne n'a relancé ; vous êtes UTG (premier à parler) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Se coucher | AT seulement assorti. | C2.2 | 2.0 |
+| N2-18 | QCM | UTG · Main `AH 3C` | Vos deux cartes : A♥ 3♣ ; bandeau : « UTG ». | Personne n'a relancé ; vous êtes UTG (premier à parler) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Se coucher | Erreur classique : « tout As ». | C2.4 | 2.0 |
+| N2-19 | QCM | MP · Main `KS QD` | Vos deux cartes : K♠ Q♦ ; bandeau : « MP ». | Personne n'a relancé ; vous êtes en milieu de table (MP) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | KQ. | C2.2 | 2.0 |
+| N2-20 | QCM | CO · Main `AS 7S` | Vos deux cartes : A♠ 7♠ ; bandeau : « CO ». | Personne n'a relancé ; vous êtes au CO (juste avant le bouton) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | A2s+. | C2.2 | 2.2 |
+| N2-21 | QCM | CO · Main `AS 7D` | Vos deux cartes : A♠ 7♦ ; bandeau : « CO ». | Personne n'a relancé ; vous êtes au CO (juste avant le bouton) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Se coucher | Dépareillé : AT au moins. | C2.2 | 2.2 |
+| N2-22 | QCM | CO · Main `6C 6H` | Vos deux cartes : 6♣ 6♥ ; bandeau : « CO ». | Personne n'a relancé ; vous êtes au CO (juste avant le bouton) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | 55+. | C2.2 | 2.2 |
+| N2-23 | QCM | CO · Main `4S 4H` | Vos deux cartes : 4♠ 4♥ ; bandeau : « CO ». | Personne n'a relancé ; vous êtes au CO (juste avant le bouton) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Se coucher | 55+ au CO. | C2.2 | 2.2 |
+| N2-24 | QCM | CO · Main `QH JD` | Vos deux cartes : Q♥ J♦ ; bandeau : « CO ». | Personne n'a relancé ; vous êtes au CO (juste avant le bouton) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | QJ. | C2.2 | 2.3 |
+| N2-25 | QCM | CO · Main `KS 9S` | Vos deux cartes : K♠ 9♠ ; bandeau : « CO ». | Personne n'a relancé ; vous êtes au CO (juste avant le bouton) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | K9s+. | C2.2 | 2.3 |
+| N2-26 | QCM | CO · Main `KH 9D` | Vos deux cartes : K♥ 9♦ ; bandeau : « CO ». | Personne n'a relancé ; vous êtes au CO (juste avant le bouton) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Se coucher | K9 seulement assorti. | C2.2 | 2.3 |
+| N2-27 | QCM | CO · Main `9S 8S` | Vos deux cartes : 9♠ 8♠ ; bandeau : « CO ». | Personne n'a relancé ; vous êtes au CO (juste avant le bouton) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Se coucher | Au CO, T9s est la plus basse. | C2.2 | 2.3 |
+| N2-28 | QCM | BTN · Main `2S 2D` | Vos deux cartes : 2♠ 2♦ ; bandeau : « BTN ». | Personne n'a relancé ; vous êtes au bouton (BTN) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | Toutes les paires. | C2.2 | 2.1 |
+| N2-29 | QCM | BTN · Main `AH 3C` | Vos deux cartes : A♥ 3♣ ; bandeau : « BTN ». | Personne n'a relancé ; vous êtes au bouton (BTN) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | Tous les As au bouton. | C2.2 | 2.1 |
+| N2-30 | QCM | BTN · Main `7S 6S` | Vos deux cartes : 7♠ 6♠ ; bandeau : « BTN ». | Personne n'a relancé ; vous êtes au bouton (BTN) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | Assorties connectées jusqu'à 76s. | C2.2 | 2.1 |
+| N2-31 | QCM | BTN · Main `6S 5S` | Vos deux cartes : 6♠ 5♠ ; bandeau : « BTN ». | Personne n'a relancé ; vous êtes au bouton (BTN) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Se coucher | 76s est la dernière. | C2.2 | 2.1 |
+| N2-32 | QCM | BTN · Main `QH TD` | Vos deux cartes : Q♥ 10♦ ; bandeau : « BTN ». | Personne n'a relancé ; vous êtes au bouton (BTN) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | Deux cartes de 10 ou plus. | C2.2 | 2.1 |
+| N2-33 | QCM | BTN · Main `KH 9D` | Vos deux cartes : K♥ 9♦ ; bandeau : « BTN ». | Personne n'a relancé ; vous êtes au bouton (BTN) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Se coucher | K9 seulement assorti. | C2.2 | 2.1 |
+| N2-34 | QCM | BTN · Main `JS 9S` | Vos deux cartes : J♠ 9♠ ; bandeau : « BTN ». | Personne n'a relancé ; vous êtes au bouton (BTN) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Se coucher | Pas dans la liste du bouton. | C2.2 | 2.1 |
+| N2-35 | QCM | SB · Main `AS 5S` | Vos deux cartes : A♠ 5♠ ; bandeau : « SB ». | Personne n'a relancé ; vous êtes en petite blind (SB) avec cette main. Que faites-vous ? [Relancer · Suivre · Se coucher] | Relancer | SB = liste du CO ; elle ne suit jamais. | C2.2 | 2.2 |
+| N2-36 | QCM | BB, personne n'a relancé · Main `KD 7C` | Vos deux cartes : K♦ 7♣ ; bandeau : « BB, personne n'a relancé ». | Personne n'a relancé ; vous êtes en grosse blind (BB) avec cette main. Que faites-vous ? [Relancer · Checker · Se coucher] | Checker | Gratuit : on ne jette pas. | C2.2 | 2.3 |
+| N2-37 | VF | | | Avant le flop, il est parfois bon d'entrer dans le pot en suivant simplement la grosse blind (limp). | Faux | Toujours en relançant. | C2.3 | 2.0 |
+| N2-38 | NUM | | | Personne n'est encore entré dans le pot : à combien de BB ouvrez-vous ? | 2,5 | | C2.3 | 2.0 |
+| N2-39 | NUM | | | Un joueur a déjà suivi (limp) : à combien de BB ouvrez-vous ? | 3,5 | 2,5 + 1 par suiveur. | C2.3 | 2.0 |
+| N2-40 | QCM | | | Au bouton, quelle part environ des mains de départ ouvrez-vous ? [9 % · 17 % · 29 %] | 29 % | UTG 9 %, CO 17 %. | C2.2 | 2.3 |
+| N2-81 | QCM | UTG · Main `AS TS` | Vos deux cartes : A♠ 10♠ ; bandeau : « UTG ». | Personne n'a relancé ; vous êtes UTG (premier à parler) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | ATs+. | C2.2 | 2.0 |
+| N2-82 | QCM | UTG · Main `8S 8D` | Vos deux cartes : 8♠ 8♦ ; bandeau : « UTG ». | Personne n'a relancé ; vous êtes UTG (premier à parler) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | 77+. | C2.2 | 2.0 |
+| N2-83 | NUM | | | Deux joueurs ont seulement suivi (limp) : à combien de BB ouvrez-vous ? | 4,5 | 2,5 + 1 par suiveur. | C2.3 | 2.0 |
 
 ### Face à une relance (C2.2)
 
-| ID | Type | Cartes | Image | Question | Réponse | Pourquoi | Section |
-|---|---|---|---|---|---|---|---|
-| N2-41 | QCM | UTG relance ; vous BTN · Main `9S 9D` | Vos deux cartes : 9♠ 9♦ ; bandeau : « UTG relance ; vous BTN ». | UTG a relancé ; vous êtes au bouton (BTN) avec cette main. Que faites-vous ? [Sur-relancer · Suivre · Se coucher] | Suivre | JJ à 66 en position. | C2.2 |
-| N2-42 | QCM | UTG relance ; vous BB · Main `9S 9D` | Vos deux cartes : 9♠ 9♦ ; bandeau : « UTG relance ; vous BB ». | UTG a relancé ; vous êtes en grosse blind (BB) avec cette main. Que faites-vous ? [Sur-relancer · Suivre · Se coucher] | Suivre | JJ à 88 aux blinds. | C2.2 |
-| N2-43 | QCM | UTG relance ; vous BB · Main `7S 7D` | Vos deux cartes : 7♠ 7♦ ; bandeau : « UTG relance ; vous BB ». | UTG a relancé ; vous êtes en grosse blind (BB) avec cette main. Que faites-vous ? [Sur-relancer · Suivre · Se coucher] | Se coucher | 88 au moins aux blinds. | C2.2 |
-| N2-44 | QCM | UTG relance ; vous BTN · Main `AS JD` | Vos deux cartes : A♠ J♦ ; bandeau : « UTG relance ; vous BTN ». | UTG a relancé ; vous êtes au bouton (BTN) avec cette main. Que faites-vous ? [Sur-relancer · Suivre · Se coucher] | Se coucher | AJ dépareillé : dominé. | C2.2 |
-| N2-45 | QCM | UTG relance ; vous BTN · Main `AH JH` | Vos deux cartes : A♥ J♥ ; bandeau : « UTG relance ; vous BTN ». | UTG a relancé ; vous êtes au bouton (BTN) avec cette main. Que faites-vous ? [Sur-relancer · Suivre · Se coucher] | Suivre | AJs en position. | C2.2 |
-| N2-46 | QCM | UTG relance ; vous CO · Main `AS KD` | Vos deux cartes : A♠ K♦ ; bandeau : « UTG relance ; vous CO ». | UTG a relancé ; vous êtes au CO avec cette main. Que faites-vous ? [Sur-relancer · Suivre · Se coucher] | Sur-relancer | QQ+, AK. | C2.2 |
-| N2-47 | QCM | CO relance ; vous SB · Main `AD QC` | Vos deux cartes : A♦ Q♣ ; bandeau : « CO relance ; vous SB ». | Le joueur au CO a relancé ; vous êtes en petite blind (SB) avec cette main. Que faites-vous ? [Sur-relancer · Suivre · Se coucher] | Suivre | AQ suit, même aux blinds. | C2.2 |
-| N2-48 | QCM | Vous aviez relancé ; sur-relance · Main `JS JD` | Vos deux cartes : J♠ J♦ ; bandeau : « Vous aviez relancé ; sur-relance ». | Vous aviez relancé, un joueur sur-relance (3-bet). Que faites-vous avec cette main ? [4-bet · Suivre · Se coucher] | Suivre | JJ et TT suivent. | C2.2 |
-| N2-49 | QCM | Vous aviez relancé ; sur-relance · Main `AH QD` | Vos deux cartes : A♥ Q♦ ; bandeau : « Vous aviez relancé ; sur-relance ». | Vous aviez relancé, un joueur sur-relance (3-bet). Que faites-vous avec cette main ? [4-bet · Suivre · Se coucher] | Se coucher | AQ compris. | C2.2 |
-| N2-50 | QCM | Relance puis sur-relance avant vous · Main `JS JD` | Vos deux cartes : J♠ J♦ ; bandeau : « Relance puis sur-relance avant vous ». | Avant vous, un joueur a relancé et un autre a sur-relancé. Que faites-vous avec cette main ? [4-bet · Suivre · Se coucher] | Se coucher | Seuls QQ+ et AK continuent. | C2.2 |
-| N2-51 | NUM | | | Un joueur relance à 3 BB ; vous parlerez après lui (en position). À combien de BB sur-relancez-vous ? | 9 | 3 fois la relance. | C2.2 |
-| N2-52 | NUM | | | Un joueur relance à 3 BB ; vous êtes en grosse blind (hors position). À combien de BB sur-relancez-vous ? | 12 | 4 fois hors position. | C2.2 |
+| ID | Type | Cartes | Image | Question | Réponse | Pourquoi | Section | Sous-niveau |
+|---|---|---|---|---|---|---|---|---|
+| N2-41 | QCM | UTG relance ; vous BTN · Main `9S 9D` | Vos deux cartes : 9♠ 9♦ ; bandeau : « UTG relance ; vous BTN ». | UTG a relancé ; vous êtes au bouton (BTN) avec cette main. Que faites-vous ? [Sur-relancer · Suivre · Se coucher] | Suivre | JJ à 66 en position. | C2.2 | 2.4 |
+| N2-42 | QCM | UTG relance ; vous BB · Main `9S 9D` | Vos deux cartes : 9♠ 9♦ ; bandeau : « UTG relance ; vous BB ». | UTG a relancé ; vous êtes en grosse blind (BB) avec cette main. Que faites-vous ? [Sur-relancer · Suivre · Se coucher] | Suivre | JJ à 88 aux blinds. | C2.2 | 2.4 |
+| N2-43 | QCM | UTG relance ; vous BB · Main `7S 7D` | Vos deux cartes : 7♠ 7♦ ; bandeau : « UTG relance ; vous BB ». | UTG a relancé ; vous êtes en grosse blind (BB) avec cette main. Que faites-vous ? [Sur-relancer · Suivre · Se coucher] | Se coucher | 88 au moins aux blinds. | C2.2 | 2.4 |
+| N2-44 | QCM | UTG relance ; vous BTN · Main `AS JD` | Vos deux cartes : A♠ J♦ ; bandeau : « UTG relance ; vous BTN ». | UTG a relancé ; vous êtes au bouton (BTN) avec cette main. Que faites-vous ? [Sur-relancer · Suivre · Se coucher] | Se coucher | AJ dépareillé : dominé. | C2.2 | 2.0 |
+| N2-45 | QCM | UTG relance ; vous BTN · Main `AH JH` | Vos deux cartes : A♥ J♥ ; bandeau : « UTG relance ; vous BTN ». | UTG a relancé ; vous êtes au bouton (BTN) avec cette main. Que faites-vous ? [Sur-relancer · Suivre · Se coucher] | Suivre | AJs en position. | C2.2 | 2.4 |
+| N2-46 | QCM | UTG relance ; vous CO · Main `AS KD` | Vos deux cartes : A♠ K♦ ; bandeau : « UTG relance ; vous CO ». | UTG a relancé ; vous êtes au CO avec cette main. Que faites-vous ? [Sur-relancer · Suivre · Se coucher] | Sur-relancer | QQ+, AK. | C2.2 | 2.0 |
+| N2-47 | QCM | CO relance ; vous SB · Main `AD QC` | Vos deux cartes : A♦ Q♣ ; bandeau : « CO relance ; vous SB ». | Le joueur au CO a relancé ; vous êtes en petite blind (SB) avec cette main. Que faites-vous ? [Sur-relancer · Suivre · Se coucher] | Suivre | AQ suit, même aux blinds. | C2.2 | 2.4 |
+| N2-48 | QCM | Vous aviez relancé ; sur-relance · Main `JS JD` | Vos deux cartes : J♠ J♦ ; bandeau : « Vous aviez relancé ; sur-relance ». | Vous aviez relancé, un joueur sur-relance (3-bet). Que faites-vous avec cette main ? [4-bet · Suivre · Se coucher] | Suivre | JJ et TT suivent. | C2.2 | 2.4 |
+| N2-49 | QCM | Vous aviez relancé ; sur-relance · Main `AH QD` | Vos deux cartes : A♥ Q♦ ; bandeau : « Vous aviez relancé ; sur-relance ». | Vous aviez relancé, un joueur sur-relance (3-bet). Que faites-vous avec cette main ? [4-bet · Suivre · Se coucher] | Se coucher | AQ compris. | C2.2 | 2.4 |
+| N2-50 | QCM | Relance puis sur-relance avant vous · Main `JS JD` | Vos deux cartes : J♠ J♦ ; bandeau : « Relance puis sur-relance avant vous ». | Avant vous, un joueur a relancé et un autre a sur-relancé. Que faites-vous avec cette main ? [4-bet · Suivre · Se coucher] | Se coucher | Seuls QQ+ et AK continuent. | C2.2 | 2.4 |
+| N2-51 | NUM | | | Un joueur relance à 3 BB ; vous parlerez après lui (en position). À combien de BB sur-relancez-vous ? | 9 | 3 fois la relance. | C2.2 | 2.0 |
+| N2-52 | NUM | | | Un joueur relance à 3 BB ; vous êtes en grosse blind (hors position). À combien de BB sur-relancez-vous ? | 12 | 4 fois hors position. | C2.2 | 2.0 |
 
 ### Après le flop, schéma simple (C2.3)
 
-| ID | Type | Cartes | Image | Question | Réponse | Pourquoi | Section |
-|---|---|---|---|---|---|---|---|
-| N2-53 | VF | Main `AS KD` · Tableau `KH 8C 3S` | Vos deux cartes : A♠ K♦ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠. | Avec cette main et ce flop, vous avez une top paire. | Vrai | Paire avec la plus haute carte du tableau. | C2.3 |
-| N2-54 | VF | Main `AH 6D` · Tableau `TC 6S 2H` | Vos deux cartes : A♥ 6♦ ; tableau de 3 cartes (flop) : 10♣ 6♠ 2♥. | Avec cette main et ce flop, vous avez une top paire. | Faux | Paire du milieu. | C2.3 |
-| N2-55 | VF | Main `9S 9H` · Tableau `7D 5C 2H` | Vos deux cartes : 9♠ 9♥ ; tableau de 3 cartes (flop) : 7♦ 5♣ 2♥. | Avec cette main et ce flop, vous avez une top paire. | Vrai | Paire en main plus haute que le tableau. | C2.3 |
-| N2-56 | QCM | Personne n'a misé · Main `AS KD` · Tableau `KH 8C 3S` | Vos deux cartes : A♠ K♦ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠ ; bandeau : « Personne n'a misé ». | Au flop, personne n'a misé. Que faites-vous ? [Miser ½ pot · Checker] | Miser ½ pot | Top paire ou mieux. | C2.3 |
-| N2-57 | QCM | Personne n'a misé · Main `QS JS` · Tableau `KH 8C 3S` | Vos deux cartes : Q♠ J♠ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠ ; bandeau : « Personne n'a misé ». | Au flop, personne n'a misé. Que faites-vous ? [Miser ½ pot · Checker] | Checker | Pas de top paire. | C2.3 |
-| N2-58 | QCM | Face à une mise · Main `KS 8S` · Tableau `KH 8C 3S` | Vos deux cartes : K♠ 8♠ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠ ; bandeau : « Face à une mise ». | Au flop, l'adversaire mise. Que faites-vous ? [Relancer ×3 · Suivre · Se coucher] | Relancer ×3 | Deux paires avec vos deux cartes. | C2.3 |
-| N2-59 | QCM | Face à une mise · Main `AS KD` · Tableau `KH 8C 3S` | Vos deux cartes : A♠ K♦ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠ ; bandeau : « Face à une mise ». | Au flop, l'adversaire mise. Que faites-vous ? [Relancer ×3 · Suivre · Se coucher] | Suivre | Top paire. | C2.3 |
-| N2-60 | QCM | Vous misez, on vous relance · Main `AS KD` · Tableau `KH 8C 3S` | Vos deux cartes : A♠ K♦ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠ ; bandeau : « Vous misez, on vous relance ». | Au flop, vous misez et l'adversaire relance. Que faites-vous ? [Relancer · Suivre · Se coucher] | Se coucher | Règle 3 : main moyenne contre grosse action. | C2.3 |
-| N2-61 | QCM | | | Avec deux cartes assorties, quelle est la probabilité de finir avec une couleur à la river ? [6 % · 20 % · 35 %] | 6 % | Ne pas surestimer les assorties. | C2.4 |
+| ID | Type | Cartes | Image | Question | Réponse | Pourquoi | Section | Sous-niveau |
+|---|---|---|---|---|---|---|---|---|
+| N2-53 | VF | Main `AS KD` · Tableau `KH 8C 3S` | Vos deux cartes : A♠ K♦ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠. | Avec cette main et ce flop, vous avez une top paire. | Vrai | Paire avec la plus haute carte du tableau. | C2.3 | 2.0 |
+| N2-54 | VF | Main `AH 6D` · Tableau `TC 6S 2H` | Vos deux cartes : A♥ 6♦ ; tableau de 3 cartes (flop) : 10♣ 6♠ 2♥. | Avec cette main et ce flop, vous avez une top paire. | Faux | Paire du milieu. | C2.3 | 2.0 |
+| N2-55 | VF | Main `9S 9H` · Tableau `7D 5C 2H` | Vos deux cartes : 9♠ 9♥ ; tableau de 3 cartes (flop) : 7♦ 5♣ 2♥. | Avec cette main et ce flop, vous avez une top paire. | Vrai | Paire en main plus haute que le tableau. | C2.3 | 2.0 |
+| N2-56 | QCM | Personne n'a misé · Main `AS KD` · Tableau `KH 8C 3S` | Vos deux cartes : A♠ K♦ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠ ; bandeau : « Personne n'a misé ». | Au flop, personne n'a misé. Que faites-vous ? [Miser ½ pot · Checker] | Miser ½ pot | Top paire ou mieux. | C2.3 | 2.0 |
+| N2-57 | QCM | Personne n'a misé · Main `QS JS` · Tableau `KH 8C 3S` | Vos deux cartes : Q♠ J♠ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠ ; bandeau : « Personne n'a misé ». | Au flop, personne n'a misé. Que faites-vous ? [Miser ½ pot · Checker] | Checker | Pas de top paire. | C2.3 | 2.0 |
+| N2-58 | QCM | Face à une mise · Main `KS 8S` · Tableau `KH 8C 3S` | Vos deux cartes : K♠ 8♠ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠ ; bandeau : « Face à une mise ». | Au flop, l'adversaire mise. Que faites-vous ? [Relancer ×3 · Suivre · Se coucher] | Relancer ×3 | Deux paires avec vos deux cartes. | C2.3 | 2.0 |
+| N2-59 | QCM | Face à une mise · Main `AS KD` · Tableau `KH 8C 3S` | Vos deux cartes : A♠ K♦ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠ ; bandeau : « Face à une mise ». | Au flop, l'adversaire mise. Que faites-vous ? [Relancer ×3 · Suivre · Se coucher] | Suivre | Top paire. | C2.3 | 2.0 |
+| N2-60 | QCM | Vous misez, on vous relance · Main `AS KD` · Tableau `KH 8C 3S` | Vos deux cartes : A♠ K♦ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠ ; bandeau : « Vous misez, on vous relance ». | Au flop, vous misez et l'adversaire relance. Que faites-vous ? [Relancer · Suivre · Se coucher] | Se coucher | Règle 3 : main moyenne contre grosse action. | C2.3 | 2.0 |
+| N2-84 | VF | Main `AS 5D` · Tableau `KH KC 7S` | Vos deux cartes : A♠ 5♦ ; tableau de 3 cartes (flop) : K♥ K♣ 7♠. | Avec cette main et ce flop, vous avez une top paire. | Faux | La paire de rois est au tableau : vos cartes n'y participent pas. | C2.3 | 2.0 |
+| N2-85 | QCM | Face à une mise · Main `7S 7D` · Tableau `KH 7C 2S` | Vos deux cartes : 7♠ 7♦ ; tableau de 3 cartes (flop) : K♥ 7♣ 2♠ ; bandeau : « Face à une mise ». | Au flop, l'adversaire mise. Que faites-vous ? [Relancer ×3 · Suivre · Se coucher] | Relancer ×3 | Brelan : main forte. | C2.3 | 2.0 |
+| N2-61 | QCM | | | Avec deux cartes assorties, quelle est la probabilité de finir avec une couleur à la river ? [6 % · 20 % · 35 %] | 6 % | Ne pas surestimer les assorties. | C2.4 | 2.5 |
+
+### Règles du niveau 2 — sous-niveaux et règles communes
+
+| ID | Type | Cartes | Image | Question | Réponse | Pourquoi | Section | Sous-niveau |
+|---|---|---|---|---|---|---|---|---|
+| N2-62 | QCM | BTN · Main `KH TD` | Vos deux cartes : K♥ 10♦ ; bandeau : « BTN ». | Personne n'a relancé ; vous êtes au bouton (BTN) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | KT+ au bouton. | C2.2 | 2.1 |
+| N2-63 | QCM | BTN · Main `QS 9S` | Vos deux cartes : Q♠ 9♠ ; bandeau : « BTN ». | Personne n'a relancé ; vous êtes au bouton (BTN) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Se coucher | Seuls K9, T9, 98, 87, 76 assortis. | C2.2 | 2.1 |
+| N2-64 | QCM | BTN · Main `8S 7S` | Vos deux cartes : 8♠ 7♠ ; bandeau : « BTN ». | Personne n'a relancé ; vous êtes au bouton (BTN) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | Assortie connectée. | C2.2 | 2.1 |
+| N2-65 | QCM | BTN · Main `JD TC` | Vos deux cartes : J♦ 10♣ ; bandeau : « BTN ». | Personne n'a relancé ; vous êtes au bouton (BTN) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | Deux cartes de 10 ou plus. | C2.2 | 2.1 |
+| N2-66 | QCM | CO · Main `5S 5D` | Vos deux cartes : 5♠ 5♦ ; bandeau : « CO ». | Personne n'a relancé ; vous êtes au CO (juste avant le bouton) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | 55+ au CO. | C2.2 | 2.2 |
+| N2-67 | QCM | CO · Main `AH TC` | Vos deux cartes : A♥ 10♣ ; bandeau : « CO ». | Personne n'a relancé ; vous êtes au CO (juste avant le bouton) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | AT+ au CO. | C2.2 | 2.2 |
+| N2-68 | QCM | SB · Main `AS 4S` | Vos deux cartes : A♠ 4♠ ; bandeau : « SB ». | Personne n'a relancé ; vous êtes en petite blind (SB) avec cette main. Que faites-vous ? [Relancer · Suivre · Se coucher] | Relancer | SB = liste du CO : A2s+. | C2.2 | 2.2 |
+| N2-69 | QCM | CO · Main `AH 9D` | Vos deux cartes : A♥ 9♦ ; bandeau : « CO ». | Personne n'a relancé ; vous êtes au CO (juste avant le bouton) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Se coucher | Dépareillé : AT au moins. | C2.2 | 2.2 |
+| N2-70 | QCM | SB · Main `3S 3D` | Vos deux cartes : 3♠ 3♦ ; bandeau : « SB ». | Personne n'a relancé ; vous êtes en petite blind (SB) avec cette main. Que faites-vous ? [Relancer · Suivre · Se coucher] | Se coucher | 55+ en SB ; la SB ne suit jamais. | C2.2 | 2.2 |
+| N2-71 | QCM | CO · Main `KS JD` | Vos deux cartes : K♠ J♦ ; bandeau : « CO ». | Personne n'a relancé ; vous êtes au CO (juste avant le bouton) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | KJ+ au CO. | C2.2 | 2.3 |
+| N2-72 | QCM | CO · Main `JS TS` | Vos deux cartes : J♠ 10♠ ; bandeau : « CO ». | Personne n'a relancé ; vous êtes au CO (juste avant le bouton) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | JTs au CO. | C2.2 | 2.3 |
+| N2-73 | QCM | SB · Main `QS TS` | Vos deux cartes : Q♠ 10♠ ; bandeau : « SB ». | Personne n'a relancé ; vous êtes en petite blind (SB) avec cette main. Que faites-vous ? [Relancer · Suivre · Se coucher] | Relancer | QTs+ : liste du CO. | C2.2 | 2.3 |
+| N2-74 | QCM | CO · Main `QS TD` | Vos deux cartes : Q♠ 10♦ ; bandeau : « CO ». | Personne n'a relancé ; vous êtes au CO (juste avant le bouton) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Se coucher | QT seulement assorti au CO. | C2.2 | 2.3 |
+| N2-75 | QCM | BB, un joueur a suivi · Main `KS JD` | Vos deux cartes : K♠ J♦ ; bandeau : « BB, un joueur a suivi ». | Un joueur a seulement suivi ; vous êtes en grosse blind (BB). Que faites-vous ? [Relancer · Checker · Se coucher] | Relancer | En BB face à des suiveurs : la liste du CO, KJ+. | C2.2 | 2.3 |
+| N2-76 | NUM | |  | Vous avez relancé au CO ; le bouton sur-relance à 8 BB. Vous avez AA. À combien de BB faites-vous votre 4-bet ? | 24 | 3 fois la sur-relance, en position. | C2.2 | 2.0 |
+| N2-77 | VF | |  | Avant le flop, quand une relance engagerait plus de la moitié de votre tapis, vous mettez tout le tapis. | Vrai | | C2.2 | 2.0 |
+| N2-78 | QCM | |  | Un joueur a relancé, un autre a suivi, puis c'est à vous. Quelle partie de la grille s'applique ? [Personne n'a relancé · Face à une relance] | Face à une relance | Un suivi ne change rien : il y a une relance. | C2.2 | 2.0 |
+| N2-79 | QCM | Vous misez, on vous relance · Main `KS KD` · Tableau `KH 8C 3S` | Vos deux cartes : K♠ K♦ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠ ; bandeau : « Vous misez, on vous relance ». | Au flop, vous avez misé et l'adversaire relance. Que faites-vous ? [Relancer · Suivre · Se coucher] | Relancer | Main forte : on relance encore une fois, puis on suit. | C2.3 | 2.0 |
+| N2-80 | VF | |  | Le schéma simple d'après le flop vaut aussi au turn et à la river. | Vrai | À chaque tour. | C2.3 | 2.0 |
 
 ---
 
@@ -297,6 +340,17 @@ image à lire, une décision. Pas de liste à réciter.
 | N3-44 | NUM | | | Après la river, vous voyez 7 cartes. Combien de cartes restent inconnues ? | 47 | 52 − 7. | C3.7 |
 | N3-45 | NUM | | | Sans aucune carte visible, combien de combinaisons (combos) existe-t-il pour une paire donnée, par exemple 8-8 ? | 6 | 4 × 3 ÷ 2. | C3.7 |
 
+### Règles du niveau 3 — tirages et petites paires
+
+| ID | Type | Cartes | Image | Question | Réponse | Pourquoi | Section |
+|---|---|---|---|---|---|---|---|
+| N3-46 | QCM | Personne n'a misé · Main `AH 8H` · Tableau `KH 7H 2C` | Vos deux cartes : A♥ 8♥ ; tableau de 3 cartes (flop) : K♥ 7♥ 2♣ ; bandeau : « Personne n'a misé ». | Au flop, personne n'a misé. Que faites-vous avec ce tirage couleur ? [Miser · Checker] | Checker | Au niveau 3, un tirage ne mise pas : il checke, et suit une mise selon les cotes. | C3.3 |
+| N3-47 | QCM | Face à un demi-pot · Main `AS KD` · Tableau `9H 6C 2S` | Vos deux cartes : A♠ K♦ ; tableau de 3 cartes (flop) : 9♥ 6♣ 2♠ ; bandeau : « Face à un demi-pot ». | Au flop, l'adversaire mise un demi-pot. Vous n'avez que deux cartes plus hautes. Que faites-vous ? [Suivre · Se coucher] | Se coucher | 6 outs × 4 = 24 %, moins que les 25 % requis. | C3.3 |
+| N3-48 | VF | |  | Au niveau 3, avec un tirage, vous pouvez suivre une relance si votre équité dépasse l'équité requise. | Vrai | Les cotes priment sur « couchez-vous face à une relance ». | C3.3 |
+| N3-49 | QCM | UTG relance à 3 BB ; tapis 100 BB · Main `5S 5D` | Vos deux cartes : 5♠ 5♦ ; bandeau : « UTG relance à 3 BB ; tapis 100 BB ». | UTG relance à 3 BB ; il vous reste 100 BB, à lui aussi. Que faites-vous avec cette main ? [Sur-relancer · Suivre · Se coucher] | Suivre | 100 BB ≥ 15 × 3 BB : les cotes implicites paient. | C3.4 |
+| N3-50 | QCM | UTG relance à 3 BB ; tapis 30 BB · Main `5S 5D` | Vos deux cartes : 5♠ 5♦ ; bandeau : « UTG relance à 3 BB ; tapis 30 BB ». | UTG relance à 3 BB ; il ne lui reste que 30 BB. Que faites-vous avec cette main ? [Sur-relancer · Suivre · Se coucher] | Se coucher | 30 BB < 15 × 3 BB = 45 BB. | C3.4 |
+| N3-51 | VF | |  | À la river, sans top paire, on se couche face à une mise. | Vrai | Plus de tirage : le schéma du niveau 2. | C3.3 |
+
 ---
 
 ## Niveau 4 — Jouer après le flop
@@ -361,6 +415,20 @@ image à lire, une décision. Pas de liste à réciter.
 | N4-29 | QCM | | | À la river, avec une main moyenne, personne n'a misé. Que faites-vous ? [Miser gros · Parole] | Parole | | C4.6 |
 | N4-30 | QCM | | | À la river, avec une main moyenne, l'adversaire mise petit. Que faites-vous ? [Suivre · Se coucher · Relancer] | Suivre | Une main moyenne paie une petite mise. | C4.6 |
 
+### Règles du niveau 4 — c-bet, turn, river, relances
+
+| ID | Type | Cartes | Image | Question | Réponse | Pourquoi | Section |
+|---|---|---|---|---|---|---|---|
+| N4-31 | QCM | |  | Vous avez suivi avant le flop et vous parlez avant le relanceur. Au flop, que faites-vous d'abord ? [Miser · Parole] | Parole | On laisse miser le relanceur. | C4.3 |
+| N4-32 | QCM | Vous avez relancé préflop · Main `QS JS` · Tableau `TH 9C 2D` | Vos deux cartes : Q♠ J♠ ; tableau de 3 cartes (flop) : 10♥ 9♣ 2♦ ; bandeau : « Vous avez relancé préflop ». | Vous avez relancé préflop, un adversaire a payé. Que faites-vous sur ce flop ? [Miser 1/3 du pot · Miser 2/3 du pot · Parole] | Miser 2/3 du pot | Flop coordonné, quinte bilatérale (8 outs) : semi-bluff. | C4.3 |
+| N4-33 | QCM | Vous avez relancé préflop · Main `AS 5D` · Tableau `JH TH 8C` | Vos deux cartes : A♠ 5♦ ; tableau de 3 cartes (flop) : J♥ 10♥ 8♣ ; bandeau : « Vous avez relancé préflop ». | Vous avez relancé préflop, un adversaire a payé. Que faites-vous sur ce flop ? [Miser 1/3 du pot · Miser 2/3 du pot · Parole] | Parole | Flop coordonné, ni top paire ni tirage de 8 outs. | C4.3 |
+| N4-34 | QCM | |  | Turn : votre c-bet a été payée ; vous avez top paire, kicker valet. Que faites-vous ? [Miser 2/3 du pot · Parole] | Miser 2/3 du pot | Top paire bon kicker : on mise encore. | C4.5 |
+| N4-35 | QCM | |  | River : votre tirage couleur a raté. Vous avez misé au flop et au turn, contre un seul adversaire. Que faites-vous ? [Bluffer 2/3 du pot · Parole] | Bluffer 2/3 du pot | Une main qui ne peut gagner qu'en misant. | C4.6 |
+| N4-36 | QCM | |  | River : votre tirage couleur a raté, contre deux adversaires. Que faites-vous ? [Bluffer 2/3 du pot · Parole] | Parole | On ne bluffe qu'un seul adversaire. | C4.6 |
+| N4-37 | QCM | |  | Vous avez top paire, on vous relance ; le SPR vaut 6. Que faites-vous ? [Tapis · Suivre · Se coucher] | Se coucher | Top paire : tapis seulement sous un SPR de 3. | C4.5 |
+| N4-38 | QCM | |  | Vous avez deux paires, on vous relance ; le SPR vaut 6. Que faites-vous ? [Tapis · Suivre · Se coucher] | Tapis | Deux paires : tapis jusqu'à un SPR de 8. | C4.5 |
+| N4-39 | QCM | Vous avez relancé préflop ; deux adversaires · Main `AS QD` · Tableau `KS 7D 2C` | Vos deux cartes : A♠ Q♦ ; tableau de 3 cartes (flop) : K♠ 7♦ 2♣ ; bandeau : « Vous avez relancé préflop ; deux adversaires ». | Vous avez relancé préflop, deux adversaires ont payé. Que faites-vous sur ce flop ? [Miser 1/3 du pot · Parole] | Parole | Contre plusieurs adversaires : top paire bon kicker ou mieux. | C4.3 |
+
 ---
 
 ## Niveau 5 — Penser en ranges et s'adapter
@@ -411,6 +479,17 @@ image à lire, une décision. Pas de liste à réciter.
 | N5-25 | VF | | | Quand la bankroll passe sous le seuil, on redescend de limite. | Vrai | Dès qu'elle passe sous le seuil. | C5.5 |
 | N5-26 | VF | | | Vous jouez pour « vous refaire » : il faut continuer la session. | Faux | C'est le tilt : on arrête. | C5.6 |
 
+### Règles du niveau 5 — ajustements selon le profil
+
+| ID | Type | Cartes | Image | Question | Réponse | Pourquoi | Section |
+|---|---|---|---|---|---|---|---|
+| N5-27 | QCM | |  | River, contre un large-passif (calling station) : vous avez top paire. Que faites-vous ? [Miser 3/4 du pot · Parole · Miser 1/4 du pot] | Miser 3/4 du pot | Il paie tout : valeur grosse. | C5.4 |
+| N5-28 | QCM | |  | River, contre un large-passif : votre tirage a raté. Que faites-vous ? [Bluffer · Parole] | Parole | On ne le bluffe jamais. | C5.4 |
+| N5-29 | QCM | |  | Un serré-passif mise au turn ; vous avez top paire. Que faites-vous ? [Suivre · Se coucher] | Se coucher | Sa mise annonce deux paires ou mieux. | C5.4 |
+| N5-30 | QCM | |  | Un large-agressif mise au flop ; vous avez top paire. Que faites-vous ? [Relancer · Suivre · Se coucher] | Suivre | On le laisse bluffer et on paie jusqu'à la river. | C5.4 |
+| N5-31 | QCM | |  | Vous n'avez pas encore de profil pour cet adversaire. Quelles règles appliquez-vous ? [Celles du niveau 4 · Bluffer plus · Jouer plus serré] | Celles du niveau 4 | Profil inconnu : pas d'ajustement. | C5.4 |
+| N5-32 | QCM | |  | River : l'adversaire mise le pot. Vous battez seulement ses bluffs, et vous estimez qu'ils font 40 % de sa range. Que faites-vous ? [Suivre · Se coucher] | Suivre | 40 % de bluffs > 33 % d'équité requise. | C5.1 |
+
 ---
 
 ## Niveau 6 — Vers le GTO
@@ -447,3 +526,12 @@ image à lire, une décision. Pas de liste à réciter.
 | N6-16 | NUM | | | En cash-game, combien de mains faut-il au minimum avant de juger ses résultats ? | 30 000 | La variance domine les petits échantillons. | C6.5 |
 | N6-17 | NUM | | | En tournois, combien de tournois faut-il au minimum avant de juger ses résultats ? | 300 | | C6.5 |
 | N6-18 | VF | | | Grosse blind à 0,10 € : vous avez gagné 40 € sur 8 000 mains. Cela suffit pour conclure que vous êtes gagnant. | Faux | 8 000 mains, sous les 30 000. | C6.5 |
+### Règles du niveau 6
+
+| ID | Type | Cartes | Image | Question | Réponse | Pourquoi | Section |
+|---|---|---|---|---|---|---|---|
+| N6-19 | NUM | |  | Face à une mise de deux tiers de pot, quelle part minimale (%) de votre range devez-vous défendre (MDF) ? | 60 (± 1) | MDF = pot ÷ (pot + mise). | C6.1 |
+| N6-20 | QCM | |  | À la river, avec une mise équilibrée d'un demi-pot, combien de mises de valeur pour 1 bluff ? [1 · 2 · 3] | 3 | 1 bluff sur 4 mises = 25 %, l'équité requise. | C6.1 |
+| N6-21 | QCM | |  | Face à une mise, quelles mains gardez-vous d'abord pour atteindre la MDF ? [Vos meilleures mains, puis vos tirages · Vos tirages, puis vos meilleures mains · Des mains au hasard] | Vos meilleures mains, puis vos tirages | | C6.1 |
+| N6-22 | VF | |  | Contre un adversaire sans profil marqué, on joue équilibré. | Vrai | On exploite seulement un profil marqué. | C6.4 |
+

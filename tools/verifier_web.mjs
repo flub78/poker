@@ -7,7 +7,7 @@
 //   - les fichiers introuvables (réponse HTTP 400 ou plus, image non chargée) ;
 //   - les boutons et liens dont le contraste texte/fond est insuffisant (WCAG AA : 4,5,
 //     ou 3 pour un grand texte) ;
-//   - les liens internes du cours qui ne mènent à aucune page ou section ;
+//   - les liens internes du cours qui ne mènent à aucune page, section ou ligne du glossaire ;
 //   - les textes « null », « undefined » ou « NaN » affichés (valeur vide écrite telle quelle) ;
 //   - le code de transfert (page Profil) : aller-retour entre deux navigateurs (profils distincts),
 //     fusion sans doublon, prénom repris, lien rouvert sans effet, code abîmé signalé.
@@ -25,7 +25,8 @@ const report = (where, what) => problems.push(`${where} : ${what}`);
 
 // --- liens internes du cours (sans navigateur) ---
 const targets = new Set(['#cours', '#cours/imprimer', ...cours.pages.flatMap((p) => [`#cours/${p.id}`,
-  ...p.sections.map((s) => `#cours/${p.id}/${s.id}`)])]);
+  ...p.sections.map((s) => `#cours/${p.id}/${s.id}`),
+  ...[...p.html.matchAll(/<tr id="([^"]+)"/g)].map(([, id]) => `#cours/${p.id}/${id}`)])]);   // lignes du glossaire
 for (const p of cours.pages) {
   for (const [, href] of p.html.matchAll(/href="(#[^"]*)"/g)) {
     if (!targets.has(href)) report(`cours/${p.id}`, `lien interne sans cible ${href}`);

@@ -11,7 +11,7 @@ export function summarize(ev, game, date = new Date().toISOString()) {
   const you = ev.players.find((p) => p.human);
   const af = you.stats.af;
   return {
-    date, seed: ev.seed, hands: ev.hands, level: you.level, judgedAt: you.judgedAt,
+    date, seed: ev.seed, hands: ev.hands, level: you.level, judgedAt: you.judgedAt, judgedRules: you.judgedRules,
     decisions: you.decisions, ...you.counts,
     vpip: Math.round(you.stats.vpip), pfr: Math.round(you.stats.pfr),
     af: af === null ? null : af === Infinity ? 'inf' : Math.round(af * 10) / 10,

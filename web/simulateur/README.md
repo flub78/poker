@@ -4,10 +4,16 @@ Une table à 6 joueurs (adresse `index.html#simulateur`, lien « Table » de l'e
 en bas et 5 bots qui appliquent les règles du cours. Plan et état d'avancement :
 [`doc/plan-simulateur.md`](../../doc/plan-simulateur.md).
 
+Règles appliquées à l'humain (Indice, mentor, évaluation) : celles de son niveau, données en tête de
+chaque niveau du cours (« Règles du niveau N »). Niveau 1 : le sous-niveau 2.0, la liste UTG avant le flop
+et le schéma simple après (le niveau 1 du cours n'a pas de stratégie) ; niveau 2 : son sous-niveau 2.0 à 2.5 (`js/sous-niveaux.js`) ;
+niveau 4 : `regles/postflop4.js` après le flop (c-bet selon la texture, turn, river, relances selon le
+SPR) ; niveaux 5 et 6 : pour l'instant les règles du niveau 4.
+
 | Fichier | Rôle |
 | --- | --- |
 | `simulateur.js`, `simulateur.css` | L'écran : table, boutons (raccourcis F, C, R, I, Entrée), indice, journal, bilan, réglages |
-| `partie.js` | Suite de mains : bouton qui tourne, 100 BB à chaque main, gains cumulés, décisions jugées, mains rejouables (graine par main) |
+| `partie.js` | Suite de mains : bouton qui tourne, 100 BB à chaque main ou tapis conservés (recave à zéro), gains cumulés, décisions jugées, mains rejouables (graine par main) |
 | `bots.js` | `decider(main, siège, niveau)` → `{ action, raisons, facts }` : sert aux bots, à l'indice et au mentor |
 | `evaluation.js` | Évaluation de la partie : verdicts par joueur, coût des erreurs, VPIP, PFR, AF, profils (C5.4), commentaires |
 | `historique.js` | Parties terminées, gardées dans le navigateur ; page Profil |

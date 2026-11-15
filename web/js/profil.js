@@ -14,9 +14,11 @@
 // Format : « 1. » + base64url( deflate-raw( JSON ) ),
 // JSON = { v: 1, p: prénom, n: { niveau: { test: [tentatives] } }, m: { niveau: { critère: secondes } } },
 // chaque tentative en tableau compact [secondes depuis 1970, graine, score, total, réussi 0/1, durée en s] ;
-// m : critères vérifiés à la table, cochés (date en secondes).
+// m : critères vérifiés à la table, cochés (date en secondes) ;
+// s : sous-niveaux choisis, { niveau: [code, secondes] } (facultatif : un ancien code n'en a pas, une
+//     ancienne version de l'application l'ignore).
 // Transfert et import de fichier passent par la fusion (storage.js, mergeData) : on ajoute les
-// tentatives manquantes, rien n'est jamais remplacé.
+// tentatives manquantes, rien n'est jamais remplacé ; pour le sous-niveau choisi, le plus récent l'emporte.
 import { levelBadge, levelDot } from './niveau-couleur.js';
 import { h, clear } from './dom.js';
 import { LEVELS } from './config.js';
@@ -24,6 +26,7 @@ import { createStore, mergeData, getPlayerName, setPlayerName } from './storage.
 import { requirements, levelProgress } from './validation.js';
 import { loadParties, mergeParties, clearParties } from '../simulateur/historique.js';
 import { loadAll as loadReflexes, mergeAll as mergeReflexes, resetAll as resetReflexes } from '../reflexes/stockage.js';
+import { loadChoices, mergeStoredChoices, resetChoices } from './sous-niveaux.js';
 
 const VERSION = '1';
 const FILE_FORMAT = 'poker-resultats';
@@ -95,6 +98,8 @@ export async function createCode() {
     if (manual.length) payload.m[lvl.n] = Object.fromEntries(manual.map(([id, d]) => [id, Math.floor(Date.parse(d) / 1000)]));
     attempts += manual.length;
   }
+  const subs = Object.entries(loadChoices());
+  if (subs.length) payload.s = Object.fromEntries(subs.map(([n, c]) => [n, [c.code, Math.floor(Date.parse(c.date) / 1000)]]));
   const bytes = await pipe(new TextEncoder().encode(JSON.stringify(payload)), new CompressionStream('deflate-raw'));
   return { code: `${VERSION}.${toBase64url(bytes)}`, attempts };
 }
@@ -119,7 +124,10 @@ export async function readCode(text) {
   for (const [n, manual] of Object.entries(payload.m || {})) {
     byLevel[n] = { tests: {}, ...byLevel[n], manual: Object.fromEntries(Object.entries(manual).map(([id, s]) => [id, new Date(s * 1000).toISOString()])) };
   }
-  return { player: payload.p || '', byLevel, code: `${m[1]}.${m[2]}` };
+  const subLevels = Object.fromEntries(Object.entries(payload.s || {})
+    .filter(([, c]) => Array.isArray(c) && typeof c[0] === 'string')
+    .map(([n, [code, t]]) => [n, { code, date: new Date(t * 1000).toISOString() }]));
+  return { player: payload.p || '', byLevel, subLevels, code: `${m[1]}.${m[2]}` };
 }
 
 export const transferLink = (code) => `${location.origin}${location.pathname}#transfert/${code}`;
@@ -129,7 +137,7 @@ export const transferLink = (code) => `${location.origin}${location.pathname}#tr
 async function exportFile() {
   const niveaux = {};
   for (const lvl of await levels()) niveaux[lvl.n] = lvl.store.exportData();
-  const json = JSON.stringify({ format: FILE_FORMAT, version: 1, joueur: getPlayerName(), date: new Date().toISOString(), niveaux, simulateur: loadParties(), reflexes: loadReflexes() }, null, 2);
+  const json = JSON.stringify({ format: FILE_FORMAT, version: 1, joueur: getPlayerName(), date: new Date().toISOString(), niveaux, simulateur: loadParties(), reflexes: loadReflexes(), sousNiveaux: loadChoices() }, null, 2);
   const a = h('a', {
     href: URL.createObjectURL(new Blob([json], { type: 'application/json' })),
     download: `poker-resultats-${new Date().toISOString().slice(0, 10)}.json`,
@@ -143,7 +151,7 @@ async function exportFile() {
 async function readFile(text) {
   let data;
   try { data = JSON.parse(text); } catch { throw new Error('ce n\'est pas un fichier JSON'); }
-  if (data?.format === FILE_FORMAT && typeof data.niveaux === 'object') return { player: data.joueur || '', byLevel: data.niveaux, parties: data.simulateur || [], reflexes: data.reflexes || null };
+  if (data?.format === FILE_FORMAT && typeof data.niveaux === 'object') return { player: data.joueur || '', byLevel: data.niveaux, parties: data.simulateur || [], reflexes: data.reflexes || null, subLevels: data.sousNiveaux || null };
   if (data && typeof data.tests === 'object') {
     const ids = Object.keys(data.tests);
     const lvl = (await levels()).find((l) => ids.length && ids.every((id) => l.def.tests.some((t) => t.id === id)));
@@ -261,6 +269,7 @@ function receiveBlock(code) {
     ].filter(Boolean));
     history.replaceState(null, '', '#profil');   // le code quitte la barre d'adresse
     if (!total) {
+      mergeStoredChoices(got.subLevels);            // le sous-niveau choisi suit quand même
       box.append(h('p', {}, h('strong', {}, 'Rien de nouveau : '), 'ces résultats sont déjà tous dans ce navigateur.'));
       return;
     }
@@ -272,6 +281,7 @@ function receiveBlock(code) {
           try {
             const done = await mergeLevels(got.byLevel, true);
             if (!getPlayerName() && got.player) { setPlayerName(got.player); notify(); }
+            mergeStoredChoices(got.subLevels);
             const added = done.rows.reduce((s, r) => s + r.added, 0);
             box.classList.add('ok');
             clear(box).append(h('h2', {}, 'Résultats ajoutés'),
@@ -366,6 +376,7 @@ function fileBlock() {
       if (!getPlayerName() && got.player) { setPlayerName(got.player); notify(); }
       const added = done.rows.reduce((s, r) => s + r.added, 0) + (mergeParties(got.parties || []) || 0);
       const suites = got.reflexes ? mergeReflexes(got.reflexes) : 0;
+      mergeStoredChoices(got.subLevels);
       if (suites === false) throw new Error('le navigateur bloque l\'enregistrement (navigation privée ?)');
       status.textContent = `${file.name} : ${plural(added, 'résultat')} ajouté${added > 1 ? 's' : ''} (ceux déjà présents sont conservés)`
         + (suites ? ` ; Réflexes : ${plural(suites, 'niveau')} repris (la progression la plus avancée est gardée).` : '.');
@@ -398,6 +409,7 @@ function resetBlock() {
         for (const lvl of await levels()) lvl.store.reset();
         clearParties();
         resetReflexes();
+        resetChoices();
         renderProfil(main());
       },
     }, 'Effacer tous mes résultats'));

@@ -221,6 +221,13 @@ async function fillGrid(body) {
   }
 }
 
+// Fait défiler jusqu'à la cible ; une ligne du glossaire est en plus surlignée.
+function show(target) {
+  document.querySelectorAll('tr.cible').forEach((r) => r.classList.remove('cible'));
+  if (target.tagName === 'TR') target.classList.add('cible');
+  target.scrollIntoView();
+}
+
 // Tout le cours sur une page : couverture, table des matières, puis chaque partie sur une nouvelle
 // page à l'impression. Les liens internes pointent vers des ancres de cette page (#c3-7-…), ce qui
 // donne des liens cliquables dans le PDF. tools/pdf_cours.mjs imprime cette page et remplit les
@@ -263,7 +270,7 @@ export function renderPrint(main) {
     const a = e.target.closest('a[href^="#"]');
     if (!a || a.getAttribute('href').startsWith('#cours')) return;
     const target = document.getElementById(a.getAttribute('href').slice(1));
-    if (target) { e.preventDefault(); target.scrollIntoView(); }
+    if (target) { e.preventDefault(); show(target); }
   };
   window.coursNumeros = (map) => {
     for (const el of main.querySelectorAll('.toc-pageno')) el.textContent = map[el.dataset.for] ?? '';
@@ -306,7 +313,7 @@ export function renderCours(main, pageId, sectionId) {
   clear(main).append(navBar(pages, i, 'top'), body, navBar(pages, i, 'bottom'));
 
   const target = sectionId && document.getElementById(sectionId);
-  if (target) target.scrollIntoView();
+  if (target) show(target);
   else window.scrollTo(0, 0);
 
   document.onkeydown = (e) => {

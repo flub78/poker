@@ -1,9 +1,10 @@
 // Exercice : quelle décision ? Une position, une main, une action à choisir.
-// Réglé sur une étape de « Pour retenir la grille » (C2.2) : la correction suit la stratégie de cette étape.
+// Réglé sur le sous-niveau choisi (étape de « Pour retenir la grille », C2.2 ; settings.step, donné par
+// js/shell.js) : la correction suit la stratégie de cette étape.
 import { h } from '../../js/dom.js';
 import { pick } from '../../js/cards.js';
 import { cardsFor } from '../ranges.js';
-import { STEPS, FULL, decide, severity, actionLabel } from '../strategy.js';
+import { FULL, decide, severity, actionLabel } from '../strategy.js';
 import { makeSituation, handFor } from '../situations.js';
 import { situationView, actionButtons } from '../hand.js';
 
@@ -17,9 +18,8 @@ export default {
   id: 'decision',
   title: 'Quelle décision ?',
   competences: 'C2.1 à C2.3',
-  summary: 'Une position, deux cartes : relancer, suivre, checker ou se coucher. Réglez l\'étape où vous en êtes ; passez à la suivante après 19 sur 20.',
+  summary: 'Une position, deux cartes : relancer, suivre, checker ou se coucher, selon la stratégie de votre sous-niveau. Passez au suivant après 19 sur 20.',
   settings: [
-    { id: 'step', label: 'Étape', default: '0', options: STEPS },
     { id: 'kind', label: 'Situations', default: 'all',
       options: [
         { value: 'all', label: 'Toutes' },
@@ -34,7 +34,7 @@ export default {
   ],
 
   create(rand, settings, report) {
-    const step = Number(settings.step);
+    const step = settings.step ?? FULL;
     const length = Number(settings.series);
     let root;
     let n = 0;
@@ -96,8 +96,8 @@ export default {
       root.replaceChildren(h('section', { class: `result ${passed ? 'ok' : 'ko'}` },
         h('p', { class: 'score' }, `${good} / ${length}`),
         h('p', {}, passed
-          ? (step < FULL ? 'Étape réussie : passez à l\'étape suivante.' : 'Grille maîtrisée : vous êtes prêt pour le test 2.')
-          : 'Il faut 19 sur 20 : relisez la grille de cette étape et refaites une série.'),
+          ? (step < FULL ? 'Sous-niveau réussi : passez au suivant.' : 'Grille maîtrisée : vous êtes prêt pour le test 2.')
+          : 'Il faut 19 sur 20 : relisez la grille de ce sous-niveau et refaites une série.'),
         h('div', { class: 'practice-actions' }, again)));
     }
 

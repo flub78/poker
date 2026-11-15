@@ -15,24 +15,376 @@
     "3d3e87a9-2b50": "doc/figures/fig-range.png"
   },
   "pages": [
-    { "titre": "Introduction", "id": "introduction", "court": "Introduction" },
-    { "titre": "Mode d'emploi", "id": "mode-d-emploi" },
-    { "titre": "Niveau 1\\b", "id": "niveau-1" },
-    { "titre": "Niveau 2\\b", "id": "niveau-2" },
-    { "titre": "Niveau 3\\b", "id": "niveau-3" },
-    { "titre": "Niveau 4\\b", "id": "niveau-4" },
-    { "titre": "Niveau 5\\b", "id": "niveau-5" },
-    { "titre": "Niveau 6\\b", "id": "niveau-6" },
-    { "titre": "Grille d'auto-évaluation", "id": "grille", "annexe": true },
-    { "titre": "Ressources d'entraînement", "id": "ressources", "annexe": true },
-    { "titre": "Glossaire", "id": "glossaire", "annexe": true }
+    {
+      "titre": "Introduction",
+      "id": "introduction",
+      "court": "Introduction"
+    },
+    {
+      "titre": "Mode d'emploi",
+      "id": "mode-d-emploi"
+    },
+    {
+      "titre": "Niveau 1\\b",
+      "id": "niveau-1"
+    },
+    {
+      "titre": "Niveau 2\\b",
+      "id": "niveau-2"
+    },
+    {
+      "titre": "Niveau 3\\b",
+      "id": "niveau-3"
+    },
+    {
+      "titre": "Niveau 4\\b",
+      "id": "niveau-4"
+    },
+    {
+      "titre": "Niveau 5\\b",
+      "id": "niveau-5"
+    },
+    {
+      "titre": "Niveau 6\\b",
+      "id": "niveau-6"
+    },
+    {
+      "titre": "Grille d'auto-évaluation",
+      "id": "grille",
+      "annexe": true
+    },
+    {
+      "titre": "Ressources d'entraînement",
+      "id": "ressources",
+      "annexe": true
+    },
+    {
+      "titre": "Grille des mains à colorier",
+      "id": "grille-mains",
+      "annexe": true,
+      "court": "Grille à colorier"
+    },
+    {
+      "titre": "Glossaire",
+      "id": "glossaire",
+      "annexe": true
+    }
   ],
-  "couverture": { "page": "introduction", "credit": "Photo" },
+  "couverture": {
+    "page": "introduction",
+    "credit": "Photo"
+  },
   "escaliers": [
     {
       "titre": "Six niveaux, chacun ouvert par un test de passage",
       "prefixe": "Niveau ",
       "legende": "Progression : 6 niveaux, 5 tests de passage"
     }
-  ]
+  ],
+  "glossaire": {
+    "_doc": "Liens vers le glossaire : première occurrence de chaque terme dans chaque section. Forme de base = le terme avant sa parenthèse ; « formes » ajoute synonymes et conjugaisons (pluriel en s/x automatique) ; « exclure » = expressions où un mot du glossaire a un autre sens.",
+    "page": "glossaire",
+    "pages_sans_liens": [
+      "grille",
+      "grille-mains"
+    ],
+    "ignorer": [
+      "Poker"
+    ],
+    "formes": {
+      "3-bet": [
+        "sur-relance",
+        "sur-relancer",
+        "sur-relancent",
+        "sur-relancez",
+        "sur-relancé"
+      ],
+      "Abattage (showdown)": [
+        "showdown"
+      ],
+      "All-in adjusted EV": [
+        "EV ajustée sur les tapis"
+      ],
+      "Apparié (flop)": [
+        "appariés",
+        "flop apparié",
+        "flops appariés"
+      ],
+      "Assorties (s)": [
+        "assortie",
+        "assortis",
+        "suited"
+      ],
+      "BB (grosse blind)": [
+        "grosse blind",
+        "big blind",
+        "grosses blinds"
+      ],
+      "Bet (miser)": [
+        "miser",
+        "misez",
+        "mise",
+        "misé"
+      ],
+      "Blinds": [
+        "blind"
+      ],
+      "Bluff": [
+        "bluffer",
+        "bluffez",
+        "bluffe",
+        "bluffent"
+      ],
+      "Bouton (BTN, dealer)": [
+        "BTN",
+        "dealer"
+      ],
+      "C-bet (continuation bet)": [
+        "continuation bet",
+        "c-bette",
+        "mise de continuation"
+      ],
+      "Call (suivre)": [
+        "suivre",
+        "suivez",
+        "suivi"
+      ],
+      "Calling station": [
+        "large-passif"
+      ],
+      "Cartes privées": [
+        "cartes privées"
+      ],
+      "Check (parole)": [
+        "checker",
+        "checkez",
+        "checke",
+        "faire parole",
+        "faites parole",
+        "fait parole",
+        "faites plutôt parole",
+        "fait parfois parole"
+      ],
+      "Connectées": [
+        "connectors"
+      ],
+      "Cote du pot (pot odds)": [
+        "cote",
+        "pot odds"
+      ],
+      "Cotes implicites (implied odds)": [
+        "implied odds",
+        "cotes implicites inverses"
+      ],
+      "Couleur (flush)": [
+        "flush"
+      ],
+      "Défendre (sa blind)": [
+        "défend",
+        "défense en BB"
+      ],
+      "Dépareillées (offsuit)": [
+        "dépareillé",
+        "dépareillés",
+        "dépareillée",
+        "hors couleur"
+      ],
+      "Dominée (main)": [
+        "main dominée",
+        "mains dominées",
+        "dominé",
+        "dominated"
+      ],
+      "Double paire": [
+        "deux paires"
+      ],
+      "Droits d'entrée (buy-in)": [
+        "buy-in"
+      ],
+      "EV (espérance de gain)": [
+        "espérance de gain"
+      ],
+      "Exploiter": [
+        "exploitez",
+        "exploite",
+        "exploitable"
+      ],
+      "Fold (se coucher)": [
+        "se coucher",
+        "couchez-vous",
+        "se couche",
+        "se couchent",
+        "vous couchez",
+        "vous coucher"
+      ],
+      "Gutshot (quinte ventrale)": [
+        "quinte ventrale"
+      ],
+      "Hold'em (Texas Hold'em)": [
+        "Texas Hold'em"
+      ],
+      "Hors position (OOP)": [
+        "OOP",
+        "out of position",
+        "hors de position"
+      ],
+      "Humide (flop)": [
+        "coordonné",
+        "coordonnés",
+        "flop humide",
+        "flops humides"
+      ],
+      "Large / passif": [
+        "large",
+        "passif",
+        "passive"
+      ],
+      "Limp": [
+        "limper",
+        "limpé",
+        "limpez"
+      ],
+      "Logiciel de suivi (tracker)": [
+        "logiciels de suivi"
+      ],
+      "Main de départ": [
+        "mains de départ"
+      ],
+      "Main faite": [
+        "mains faites",
+        "made hands"
+      ],
+      "Maniaque": [
+        "large-agressif"
+      ],
+      "MDF (minimum defense frequency)": [
+        "défense minimale"
+      ],
+      "Monotone (flop)": [
+        "flop monotone",
+        "flops monotones"
+      ],
+      "No-Limit": [
+        "no limit"
+      ],
+      "Outs sales": [
+        "outs « sales »"
+      ],
+      "Paire servie": [
+        "paires servies",
+        "pocket pair"
+      ],
+      "Payer pour voir": [
+        "« pour voir »"
+      ],
+      "Payer un tirage": [
+        "payer les tirages",
+        "payez jamais un tirage",
+        "se payer"
+      ],
+      "Pot partagé (split pot)": [
+        "pot est partagé",
+        "split pot"
+      ],
+      "Quinte (suite)": [
+        "straight"
+      ],
+      "Quinte bilatérale": [
+        "quintes bilatérales",
+        "open-ended"
+      ],
+      "Quinte flush (royale)": [
+        "quinte flush royale"
+      ],
+      "Raise (relancer)": [
+        "relancer",
+        "relance",
+        "relancez",
+        "relancé",
+        "relancent",
+        "relançant"
+      ],
+      "Règle du 2 et du 4": [
+        "règle du 4"
+      ],
+      "Rock": [
+        "serré-passif"
+      ],
+      "SB (petite blind)": [
+        "petite blind",
+        "small blind"
+      ],
+      "Se refaire": [
+        "vous refaire"
+      ],
+      "Sec (flop)": [
+        "flop sec",
+        "flops secs",
+        "tableau sec"
+      ],
+      "Serré / agressif": [
+        "serré",
+        "serrée",
+        "serrés",
+        "agressif",
+        "agressive",
+        "tight-aggressive"
+      ],
+      "Solveur": [
+        "solver"
+      ],
+      "TAG": [
+        "serré-agressif"
+      ],
+      "Tableau (board)": [
+        "board",
+        "cartes communes"
+      ],
+      "Tapis (stack)": [
+        "all-in",
+        "stack",
+        "à tapis",
+        "faire tapis"
+      ],
+      "Tapis effectif": [
+        "effective stack"
+      ],
+      "Tirage": [
+        "draw"
+      ],
+      "Top paire": [
+        "top pair"
+      ],
+      "Tour d'enchères": [
+        "tours d'enchères"
+      ],
+      "Valeur (miser pour la)": [
+        "value bet"
+      ],
+      "Voler les blinds": [
+        "voler ses blinds"
+      ]
+    },
+    "exclure": [
+      "même couleur",
+      "de couleurs",
+      "couleur commune",
+      "code couleur",
+      "la couleur du niveau",
+      "une couleur et un rang",
+      "carte de la couleur",
+      "ce tableau",
+      "le tableau des",
+      "ses boutons",
+      "sans limite",
+      "à suivre",
+      "valeur espérée",
+      "puis le tirage",
+      "les couleurs",
+      "ligne du tableau",
+      "Suivre aussi",
+      "à carte haute",
+      "« Position minimum »"
+    ]
+  }
 }

@@ -8,6 +8,25 @@
 # Usage : bin/deploy.sh <destination rsync> [options rsync]
 #   bin/deploy.sh utilisateur@vps:/chemin/public_html/poker/
 #   bin/deploy.sh utilisateur@vps:/chemin/public_html/poker/ --dry-run     (simulation)
+#
+# Cache côté serveur (flub78.net : nginx devant Apache ; nginx sert lui-même les fichiers).
+# Le ?v= ne couvre que app.js et style.css ; les modules chargés par import n'ont pas de numéro.
+# Sans règle, nginx envoie « expires max » (10 ans) et les navigateurs gardent l'ancienne
+# version. À mettre dans le bloc server HTTPS, avant les autres location (ou dans le fichier
+# d'inclusion personnalisé du panneau d'administration), puis nginx -t && systemctl reload nginx :
+#
+#   location ^~ /poker/ {
+#       index index.html;
+#       location ~* \.(?:html|js|mjs|css|json|csv|md)$ {
+#           expires epoch;      # Cache-Control: no-cache, revalidation par etag
+#       }
+#       location ~* \.(?:png|jpe?g|svg|webp|gif|ico|woff2?)$ {
+#           expires 7d;
+#       }
+#   }
+#
+# Vérifier : curl -sI https://flub78.net/poker/simulateur/simulateur.js | grep -i cache-control
+# (attendu : no-cache). « expires » plutôt que add_header, qui annulerait les en-têtes du parent (HSTS).
 
 set -euo pipefail
 

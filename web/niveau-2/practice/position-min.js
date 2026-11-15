@@ -1,9 +1,10 @@
 // Exercice : position minimum. Une main : à partir de quelle position la relance-t-on
-// quand personne n'a relancé ? UTG (et MP), CO (et SB), BTN, ou jamais.
+// quand personne n'a relancé ? UTG (et MP), CO (et SB), BTN, ou jamais. Les listes sont celles du
+// sous-niveau choisi (settings.step).
 import { h } from '../../js/dom.js';
 import { pick, cardRow } from '../../js/cards.js';
 import { cardsFor, handName, coveringToken, frontier, randomHand } from '../ranges.js';
-import { UTG, CO, BTN, minPosition } from '../strategy.js';
+import { FULL, openRange, minPosition } from '../strategy.js';
 
 const CHOICES = [
   ['UTG', 'UTG (et MP)'],
@@ -11,7 +12,6 @@ const CHOICES = [
   ['BTN', 'BTN seulement'],
   ['jamais', 'Jamais'],
 ];
-const LIST = { UTG, CO, BTN };
 
 export default {
   id: 'position-min',
@@ -27,7 +27,9 @@ export default {
   ],
 
   create(rand, settings, report) {
-    const edges = [...new Set([...frontier(UTG.set), ...frontier(CO.set), ...frontier(BTN.set)])];
+    const step = settings.step ?? FULL;
+    const list = (pos) => openRange(pos, step);
+    const edges = [...new Set(['UTG', 'CO', 'BTN'].flatMap((pos) => frontier(list(pos).set)))];
     let root;
     let code;
     let cards;
@@ -43,16 +45,16 @@ export default {
     function choose(value) {
       if (answer) return;
       answer = value;
-      report(value === minPosition(code));
+      report(value === minPosition(code, step));
       show();
     }
 
     function feedback() {
-      const want = minPosition(code);
+      const want = minPosition(code, step);
       const ok = answer === want;
       const why = want === 'jamais'
         ? `${handName(code)} n'est dans aucune liste, même pas celle du BTN.`
-        : `${handName(code)} entre dans la liste ${want === 'UTG' ? 'UTG' : want === 'CO' ? 'du CO' : 'du BTN'} par ${coveringToken(LIST[want], code)}.`;
+        : `${handName(code)} entre dans la ${list(want).name} par ${coveringToken(list(want), code)}.`;
       const btn = h('button', { type: 'button', class: 'btn', onclick: next }, 'Main suivante →');
       setTimeout(() => btn.focus(), 0);
       return h('div', {},

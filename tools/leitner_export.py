@@ -8,6 +8,10 @@ Lit les tableaux du Markdown (conventions en tête du fichier), et écrit à cô
   - <nom>.csv : le même questions.csv, pour le relire dans un tableur.
 Les images viennent de doc/leitner/images/ (tools/leitner_images.mjs) ; une image manquante
 est une erreur. La banque est éditée ensuite dans mentor seulement : ce script sert à l'amorcer.
+
+Thème : le titre de niveau du Markdown (« Niveau 1 — Les règles »). Une question avec une colonne
+Sous-niveau (niveau 2) prend « Niveau 2.N — <nom> », le nom venant de la table « Sous-niveau | Nom »
+des conventions (web/js/sous-niveaux.js lit le numéro ; mentor garde le thème en texte libre).
 """
 import csv
 import io
@@ -33,7 +37,7 @@ def cards_to_text(text):
 
 
 def read_questions(md):
-    theme, head, out = None, None, []
+    theme, head, out, names = None, None, [], {}
     for line in md.splitlines():
         if line.startswith('## '):
             theme = line[3:].strip()
@@ -41,11 +45,20 @@ def read_questions(md):
             head = None
             continue
         cells = [c.strip() for c in line.strip().strip('|').split('|')]
-        if cells[0] == 'ID':
+        if cells[0] in ('ID', 'Sous-niveau'):
             head = cells
+        elif head and head[0] == 'Sous-niveau' and not set(cells[0]) <= set('-'):
+            names[cells[0]] = cells[1]
         elif head and not set(cells[0]) <= set('-'):
             row = dict(zip(head, cells))
             row['Thème'] = theme
+            sub = row.get('Sous-niveau', '')
+            if sub:
+                if sub not in names:
+                    sys.exit(f"{row['ID']} : sous-niveau {sub} absent de la table « Sous-niveau | Nom »")
+                if not theme.startswith(f"Niveau {sub.split('.')[0]} "):
+                    sys.exit(f"{row['ID']} : sous-niveau {sub} hors de « {theme} »")
+                row['Thème'] = f"Niveau {sub} — {names[sub]}"
             out.append(row)
     return out
 
@@ -133,7 +146,8 @@ def main():
         'format_version': 1,
         'nom': f"Poker — Réflexes, niveaux {levels[0]} à {levels[-1]}",
         'description': "Questions courtes du cours d'initiation au poker, à réponse immédiate, "
-                       "souvent sur une image de main ou de tableau. Thème = niveau du cours.",
+                       "souvent sur une image de main ou de tableau. Thème = niveau du cours "
+                       "(sous-niveau pour le niveau 2 : « Niveau 2.3 — … »).",
     }
     out = src.with_suffix('')
     out.with_suffix('.csv').write_text(text, encoding='utf-8')
