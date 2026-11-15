@@ -132,25 +132,6 @@ image à lire, une décision. Pas de liste à réciter.
 | N1-53 | VF | | | Un joueur à tapis peut gagner le pot annexe, formé des mises faites après son tapis. | Faux | Il ne joue que le pot principal. | C1.2 |
 | N1-54 | NUM | | | A fait tapis pour 50 ; B et C suivent, puis misent encore 100 chacun. Combien vaut le pot principal (blinds non comptées) ? | 150 | 3 × 50 ; le pot annexe fait 200. | C1.2 |
 
-### Règles du niveau 1 — que jouer dès la première partie
-
-| ID | Type | Cartes | Image | Question | Réponse | Pourquoi | Section |
-|---|---|---|---|---|---|---|---|
-| N1-55 | QCM | Personne n'a relancé · Main `AS TS` | Vos deux cartes : A♠ 10♠ ; bandeau : « Personne n'a relancé ». | Niveau 1 : personne n'a relancé, vous avez cette main. Que faites-vous ? [Relancer · Suivre · Se coucher] | Relancer | AT assortis : dans la liste. | C2.2 |
-| N1-56 | QCM | Personne n'a relancé · Main `AS TD` | Vos deux cartes : A♠ 10♦ ; bandeau : « Personne n'a relancé ». | Niveau 1 : personne n'a relancé, vous avez cette main. Que faites-vous ? [Relancer · Suivre · Se coucher] | Se coucher | AT seulement assorti. | C2.2 |
-| N1-57 | QCM | Personne n'a relancé · Main `8S 8D` | Vos deux cartes : 8♠ 8♦ ; bandeau : « Personne n'a relancé ». | Niveau 1 : personne n'a relancé, vous avez cette main. Que faites-vous ? [Relancer · Suivre · Se coucher] | Relancer | Paire de 7 à As. | C2.2 |
-| N1-58 | QCM | Personne n'a relancé · Main `KS JD` | Vos deux cartes : K♠ J♦ ; bandeau : « Personne n'a relancé ». | Niveau 1 : personne n'a relancé, vous avez cette main. Que faites-vous ? [Relancer · Suivre · Se coucher] | Se coucher | KJ seulement assorti ; jamais de suivi. | C2.2 |
-| N1-59 | NUM | |  | Niveau 1 : personne n'a relancé, deux joueurs ont seulement suivi. À combien de BB relancez-vous ? | 4,5 | 2,5 + 1 par joueur qui a suivi. | C2.3 |
-| N1-60 | QCM | Un joueur a relancé · Main `AH KD` | Vos deux cartes : A♥ K♦ ; bandeau : « Un joueur a relancé ». | Niveau 1 : un joueur a relancé avant vous. Que faites-vous avec cette main ? [Sur-relancer · Suivre · Se coucher] | Sur-relancer | AA, KK, QQ ou AK sur-relancent. | C2.2 |
-| N1-61 | QCM | Un joueur a relancé · Main `JS JD` | Vos deux cartes : J♠ J♦ ; bandeau : « Un joueur a relancé ». | Niveau 1 : un joueur a relancé avant vous. Que faites-vous avec cette main ? [Sur-relancer · Suivre · Se coucher] | Se coucher | Au niveau 1, seuls AA, KK, QQ et AK continuent. Le niveau 2 apprend à suivre. | C2.2 |
-| N1-62 | VF | |  | Niveau 1 : en BB, personne n'a relancé et votre main n'est pas dans la liste. Vous checkez. | Vrai | C'est gratuit. | C2.2 |
-| N1-63 | QCM | Personne n'a misé · Main `KS QD` · Tableau `KH 7C 2S` | Vos deux cartes : K♠ Q♦ ; tableau de 3 cartes (flop) : K♥ 7♣ 2♠ ; bandeau : « Personne n'a misé ». | Niveau 1 : au flop, personne n'a misé. Que faites-vous ? [Miser la moitié du pot · Checker] | Miser la moitié du pot | Top paire. | C2.3 |
-| N1-64 | QCM | Personne n'a misé · Main `QS JS` · Tableau `KH 7C 2S` | Vos deux cartes : Q♠ J♠ ; tableau de 3 cartes (flop) : K♥ 7♣ 2♠ ; bandeau : « Personne n'a misé ». | Niveau 1 : au flop, personne n'a misé. Que faites-vous ? [Miser la moitié du pot · Checker] | Checker | Pas de top paire. | C2.3 |
-| N1-65 | QCM | Vous misez, on vous relance · Main `KS QD` · Tableau `KH 7C 2S` | Vos deux cartes : K♠ Q♦ ; tableau de 3 cartes (flop) : K♥ 7♣ 2♠ ; bandeau : « Vous misez, on vous relance ». | Niveau 1 : vous avez misé, l'adversaire relance. Que faites-vous ? [Relancer · Suivre · Se coucher] | Se coucher | Top paire : on suit une mise, pas une relance. | C2.3 |
-| N1-66 | QCM | Face à une mise · Main `7S 7D` · Tableau `KH 7C 2S` | Vos deux cartes : 7♠ 7♦ ; tableau de 3 cartes (flop) : K♥ 7♣ 2♠ ; bandeau : « Face à une mise ». | Niveau 1 : au flop, l'adversaire mise. Que faites-vous ? [Relancer · Suivre · Se coucher] | Relancer | Brelan : main forte, 3 fois la mise. | C2.3 |
-| N1-67 | VF | |  | Niveau 1 : avant le flop, quand personne n'a relancé, on ne se contente jamais de suivre. | Vrai | On relance ou on se couche. | C2.3 |
-| N1-68 | VF | Main `AS 5D` · Tableau `KH KC 7S` | Vos deux cartes : A♠ 5♦ ; tableau de 3 cartes (flop) : K♥ K♣ 7♠. | Niveau 1 : avec cette main et ce tableau, vous avez une top paire. | Faux | La paire de rois est au tableau : vos cartes n'y participent pas. | C2.3 |
-
 ---
 
 ## Niveau 2 — Éviter les grosses erreurs
@@ -209,6 +190,9 @@ image à lire, une décision. Pas de liste à réciter.
 | N2-38 | NUM | | | Personne n'est encore entré dans le pot : à combien de BB ouvrez-vous ? | 2,5 | | C2.3 | 2.0 |
 | N2-39 | NUM | | | Un joueur a déjà suivi (limp) : à combien de BB ouvrez-vous ? | 3,5 | 2,5 + 1 par suiveur. | C2.3 | 2.0 |
 | N2-40 | QCM | | | Au bouton, quelle part environ des mains de départ ouvrez-vous ? [9 % · 17 % · 29 %] | 29 % | UTG 9 %, CO 17 %. | C2.2 | 2.3 |
+| N2-81 | QCM | UTG · Main `AS TS` | Vos deux cartes : A♠ 10♠ ; bandeau : « UTG ». | Personne n'a relancé ; vous êtes UTG (premier à parler) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | ATs+. | C2.2 | 2.0 |
+| N2-82 | QCM | UTG · Main `8S 8D` | Vos deux cartes : 8♠ 8♦ ; bandeau : « UTG ». | Personne n'a relancé ; vous êtes UTG (premier à parler) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | 77+. | C2.2 | 2.0 |
+| N2-83 | NUM | | | Deux joueurs ont seulement suivi (limp) : à combien de BB ouvrez-vous ? | 4,5 | 2,5 + 1 par suiveur. | C2.3 | 2.0 |
 
 ### Face à une relance (C2.2)
 
@@ -231,14 +215,16 @@ image à lire, une décision. Pas de liste à réciter.
 
 | ID | Type | Cartes | Image | Question | Réponse | Pourquoi | Section | Sous-niveau |
 |---|---|---|---|---|---|---|---|---|
-| N2-53 | VF | Main `AS KD` · Tableau `KH 8C 3S` | Vos deux cartes : A♠ K♦ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠. | Avec cette main et ce flop, vous avez une top paire. | Vrai | Paire avec la plus haute carte du tableau. | C2.3 | 2.5 |
-| N2-54 | VF | Main `AH 6D` · Tableau `TC 6S 2H` | Vos deux cartes : A♥ 6♦ ; tableau de 3 cartes (flop) : 10♣ 6♠ 2♥. | Avec cette main et ce flop, vous avez une top paire. | Faux | Paire du milieu. | C2.3 | 2.5 |
-| N2-55 | VF | Main `9S 9H` · Tableau `7D 5C 2H` | Vos deux cartes : 9♠ 9♥ ; tableau de 3 cartes (flop) : 7♦ 5♣ 2♥. | Avec cette main et ce flop, vous avez une top paire. | Vrai | Paire en main plus haute que le tableau. | C2.3 | 2.5 |
-| N2-56 | QCM | Personne n'a misé · Main `AS KD` · Tableau `KH 8C 3S` | Vos deux cartes : A♠ K♦ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠ ; bandeau : « Personne n'a misé ». | Au flop, personne n'a misé. Que faites-vous ? [Miser ½ pot · Checker] | Miser ½ pot | Top paire ou mieux. | C2.3 | 2.5 |
-| N2-57 | QCM | Personne n'a misé · Main `QS JS` · Tableau `KH 8C 3S` | Vos deux cartes : Q♠ J♠ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠ ; bandeau : « Personne n'a misé ». | Au flop, personne n'a misé. Que faites-vous ? [Miser ½ pot · Checker] | Checker | Pas de top paire. | C2.3 | 2.5 |
-| N2-58 | QCM | Face à une mise · Main `KS 8S` · Tableau `KH 8C 3S` | Vos deux cartes : K♠ 8♠ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠ ; bandeau : « Face à une mise ». | Au flop, l'adversaire mise. Que faites-vous ? [Relancer ×3 · Suivre · Se coucher] | Relancer ×3 | Deux paires avec vos deux cartes. | C2.3 | 2.5 |
-| N2-59 | QCM | Face à une mise · Main `AS KD` · Tableau `KH 8C 3S` | Vos deux cartes : A♠ K♦ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠ ; bandeau : « Face à une mise ». | Au flop, l'adversaire mise. Que faites-vous ? [Relancer ×3 · Suivre · Se coucher] | Suivre | Top paire. | C2.3 | 2.5 |
-| N2-60 | QCM | Vous misez, on vous relance · Main `AS KD` · Tableau `KH 8C 3S` | Vos deux cartes : A♠ K♦ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠ ; bandeau : « Vous misez, on vous relance ». | Au flop, vous misez et l'adversaire relance. Que faites-vous ? [Relancer · Suivre · Se coucher] | Se coucher | Règle 3 : main moyenne contre grosse action. | C2.3 | 2.5 |
+| N2-53 | VF | Main `AS KD` · Tableau `KH 8C 3S` | Vos deux cartes : A♠ K♦ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠. | Avec cette main et ce flop, vous avez une top paire. | Vrai | Paire avec la plus haute carte du tableau. | C2.3 | 2.0 |
+| N2-54 | VF | Main `AH 6D` · Tableau `TC 6S 2H` | Vos deux cartes : A♥ 6♦ ; tableau de 3 cartes (flop) : 10♣ 6♠ 2♥. | Avec cette main et ce flop, vous avez une top paire. | Faux | Paire du milieu. | C2.3 | 2.0 |
+| N2-55 | VF | Main `9S 9H` · Tableau `7D 5C 2H` | Vos deux cartes : 9♠ 9♥ ; tableau de 3 cartes (flop) : 7♦ 5♣ 2♥. | Avec cette main et ce flop, vous avez une top paire. | Vrai | Paire en main plus haute que le tableau. | C2.3 | 2.0 |
+| N2-56 | QCM | Personne n'a misé · Main `AS KD` · Tableau `KH 8C 3S` | Vos deux cartes : A♠ K♦ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠ ; bandeau : « Personne n'a misé ». | Au flop, personne n'a misé. Que faites-vous ? [Miser ½ pot · Checker] | Miser ½ pot | Top paire ou mieux. | C2.3 | 2.0 |
+| N2-57 | QCM | Personne n'a misé · Main `QS JS` · Tableau `KH 8C 3S` | Vos deux cartes : Q♠ J♠ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠ ; bandeau : « Personne n'a misé ». | Au flop, personne n'a misé. Que faites-vous ? [Miser ½ pot · Checker] | Checker | Pas de top paire. | C2.3 | 2.0 |
+| N2-58 | QCM | Face à une mise · Main `KS 8S` · Tableau `KH 8C 3S` | Vos deux cartes : K♠ 8♠ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠ ; bandeau : « Face à une mise ». | Au flop, l'adversaire mise. Que faites-vous ? [Relancer ×3 · Suivre · Se coucher] | Relancer ×3 | Deux paires avec vos deux cartes. | C2.3 | 2.0 |
+| N2-59 | QCM | Face à une mise · Main `AS KD` · Tableau `KH 8C 3S` | Vos deux cartes : A♠ K♦ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠ ; bandeau : « Face à une mise ». | Au flop, l'adversaire mise. Que faites-vous ? [Relancer ×3 · Suivre · Se coucher] | Suivre | Top paire. | C2.3 | 2.0 |
+| N2-60 | QCM | Vous misez, on vous relance · Main `AS KD` · Tableau `KH 8C 3S` | Vos deux cartes : A♠ K♦ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠ ; bandeau : « Vous misez, on vous relance ». | Au flop, vous misez et l'adversaire relance. Que faites-vous ? [Relancer · Suivre · Se coucher] | Se coucher | Règle 3 : main moyenne contre grosse action. | C2.3 | 2.0 |
+| N2-84 | VF | Main `AS 5D` · Tableau `KH KC 7S` | Vos deux cartes : A♠ 5♦ ; tableau de 3 cartes (flop) : K♥ K♣ 7♠. | Avec cette main et ce flop, vous avez une top paire. | Faux | La paire de rois est au tableau : vos cartes n'y participent pas. | C2.3 | 2.0 |
+| N2-85 | QCM | Face à une mise · Main `7S 7D` · Tableau `KH 7C 2S` | Vos deux cartes : 7♠ 7♦ ; tableau de 3 cartes (flop) : K♥ 7♣ 2♠ ; bandeau : « Face à une mise ». | Au flop, l'adversaire mise. Que faites-vous ? [Relancer ×3 · Suivre · Se coucher] | Relancer ×3 | Brelan : main forte. | C2.3 | 2.0 |
 | N2-61 | QCM | | | Avec deux cartes assorties, quelle est la probabilité de finir avec une couleur à la river ? [6 % · 20 % · 35 %] | 6 % | Ne pas surestimer les assorties. | C2.4 | 2.5 |
 
 ### Règles du niveau 2 — sous-niveaux et règles communes
@@ -262,8 +248,8 @@ image à lire, une décision. Pas de liste à réciter.
 | N2-76 | NUM | |  | Vous avez relancé au CO ; le bouton sur-relance à 8 BB. Vous avez AA. À combien de BB faites-vous votre 4-bet ? | 24 | 3 fois la sur-relance, en position. | C2.2 | 2.0 |
 | N2-77 | VF | |  | Avant le flop, quand une relance engagerait plus de la moitié de votre tapis, vous mettez tout le tapis. | Vrai | | C2.2 | 2.0 |
 | N2-78 | QCM | |  | Un joueur a relancé, un autre a suivi, puis c'est à vous. Quelle partie de la grille s'applique ? [Personne n'a relancé · Face à une relance] | Face à une relance | Un suivi ne change rien : il y a une relance. | C2.2 | 2.0 |
-| N2-79 | QCM | Vous misez, on vous relance · Main `KS KD` · Tableau `KH 8C 3S` | Vos deux cartes : K♠ K♦ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠ ; bandeau : « Vous misez, on vous relance ». | Au flop, vous avez misé et l'adversaire relance. Que faites-vous ? [Relancer · Suivre · Se coucher] | Relancer | Main forte : on relance encore une fois, puis on suit. | C2.3 | 2.5 |
-| N2-80 | VF | |  | Le schéma simple d'après le flop vaut aussi au turn et à la river. | Vrai | À chaque tour. | C2.3 | 2.5 |
+| N2-79 | QCM | Vous misez, on vous relance · Main `KS KD` · Tableau `KH 8C 3S` | Vos deux cartes : K♠ K♦ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠ ; bandeau : « Vous misez, on vous relance ». | Au flop, vous avez misé et l'adversaire relance. Que faites-vous ? [Relancer · Suivre · Se coucher] | Relancer | Main forte : on relance encore une fois, puis on suit. | C2.3 | 2.0 |
+| N2-80 | VF | |  | Le schéma simple d'après le flop vaut aussi au turn et à la river. | Vrai | À chaque tour. | C2.3 | 2.0 |
 
 ---
 

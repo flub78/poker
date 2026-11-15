@@ -12,7 +12,7 @@ export const playLevel = (level) => Math.min(Math.max(level, 2), 4);
 
 // step : sous-niveau 2.N du joueur humain (étape N de la grille, js/sous-niveaux.js), appliqué avant
 // le flop quand il joue aux règles du niveau 2 ; null : la grille complète.
-// rules : le niveau des règles appliquées, en texte (« 3 », « 2.3 » ; « 1 » : niveau 1 = étape 0 de la grille).
+// rules : le niveau des règles appliquées, en texte (« 3 », « 2.3 » ; un joueur du niveau 1 joue le sous-niveau 2.0).
 export function decider(hand, seat, level, step = null) {
   const legal = legalActions(hand);
   if (!legal || legal.seat !== seat) throw new Error('Ce n\'est pas à ce joueur de parler.');
@@ -21,7 +21,7 @@ export function decider(hand, seat, level, step = null) {
   const d = hand.street === 'preflop'
     ? preflopDecision(hand, seat, lvl, legal, st ?? FULL)
     : postflopDecision(hand, seat, lvl, legal);
-  const rules = level < 2 ? '1' : st === null ? String(lvl) : STEPS[st].code;
+  const rules = level < 2 ? STEPS[0].code : st === null ? String(lvl) : STEPS[st].code;
   return { action: makeLegal(d.action, legal), raisons: d.raisons, facts: d.facts, level: lvl, rules };
 }
 

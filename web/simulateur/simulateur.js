@@ -46,7 +46,7 @@ export function renderSimulateur(main) {
   let mentorStats = null;       // décompte des verdicts de la partie (bilan)
   let view = 'table';           // 'table' ou 'evaluation'
 
-  // Étape de la grille appliquée à l'humain : au niveau 1, le filet (étape 0, règles du niveau 1) ;
+  // Étape de la grille appliquée à l'humain : au niveau 1, le sous-niveau 2.0 (le filet) ;
   // au niveau 2, son sous-niveau, choisi aussi dans les exercices ; au-delà, la grille complète.
   const humanStep = () => (settings.humanLevel <= 1 ? 0 : settings.humanLevel === 2 ? currentSubLevel(2).step : null);
 
@@ -301,7 +301,7 @@ export function renderSimulateur(main) {
     return h('section', { class: 'sim-hint', 'aria-live': 'polite' },
       h('p', { class: 'sim-hint-title' }, `Indice (règles du niveau ${hint.rules}) : `, h('strong', {}, actionLabel(hint.action, game.hand, legal))),
       reasonList(hint.raisons),
-      settings.humanLevel === 1 ? h('p', { class: 'meta' }, 'Au niveau 1, l\'indice applique les règles du niveau 1 : la liste UTG avant le flop, le schéma simple après.') : null,
+      settings.humanLevel === 1 ? h('p', { class: 'meta' }, 'Au niveau 1, l\'indice applique le sous-niveau 2.0, « Le filet » : la liste UTG avant le flop, le schéma simple après. Le niveau 1 apprend les règles du jeu ; la stratégie commence au niveau 2.') : null,
       settings.humanLevel > 4 ? h('p', { class: 'meta' }, 'Les règles des niveaux 5 et 6 arrivent bientôt : l\'indice applique celles du niveau 4.') : null);
   }
 

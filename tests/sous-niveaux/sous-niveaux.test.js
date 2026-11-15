@@ -124,7 +124,7 @@ test('simulateur : l\'humain au niveau 2 est conseillé et jugé selon son sous-
   assert.equal(decider(h, 5, 2, FULL).rules, '2');       // la dernière étape est la grille complète
   assert.equal(decider(h, 5, 3, 0).rules, '3');          // le sous-niveau ne vaut qu'au niveau 2
   assert.equal(decider(h, 5, 1, 0).action.type, 'fold'); // niveau 1 : la liste UTG partout
-  assert.equal(decider(h, 5, 1, 0).rules, '1');
+  assert.equal(decider(h, 5, 1, 0).rules, '2.0');       // niveau 1 : le sous-niveau 2.0
   const raise = { type: 'raise', to: 5 };
   const j0 = judge(h, raise, decider(h, 5, 2, 0), legalActions(h));
   assert.notEqual(j0.verdict, 'conforme');
@@ -141,5 +141,5 @@ test('évaluation : sous-niveau de l\'humain seulement, aux règles du niveau 2'
   assert.equal(judgeRules({ human: true, level: 2, step: null }), '2');
   // Niveau 1 : les règles du niveau 1 sont l'étape 0 de la grille (le filet).
   assert.equal(judgeStep({ human: true, level: 1, step: 0 }), 0);
-  assert.equal(judgeRules({ human: true, level: 1, step: 0 }), '1');
+  assert.equal(judgeRules({ human: true, level: 1, step: 0 }), '2.0');
 });

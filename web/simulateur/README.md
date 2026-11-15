@@ -5,8 +5,8 @@ en bas et 5 bots qui appliquent les règles du cours. Plan et état d'avancement
 [`doc/plan-simulateur.md`](../../doc/plan-simulateur.md).
 
 Règles appliquées à l'humain (Indice, mentor, évaluation) : celles de son niveau, données en tête de
-chaque niveau du cours (« Règles du niveau N »). Niveau 1 : la liste UTG avant le flop (étape 0 de la
-grille) et le schéma simple après ; niveau 2 : son sous-niveau 2.0 à 2.5 (`js/sous-niveaux.js`) ;
+chaque niveau du cours (« Règles du niveau N »). Niveau 1 : le sous-niveau 2.0, la liste UTG avant le flop
+et le schéma simple après (le niveau 1 du cours n'a pas de stratégie) ; niveau 2 : son sous-niveau 2.0 à 2.5 (`js/sous-niveaux.js`) ;
 niveau 4 : `regles/postflop4.js` après le flop (c-bet selon la texture, turn, river, relances selon le
 SPR) ; niveaux 5 et 6 : pour l'instant les règles du niveau 4.
 

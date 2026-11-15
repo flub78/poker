@@ -15,8 +15,8 @@ export const REFERENCE_LEVEL = Math.max(...BOT_LEVELS);
 export const judgeLevel = (player) => (player.human ? playLevel(player.level) : REFERENCE_LEVEL);
 // Sous-niveau de l'humain jugé aux règles du niveau 2 (étape de la grille), sinon null.
 export const judgeStep = (player) => (player.human && judgeLevel(player) === 2 && Number.isInteger(player.step) && player.step < FULL ? player.step : null);
-// Niveau des règles, en texte : « 3 », ou « 2.3 » pour un sous-niveau.
-export const judgeRules = (player) => (player.human && player.level < 2 ? '1'
+// Niveau des règles, en texte : « 3 », ou « 2.3 » pour un sous-niveau (niveau 1 : « 2.0 »).
+export const judgeRules = (player) => (player.human && player.level < 2 ? STEPS[0].code
   : judgeStep(player) === null ? String(judgeLevel(player)) : STEPS[judgeStep(player)].code);
 
 // Coût d'un coup : { stake, ev }.
