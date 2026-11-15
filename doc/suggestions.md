@@ -1,6 +1,6 @@
 # Suggestions d'amélioration
 
-Mis à jour le 2026-11-14 (S-022 faite ; avant : ajout de S-022 ; avant : ajout de S-017 ; avant : ajout de S-015 et S-016 ; avant : réalisation de S-001, S-003 à S-010, S-012 option A, S-013, S-014). Fiches classées par section ; index trié par rapport
+Mis à jour le 2026-11-15 (note sur S-015 ; avant : S-023 et S-024 faites ; avant : ajout de S-023 ; avant : S-022 faite ; avant : ajout de S-022 ; avant : ajout de S-017 ; avant : ajout de S-015 et S-016 ; avant : réalisation de S-001, S-003 à S-010, S-012 option A, S-013, S-014). Fiches classées par section ; index trié par rapport
 bénéfice/coût. Statuts : proposée · acceptée · en cours · faite · reportée · refusée.
 Règles de tenue et commandes : voir [`strategie_suggestions.md`](../strategie_suggestions.md).
 
@@ -22,6 +22,8 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 | S-014 | Tutoriel | Écrire dans le cours trois règles que l'application a dû fixer (c-bet sur flop apparié ou monotone, seuils des profils, catégories de range) | moyen | S | élevé | faite |
 | S-013 | Par fonctionnalité | Quiz préflop du niveau 2 en 2 séries de 10 (règle des 10 questions par série) | moyen | S | élevé | faite |
 | S-010 | Tutoriel | Corriger l'écart de VPIP du test du niveau 2 (18–26 % ou 12–20 %) | moyen | S | élevé | faite |
+| S-024 | Par fonctionnalité | Sous-niveaux cumulatifs du niveau 2 (2.0 à 2.5) pour les exercices, les Réflexes et le simulateur | élevé | M | élevé | faite |
+| S-023 | Tutoriel | Renvoyer vers l'annexe « Grille des mains à colorier » là où le cours demande de colorier la grille | faible | S | élevé | faite |
 | S-011 | Tutoriel | Ajouter C3.7 à la grille d'auto-évaluation | faible | S | élevé | proposée |
 | S-002 | Système | Remplacer le carnet PDF par la progression enregistrée dans l'application | élevé | M | moyen | proposée |
 | S-001 | Système | Remplacer le PDF du tutoriel par une version imprimable du site | élevé | S | élevé | faite |
@@ -302,6 +304,37 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 - **Premier pas** : ajouter la ligne dans le doc, puis `/publier-tutoriel`.
 - **Décision** :
 
+### S-023 · Renvoyer vers la grille à colorier depuis le cours
+- **Statut** : faite (2026-11-15, commit à venir) · **Date** : 2026-11-15 · **Origine** : ajout de l'annexe « Grille des mains à colorier »
+- **Constat** : le niveau 2 demande trois fois de colorier la grille 13 × 13 (« Pour retenir la
+  grille », étapes de l'escalier, case à cocher « Je colorie de mémoire… »), sans dire qu'une grille
+  vierge est en annexe.
+- **Proposition** : ajouter « (grille à imprimer en annexe) » avec un lien interne à ces endroits.
+- **Bénéfices** : le lecteur trouve la grille au moment où il en a besoin.
+- **Coûts** : S. Trois liens dans le doc ; vérifier que le générateur résout un lien vers une page
+  d'annexe (il résout aujourd'hui les liens par titre de section h3).
+- **Rapport** : élevé.
+- **Premier pas** : un lien dans le paragraphe « Pour retenir la grille », puis `/publier-tutoriel`.
+- **Décision** : acceptée le 2026-11-15. Deux liens (paragraphe sur les sous-niveaux sous « Pour
+  retenir la grille », case « Je colorie de mémoire… ») ; le générateur résout maintenant un lien
+  vers une grande partie par son titre.
+
+### S-024 · Sous-niveaux cumulatifs du niveau 2
+- **Statut** : faite (2026-11-15, commit à venir) · **Date** : 2026-11-15 · **Origine** : discussion
+  sur la charge de mémorisation du niveau 2 (43 des 61 questions des Réflexes portent sur la grille C2.2)
+- **Constat** : les étapes « Pour retenir la grille » n'existaient que dans « Quelle décision ? ».
+  Les autres exercices, les Réflexes et le simulateur demandaient la grille complète d'emblée.
+- **Proposition** : l'étape N devient le sous-niveau 2.N, choisi une fois et suivi partout
+  (exercices, Réflexes, Indice, mentor et évaluation du simulateur). Cumulatif, choix libre ; les
+  tests du niveau restent sur la grille complète. Banque : thème « Niveau 2.N — nom » ; mentor
+  inchangé (thème en texte libre).
+- **Bénéfices** : une petite quantité à retenir à la fois ; même stratégie partout à un moment donné.
+- **Coûts** : M. `js/sous-niveaux.js`, réglage dans le shell, quatre exercices, simulateur, Profil,
+  banque reclassée (61 questions, une colonne Sous-niveau), tests.
+- **Rapport** : élevé.
+- **Décision** : acceptée le 2026-11-15 (cumulatif, choix libre, évaluation au sous-niveau).
+  Autres niveaux non découpés : le niveau 1 (C1.3, 31 questions) serait le candidat suivant.
+
 ### S-015 · Simulateur de table à 6 joueurs
 - **Statut** : acceptée · **Date** : 2026-11-10 · **Origine** : demande de l'utilisateur
 - **Constat** : l'application entraîne chaque compétence isolément ; rien ne les met en jeu
@@ -321,6 +354,7 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 - **Décision** : 2026-11-10, acceptée. Pas de serveur ; Laraskel écarté pour cette
   fonctionnalité (à reconsidérer seulement avec S-012 B ou un relais vers une IA).
 
+- **Note du 2026-11-15** : chaque niveau du cours commence maintenant par ses règles complètes (« Règles du niveau N »). Celles des niveaux 4 à 6 donnent la base des bots et du mentor de la phase 5 ; le niveau 1 est déjà jugé avec les siennes (étape 0 de la grille). Niveau 4 codé le même jour (`regles/postflop4.js`, bots, Indice, mentor ; voir `doc/plan-simulateur.md`, phase 5).
 ### S-022 · Exercice d'entraînement « Comparer deux mains » au niveau 1
 - **Statut** : faite (commit « Niveau 1 : test 5 et exercice « Comparer deux mains » ») · **Date** : 2026-11-14 · **Origine** : ajout du test 5 du niveau 1
 - **Constat** : le test 5 (comparer deux mains proches) n'a pas d'exercice correspondant dans

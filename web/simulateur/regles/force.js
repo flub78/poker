@@ -25,6 +25,30 @@ export function handClass(hole, board) {
   return { cls: 'rien', text: 'aucune paire avec vos cartes' };
 }
 
+// Cartes qui donnent une quinte ou mieux grâce à vos cartes (tirages couleur et quinte), si vous
+// n'avez pas déjà une quinte. Renvoie { found: Set de clés de cartes, kinds: Set }.
+function drawCards(hole, board) {
+  const found = new Set();
+  const kinds = new Set();
+  if (board.length >= 5) return { found, kinds };
+  const seen = [...hole, ...board];
+  const rest = deck().filter((c) => !seen.some((u) => sameCard(u, c)));
+  if (evaluate(seen)[0] < CAT.STRAIGHT) {
+    for (const c of rest) {
+      const mine = evaluate([...seen, c]);
+      if (mine[0] >= CAT.STRAIGHT && compare(mine, evaluate([...board, c])) > 0) {
+        found.add(`${c.r}${c.s}`);
+        kinds.add(mine[0] === CAT.FLUSH || mine[0] === CAT.STRAIGHT_FLUSH ? 'couleur' : 'quinte');
+      }
+    }
+  }
+  return { found, kinds };
+}
+
+// Outs d'un vrai tirage (couleur, quinte) seulement : la mesure des règles du niveau 4
+// (« un tirage de 8 outs ou plus »).
+export const drawOuts = (hole, board) => drawCards(hole, board).found.size;
+
 // Outs : cartes qui donnent une quinte ou mieux grâce à vos cartes (tirages couleur et quinte),
 // plus, si vous n'avez rien, les cartes qui apparient une carte haute (au-dessus du tableau),
 // et pour une paire servie sous le tableau, les 2 cartes du brelan. Renvoie { n, kinds }.
@@ -32,19 +56,8 @@ export function outs(hole, board) {
   if (board.length >= 5) return { n: 0, kinds: [] };
   const seen = [...hole, ...board];
   const rest = deck().filter((c) => !seen.some((u) => sameCard(u, c)));
-  const now = evaluate(seen);
-  const found = new Set();
-  const kinds = new Set();
+  const { found, kinds } = drawCards(hole, board);
   const key = (c) => `${c.r}${c.s}`;
-  if (now[0] < CAT.STRAIGHT) {
-    for (const c of rest) {
-      const mine = evaluate([...seen, c]);
-      if (mine[0] >= CAT.STRAIGHT && compare(mine, evaluate([...board, c])) > 0) {
-        found.add(key(c));
-        kinds.add(mine[0] === CAT.FLUSH || mine[0] === CAT.STRAIGHT_FLUSH ? 'couleur' : 'quinte');
-      }
-    }
-  }
   const { cls } = handClass(hole, board);
   const top = Math.max(...board.map((c) => c.r));
   const pocket = hole[0].r === hole[1].r;
@@ -55,4 +68,20 @@ export function outs(hole, board) {
     for (const c of rest) if (c.r === hole[0].r) { found.add(key(c)); kinds.add('brelan'); }
   }
   return { n: found.size, kinds: [...kinds] };
+}
+
+// Force d'une main pour les règles du niveau 4 (C4.5, C4.6) :
+//   'quinte'      quinte ou mieux, grâce à vos cartes ;
+//   'deux-paires' deux paires avec vos deux cartes, ou brelan (main forte sous la quinte) ;
+//   'top-bon'     top paire avec un kicker valet ou mieux, ou paire servie au-dessus du tableau ;
+//   'top'         top paire, kicker plus faible ;
+//   'paire', 'rien' comme handClass.
+export function strength(hole, board) {
+  const { cls } = handClass(hole, board);
+  if (cls === 'forte') return evaluate([...hole, ...board])[0] >= CAT.STRAIGHT ? 'quinte' : 'deux-paires';
+  if (cls !== 'top') return cls;
+  if (hole[0].r === hole[1].r) return 'top-bon';
+  const top = Math.max(...board.map((c) => c.r));
+  const kicker = hole.find((c) => c.r !== top) ?? hole[0];
+  return kicker.r >= 11 ? 'top-bon' : 'top';
 }

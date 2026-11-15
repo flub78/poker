@@ -227,6 +227,10 @@ a.level-link:focus-visible { outline: 3px solid var(--felt-ink); outline-offset:
 .settings { display: flex; flex-wrap: wrap; gap: 12px 20px; margin: 16px 0 8px; }
 .setting { display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; font-weight: 600; color: var(--quiet); }
 .setting select { min-width: 200px; }
+/* choix du sous-niveau (js/shell.js, subLevelBar), en tête des exercices et des Réflexes */
+.sublevel-bar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 20px; margin: 16px 0; padding: 12px 16px;
+  border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--niv, var(--accent)); }
+.sublevel-bar .meta { margin: 0; flex: 1 1 280px; }
 .counter { font-weight: 600; margin: 8px 0 0; }
 .announce { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 16px; }
 .announce .form-message { flex-basis: 100%; }
@@ -445,6 +449,16 @@ a.level-link.current:hover { background: var(--felt-ink); }
   .level-link.cours-link { margin-right: 3px; }
   .stair-head { flex-direction: column; gap: 0; }
 }
+/* grille 13 × 13 des mains à colorier (tools/cours_html.py, hand_grids) : cases carrées, texte discret */
+.cours-body table.grille-mains { table-layout: fixed; width: 100%; min-width: 0; max-width: 640px; font-size: 0.72rem; }
+.cours-body .grille-mains th, .cours-body .grille-mains td {
+  min-width: 0; padding: 0; text-align: center; vertical-align: middle; aspect-ratio: 1; border-color: var(--quiet);
+}
+.cours-body .grille-mains td { color: var(--quiet); }
+.cours-body .grille-mains td.paire { font-weight: 700; }
+.cours-body .grille-mains th { color: var(--ink); }
+@media (max-width: 480px) { .cours-body table.grille-mains { font-size: 0.58rem; } }
+
 /* vue « tout le cours » (#cours/imprimer) */
 .print-only { display: none; }
 .cours-print-link { margin: 4px 0 0; }
@@ -488,6 +502,9 @@ a.level-link.current:hover { background: var(--felt-ink); }
   a { color: inherit; }
   .cours-body a[target="_blank"]::after { content: " (" attr(href) ")"; font-size: 8pt; color: var(--quiet); word-break: break-all; }
   .level-nav { display: none; }
+  .cours-body table.grille-mains { width: 100%; max-width: none; font-size: 7.5pt; break-inside: avoid; }
+  .cours-body .grille-mains th, .cours-body .grille-mains td { height: 12mm; padding: 0; border-color: #8a9199; }
+  .cours-body .grille-mains th { background: #fff; font-size: 11pt; }
 }
 
 /* bouton vers le simulateur, en tête des pages de niveau (js/shell.js) */

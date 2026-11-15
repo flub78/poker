@@ -23,8 +23,8 @@
 
 ## Tests automatiques
 
-- `bin/tester.sh` lance tout : tests unitaires (`node --test`, dossier `tests/`) puis test de
-  fumée (`tools/verifier_web.mjs`). `bin/tester.sh --rapide` : tests unitaires seuls.
+- `bin/tester.sh` lance tout : tests unitaires (`node --test`, dossier `tests/`), partie de
+  contrôle des bots (`tools/controle_bots.mjs`), puis test de fumée (`tools/verifier_web.mjs`). `bin/tester.sh --rapide` : tests unitaires seuls.
 - Toute modification d'un module JavaScript pur (logique sans DOM : évaluateur, ranges, cotes,
   moteur et règles du simulateur) s'accompagne de ses tests dans `tests/`, à l'image du code
   (`tests/existants/` pour les niveaux, `tests/moteur/`, `tests/regles/` pour le simulateur).

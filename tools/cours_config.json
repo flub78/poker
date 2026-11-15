@@ -25,6 +25,7 @@
     { "titre": "Niveau 6\\b", "id": "niveau-6" },
     { "titre": "Grille d'auto-évaluation", "id": "grille", "annexe": true },
     { "titre": "Ressources d'entraînement", "id": "ressources", "annexe": true },
+    { "titre": "Grille des mains à colorier", "id": "grille-mains", "annexe": true, "court": "Grille à colorier" },
     { "titre": "Glossaire", "id": "glossaire", "annexe": true }
   ],
   "couverture": { "page": "introduction", "credit": "Photo" },

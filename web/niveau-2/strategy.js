@@ -23,13 +23,16 @@ export const POSITION_NAME = {
 };
 export const isBlind = (pos) => pos === 'SB' || pos === 'BB';
 
+// Étapes de « Pour retenir la grille » (C2.2). Dans l'application, l'étape N est le sous-niveau 2.N :
+// exercices, Réflexes et simulateur s'y règlent (js/sous-niveaux.js). Cumulatif : chaque étape
+// reprend les précédentes.
 export const STEPS = [
-  { value: '0', label: 'Étape 0 · Le filet' },
-  { value: '1', label: 'Étape 1 · Le bouton' },
-  { value: '2', label: 'Étape 2 · Paires et As' },
-  { value: '3', label: 'Étape 3 · Le reste du CO' },
-  { value: '4', label: 'Étape 4 · Suivre une relance' },
-  { value: '5', label: 'Étape 5 · Grille complète' },
+  { step: 0, code: '2.0', name: 'Le filet' },
+  { step: 1, code: '2.1', name: 'Le bouton' },
+  { step: 2, code: '2.2', name: 'Paires et As' },
+  { step: 3, code: '2.3', name: 'Le reste du CO' },
+  { step: 4, code: '2.4', name: 'Suivre une relance' },
+  { step: 5, code: '2.5', name: 'Grille complète' },
 ];
 export const FULL = 5;
 
@@ -41,11 +44,9 @@ export function openRange(pos, step = FULL) {
   return step === 2 ? STEP2_CO : CO;            // CO, SB, et BB face à des limps
 }
 
-// Position la plus précoce où l'on relance la main (grille complète).
-export function minPosition(code) {
-  if (has(UTG, code)) return 'UTG';
-  if (has(CO, code)) return 'CO';
-  if (has(BTN, code)) return 'BTN';
+// Position la plus précoce où l'on relance la main quand personne n'a relancé, à l'étape donnée.
+export function minPosition(code, step = FULL) {
+  for (const pos of ['UTG', 'CO', 'BTN']) if (has(openRange(pos, step), code)) return pos;
   return 'jamais';
 }
 

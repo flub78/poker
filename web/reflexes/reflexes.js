@@ -4,10 +4,13 @@
 //
 // La banque vient de mentor, déposée telle quelle dans reflexes/banque/ (questions.csv, images/) ;
 // on ne l'édite jamais ici. Les questions du niveau N sont celles dont le thème commence par
-// « Niveau N ». Une suite par niveau, enregistrée dans le navigateur (stockage.js).
+// « Niveau N » ; pour un niveau découpé en sous-niveaux (« Niveau 2.3 — … »), seules celles du
+// sous-niveau choisi et des précédents (js/sous-niveaux.js). Une suite par niveau, enregistrée dans
+// le navigateur (stockage.js) : changer de sous-niveau garde la progression de chaque question.
 import { h, clear } from '../js/dom.js';
 import { competenceHref } from '../js/cours.js';
-import { readBank, levelOfTheme, verdict, expected, legacyIds } from './banque.js';
+import { readBank, verdict, expected, legacyIds } from './banque.js';
+import { questionsFor } from '../js/sous-niveaux.js';
 import { DEFAULTS, planSession, startSession, recordAnswer, createRun, resumable, summary, boxesDue, renameItems } from './leitner.js';
 import { loadSuite, saveSuite } from './stockage.js';
 
@@ -54,7 +57,8 @@ function boxesView(sum) {
     h('div', { class: 'leitner-box mastered', role: 'listitem' }, h('span', { class: 'n' }, String(sum.mastered)), h('span', {}, 'maîtrisées')));
 }
 
-export async function renderReflexes(root, level) {
+// step : étape du sous-niveau choisi (null : niveau sans sous-niveaux, toutes ses questions).
+export async function renderReflexes(root, level, step = null) {
   clear(root).append(h('p', { class: 'meta' }, 'Chargement des questions…'));
   let bank;
   try {
@@ -63,7 +67,7 @@ export async function renderReflexes(root, level) {
     clear(root).append(h('p', { class: 'form-message' }, `Impossible de charger les questions : ${err.message}`));
     return;
   }
-  const questions = bank.questions.filter((q) => levelOfTheme(q.theme) === level);
+  const questions = questionsFor(bank.questions, level, step);
   migrate();
   home();
 
@@ -71,7 +75,7 @@ export async function renderReflexes(root, level) {
   // rattachée une fois pour toutes à la référence de la question.
   function migrate() {
     const map = new Map();
-    for (const q of questions) for (const old of legacyIds(q)) map.set(old, q.id);
+    for (const q of questionsFor(bank.questions, level)) for (const old of legacyIds(q)) map.set(old, q.id);
     if (!map.size) return;
     const { suite, moved } = renameItems(loadSuite(level), map);
     if (moved) saveSuite(level, suite);

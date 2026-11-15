@@ -70,6 +70,7 @@ web/
 │   ├── shell.js            onglets, tableau de bord, passage d'un test, correction, exercices, export
 │   ├── dom.js              construction du DOM
 │   ├── niveau-couleur.js   code couleur des niveaux : pastilles, points, niveau de travail de la page (body data-niveau)
+│   ├── sous-niveaux.js     sous-niveaux cumulatifs (2.0 à 2.5) : thèmes de la banque, choix enregistré (poker.sousniveaux.v1)
 │   ├── cards.js            paquet, tirage reproductible (graine), affichage des cartes
 │   └── storage.js          historique des tentatives (localStorage), règle des 3 jours, fusion
 ├── reflexes/               onglet Réflexes de chaque niveau (répétition espacée, méthode Leitner)
@@ -150,7 +151,7 @@ Ce sont les règles du module Leitner de **mentor** (son PRD, §7), pour qu'une 
 bin/installer-banque.sh export-mentor.zip     # remplace web/reflexes/banque/ et lance les tests unitaires
 ```
 
-Les questions du niveau *N* sont celles dont le **thème** commence par « Niveau *N* ». Types lus : QCM, vrai / faux, auto-évaluation, valeur numérique ; les autres sont écartés. La progression est rattachée à la **référence** de la question (colonne `reference` du format mentor, ici l'ID du brouillon : `N1-13`) : corriger un énoncé dans mentor ne fait rien perdre. Une question sans référence est rattachée à son type et à son énoncé, et repart de zéro si l'énoncé change. La progression enregistrée avant les références est reprise automatiquement à l'ouverture de l'onglet. Un QCM non mélangé s'affiche dans l'ordre de la colonne `ordre` (les dix combinaisons dans l'ordre du classement, « A · B · Partage ») : la position du bouton devient un repère.
+Les questions du niveau *N* sont celles dont le **thème** commence par « Niveau *N* ». Le niveau 2 est découpé en sous-niveaux cumulatifs : un thème « Niveau 2.3 — Le reste du CO » range la question au sous-niveau 2.3, posée à partir de ce sous-niveau (`js/sous-niveaux.js`) ; mentor garde le thème en texte libre, la convention ne lui demande rien. Types lus : QCM, vrai / faux, auto-évaluation, valeur numérique ; les autres sont écartés. La progression est rattachée à la **référence** de la question (colonne `reference` du format mentor, ici l'ID du brouillon : `N1-13`) : corriger un énoncé dans mentor ne fait rien perdre. Une question sans référence est rattachée à son type et à son énoncé, et repart de zéro si l'énoncé change. La progression enregistrée avant les références est reprise automatiquement à l'ouverture de l'onglet. Un QCM non mélangé s'affiche dans l'ordre de la colonne `ordre` (les dix combinaisons dans l'ordre du classement, « A · B · Partage ») : la position du bouton devient un repère.
 
 La première banque a été amorcée depuis le cours : `doc/leitner/questions.md` (brouillon lisible, niveaux 1 à 6), `tools/leitner_images.mjs` (images), `tools/leitner_export.py` (ZIP au format mentor).
 

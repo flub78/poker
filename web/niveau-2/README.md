@@ -15,23 +15,23 @@ Un test est validé après **deux réussites à au moins 3 jours d'écart**. Les
 
 | Exercice | Contenu | Options |
 | --- | --- | --- |
-| Quelle décision ? | Une situation et deux cartes : relancer, suivre, checker ou se coucher. La correction donne la raison et la gravité de l'erreur. | Étape 0 à 5 ; toutes les situations, sans relance ou face à une relance ; série de 20 ou sans fin |
-| Position minimum | Deux cartes : à partir de quelle position les relance-t-on ? | Mains limites ou au hasard |
-| Colorier la grille | Colorier de mémoire la liste d'une position, puis voir les cases oubliées et en trop | UTG et MP, CO et SB, BTN |
-| Seuils éclair | Questions courtes : plus petite paire, plus petit As, mains à suivre face à une relance | — |
+| Quelle décision ? | Une situation et deux cartes : relancer, suivre, checker ou se coucher. La correction donne la raison et la gravité de l'erreur. | Toutes les situations, sans relance ou face à une relance ; série de 20 ou sans fin |
+| Position minimum | Deux cartes : à partir de quelle position les relance-t-on ? | Mains limites ou au hasard ; listes du sous-niveau |
+| Colorier la grille | Colorier de mémoire la liste d'une position, puis voir les cases oubliées et en trop | UTG et MP, CO et SB, BTN ; liste du sous-niveau (à l'étape 0, la liste UTG partout) |
+| Seuils éclair | Questions courtes : plus petite paire, plus petit As, mains à suivre face à une relance | Questions des étapes 0 au sous-niveau choisi |
 
-### Les étapes de mémorisation
+### Les sous-niveaux (étapes de mémorisation)
 
-Elles suivent l'encadré « Pour retenir la grille » du tutoriel (C2.2). Chaque étape est une stratégie complète, plus serrée que la grille finale. L'exercice « Quelle décision ? » corrige selon l'étape choisie et signale la réponse de la grille complète quand elle diffère. On passe à l'étape suivante après 19 sur 20.
+Ils suivent l'encadré « Pour retenir la grille » du tutoriel (C2.2) : l'étape N est le **sous-niveau 2.N**. Chaque étape est une stratégie complète, plus serrée que la grille finale, et reprend les précédentes (cumulatif). Le joueur choisit son sous-niveau en tête des onglets Exercices et Réflexes (`js/sous-niveaux.js`, choix enregistré et repris par la page Profil) ; le simulateur lit le même choix quand le joueur est au niveau 2. Tout s'y règle : « Quelle décision ? » corrige selon l'étape et signale la réponse de la grille complète quand elle diffère ; « Position minimum » et « Colorier la grille » prennent les listes de l'étape ; « Seuils éclair » ne pose que les questions des étapes déjà vues ; les Réflexes posent les questions des thèmes « Niveau 2.0 » au sous-niveau choisi ; le simulateur conseille (Indice, mentor) et juge selon l'étape. Les tests du niveau restent sur la grille complète. On passe au sous-niveau suivant après 19 sur 20 à « Quelle décision ? ».
 
-| Étape | Stratégie corrigée |
+| Sous-niveau | Stratégie corrigée |
 | --- | --- |
-| 0 · Le filet | La liste UTG partout ; face à une relance ou une sur-relance, QQ+ et AK continuent, le reste se couche |
-| 1 · Le bouton | + la liste du BTN au bouton |
-| 2 · Paires et As | + au CO, en SB et en BB face à des limps : 55+, AT+, A2s+ |
-| 3 · Le reste du CO | La liste complète du CO |
-| 4 · Suivre une relance | + les mains qu'on suit face à une relance ou une sur-relance |
-| 5 · Grille complète | Identique à l'étape 4 ; c'est la stratégie du test 2 |
+| 2.0 · Le filet | La liste UTG partout ; face à une relance ou une sur-relance, QQ+ et AK continuent, le reste se couche |
+| 2.1 · Le bouton | + la liste du BTN au bouton |
+| 2.2 · Paires et As | + au CO, en SB et en BB face à des limps : 55+, AT+, A2s+ |
+| 2.3 · Le reste du CO | La liste complète du CO |
+| 2.4 · Suivre une relance | + les mains qu'on suit face à une relance ou une sur-relance |
+| 2.5 · Grille complète | Identique à 2.4 ; c'est la stratégie du test 2 |
 
 ## Organisation du code
 

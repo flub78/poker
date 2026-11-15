@@ -15,8 +15,12 @@ de configuration JSON (par défaut tools/cours_config.json) :
                     suit un paragraphe en gras égal à `titre` ; colonnes : étape, objectif,
                     durée, test pour passer à l'étape suivante.
 
+Un tableau dont la ligne de tête est « (vide) A K Q J T 9 … 2 » devient une grille des mains à
+colorier (classe grille-mains : cases carrées, paires / assorties / dépareillées repérées).
+
 Le script remplace aussi ce que l'export ne sait pas rendre hors de Claude Docs :
-- les liens internes du doc (#<id de bloc>), résolus par le texte du lien (« C3.7 ») ;
+- les liens internes du doc (#<id de bloc>), résolus par le texte du lien (« C3.7 », ou le titre
+  d'une grande partie) ;
 - la mention de l'auteur, les listes déroulantes (statut de la grille), la date.
 Les symboles ♥ ♦ sont colorés en rouge, ♠ ♣ en noir, toujours affichés en texte (jamais en émoji).
 
@@ -54,6 +58,27 @@ def color_suits(fragment):
         text = re.sub(r"([♠♣])︎?", "<span class=\"suit black\">\\1︎</span>", text)
         return ">" + text + "<"
     return re.sub(r">([^<]+)<", repl, fragment)
+
+
+RANKS = "AKQJT98765432"
+
+
+def hand_grids(body):
+    """Tableau 13 × 13 des mains (en-têtes A … 2) : grille à colorier, cases carrées.
+    Ligne de tête et première colonne en <th>, chaque case marquée paire / assortie / dépareillée."""
+    head = "<thead><tr><th></th>" + "".join(f"<th>{r}</th>" for r in RANKS) + "</tr></thead>"
+
+    def cell(m):
+        text = m.group(1)
+        kind = "paire" if len(text) == 2 and text[0] == text[1] else "assortie" if text.endswith("s") else "depareillee"
+        return f'<td class="{kind}">{text}</td>'
+
+    def grid(m):
+        rows = re.sub(r"<tr><td><strong>([A-Z0-9])</strong></td>", r'<tr><th scope="row">\1</th>', m.group(1))
+        rows = re.sub(r"<td>([AKQJT2-9]{2}s?)</td>", cell, rows)
+        cols = "".join(f'<th scope="col">{r}</th>' for r in RANKS)
+        return f'<table class="grille-mains"><thead><tr><th></th>{cols}</tr></thead><tbody>{rows}</tbody></table>'
+    return re.sub(r"<table>" + re.escape(head) + r"<tbody>(.*?)</tbody></table>", grid, body, flags=re.S)
 
 
 def image_size(path):
@@ -140,8 +165,10 @@ def main(src, config_path):
                       "annex": bool(spec.get("annexe")), "sections": subs, "html": body})
 
     # index des sections, pour résoudre les liens internes par leur texte (« C3.7 »)
+    # (un lien peut aussi viser une grande partie par son titre : « Grille des mains à colorier »)
     index = {}
     for p in pages:
+        index[plain(p["title"])] = f"#cours/{p['id']}"
         for s in p["sections"]:
             index[s["title"].split(" ")[0]] = index[s["title"]] = f"#cours/{p['id']}/{s['id']}"
 
@@ -178,7 +205,9 @@ def main(src, config_path):
             body = re.sub(r'<figure data-embed="[^"]*">.*?</figure>', "", body, flags=re.S)
         body = re.sub(r'<span data-atom="enum"[^>]*>(.*?)</span>', r'<span class="chip">\1</span>', body)
         body = re.sub(r'<span data-atom="mention"[^>]*>.*?</span>', author, body)
-        body = body.replace("<table>", '<div class="table-wrap"><table>').replace("</table>", "</table></div>")
+        body = hand_grids(body)
+        body = re.sub(r"<table( [^>]*)?>", r'<div class="table-wrap"><table\1>', body)
+        body = body.replace("</table>", "</table></div>")
         for spec in cfg.get("escaliers", []):
             body, done = stairs(body, spec)
             if done:

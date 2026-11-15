@@ -2,15 +2,22 @@
 // AF, profils de C5.4), commentaires. JavaScript pur, testé sous Node (tests/simulateur/).
 //
 // Qui est jugé avec quelles règles :
-//   le joueur humain : les règles de son niveau, comme le mentor ;
+//   le joueur humain : les règles de son niveau, comme le mentor (au niveau 2, celles de son
+//                      sous-niveau : étape de la grille, js/sous-niveaux.js) ;
 //   les bots         : les règles du niveau de référence (le plus haut disponible), pour montrer
 //                      ce qu'un niveau de plus apporte.
 import { BOT_LEVELS, playLevel } from './bots.js';
 import { evCall } from '../niveau-3/odds.js';
 import { potTotal } from './positions.js';
+import { STEPS, FULL } from '../niveau-2/strategy.js';
 
 export const REFERENCE_LEVEL = Math.max(...BOT_LEVELS);
 export const judgeLevel = (player) => (player.human ? playLevel(player.level) : REFERENCE_LEVEL);
+// Sous-niveau de l'humain jugé aux règles du niveau 2 (étape de la grille), sinon null.
+export const judgeStep = (player) => (player.human && judgeLevel(player) === 2 && Number.isInteger(player.step) && player.step < FULL ? player.step : null);
+// Niveau des règles, en texte : « 3 », ou « 2.3 » pour un sous-niveau.
+export const judgeRules = (player) => (player.human && player.level < 2 ? '1'
+  : judgeStep(player) === null ? String(judgeLevel(player)) : STEPS[judgeStep(player)].code);
 
 // Coût d'un coup : { stake, ev }.
 //   stake : jetons engagés par le coup (pour un « se coucher » : le pot abandonné) ;
@@ -84,7 +91,7 @@ export function evaluateGame(game) {
     }
     const stats = playerStats(hands, seat);
     return {
-      seat, name: p.name, human: p.human, level: p.level, judgedAt: judgeLevel(p),
+      seat, name: p.name, human: p.human, level: p.level, judgedAt: judgeLevel(p), judgedRules: judgeRules(p),
       decisions: mine.length, counts,
       score: mine.length ? (100 * counts.conforme) / mine.length : null,
       byRule: [...byRule.entries()].sort((a, b) => b[1] - a[1]).map(([code, count]) => ({ code, count })),
@@ -107,7 +114,7 @@ function comments(human, players, game) {
     you.push('Aucune décision jouée pour l\'instant.');
   } else {
     const s = human.score;
-    you.push(`${pctText(s)} de vos décisions sont conformes aux règles du niveau ${human.judgedAt} (${human.counts.conforme} sur ${human.decisions}).`);
+    you.push(`${pctText(s)} de vos décisions sont conformes aux règles du niveau ${human.judgedRules} (${human.counts.conforme} sur ${human.decisions}).`);
     you.push(s >= 90 ? 'Très bon respect des règles : continuez ainsi.'
       : s >= 75 ? 'Bonne base ; quelques écarts à revoir ci-dessous.'
         : 'Revoyez les règles citées ci-dessous avant la prochaine partie.');

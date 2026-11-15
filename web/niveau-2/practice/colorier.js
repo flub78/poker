@@ -1,10 +1,9 @@
 // Exercice : colorier de mémoire la grille 13 × 13 d'une position, puis comparer.
+// La liste attendue est celle du sous-niveau choisi (settings.step) : à l'étape 0, UTG partout.
 import { h } from '../../js/dom.js';
 import { handName } from '../ranges.js';
-import { UTG, CO, BTN } from '../strategy.js';
+import { FULL, openRange } from '../strategy.js';
 import { paintableGrid, compare, correctionGrid, correctionLegend } from '../grid.js';
-
-const TARGETS = { UTG, CO, BTN };
 
 export default {
   id: 'colorier',
@@ -21,7 +20,7 @@ export default {
   ],
 
   create(rand, settings, report) {
-    const target = TARGETS[settings.pos];
+    const target = openRange(settings.pos, settings.step ?? FULL);
     let root;
 
     function start() {
