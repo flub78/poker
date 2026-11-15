@@ -21,7 +21,7 @@ const STREET_LABEL = { preflop: 'Préflop', flop: 'Flop', turn: 'Turn', river: '
 function loadSettings() {
   let last = 2;
   try { last = Number(localStorage.getItem('poker.dernierNiveau')) || 2; } catch { /* stockage bloqué */ }
-  const defaults = { humanLevel: Math.max(1, Math.min(6, last)), botLevels: [2, 3, 2, 3, 2], aide: 'indice', vitesse: 'normale', voirCartes: false, mains: 30, graine: '' };
+  const defaults = { humanLevel: Math.max(1, Math.min(6, last)), botLevels: [2, 3, 2, 3, 2], aide: 'indice', vitesse: 'normale', voirCartes: false, mains: 30, tapis: 'fixes', graine: '' };
   try {
     const saved = JSON.parse(localStorage.getItem(KEY) || '{}');
     return { ...defaults, ...saved };
@@ -47,7 +47,7 @@ export function renderSimulateur(main) {
 
   function newGameFromSettings() {
     const seed = /^\d+$/.test(String(settings.graine).trim()) ? Number(settings.graine) : null;
-    game = newGame({ botLevels: settings.botLevels, humanLevel: settings.humanLevel, maxHands: Number(settings.mains) || 0, seed });
+    game = newGame({ botLevels: settings.botLevels, humanLevel: settings.humanLevel, maxHands: Number(settings.mains) || 0, keepStacks: settings.tapis === 'conserves', seed });
     view = 'table';
     mentorStats = { conforme: 0, défendable: 0, erreur: 0, repris: 0 };
     nextHand();
@@ -333,10 +333,12 @@ export function renderSimulateur(main) {
           mentorStats.repris ? ` (coup du mentor repris ${mentorStats.repris} fois).` : '.')
         : null,
       h('table', {},
-        h('thead', {}, h('tr', {}, h('th', {}, 'Joueur'), h('th', {}, 'Niveau'), h('th', {}, 'Gains'))),
+        h('thead', {}, h('tr', {}, h('th', {}, 'Joueur'), h('th', {}, 'Niveau'), h('th', {}, 'Gains'),
+          game.keepStacks ? h('th', {}, 'Recaves') : null)),
         h('tbody', {}, game.players.map((p, i) => h('tr', {},
           h('td', {}, p.name), h('td', {}, p.human ? `${p.level} (vous)` : String(p.level)),
-          h('td', {}, `${game.totals[i] > 0 ? '+' : game.totals[i] < 0 ? '−' : ''}${bbText(Math.abs(game.totals[i]), game.bb)}`))))));
+          h('td', {}, `${game.totals[i] > 0 ? '+' : game.totals[i] < 0 ? '−' : ''}${bbText(Math.abs(game.totals[i]), game.bb)}`),
+          game.keepStacks ? h('td', {}, String(game.rebuys[i])) : null)))));
   }
 
   // ---------- évaluation de la partie ----------
@@ -423,10 +425,12 @@ export function renderSimulateur(main) {
         select('Vitesse des adversaires', settings.vitesse, [['lente', 'Lente'], ['normale', 'Normale'], ['rapide', 'Rapide']], (v) => { settings.vitesse = v; saveSettings(settings); }),
         select('Cartes des adversaires', settings.voirCartes ? 'oui' : 'non', [['non', 'Cachées'], ['oui', 'Visibles (entraînement)']], (v) => { settings.voirCartes = v === 'oui'; saveSettings(settings); render(); }),
         select('Mains par partie', settings.mains, [[10, '10'], [20, '20'], [30, '30'], [50, '50'], [100, '100'], [0, 'Sans limite']], (v) => { settings.mains = Number(v); saveSettings(settings); }),
+        select('Tapis', settings.tapis, [['fixes', '100 BB à chaque main'], ['conserves', 'Conservés (recave à zéro)']], (v) => { settings.tapis = v; saveSettings(settings); }),
         h('label', { class: 'setting' }, 'Graine (facultatif)',
           h('input', { type: 'text', inputmode: 'numeric', value: settings.graine, placeholder: 'au hasard', size: 12,
             onchange: (e) => { settings.graine = e.target.value.trim(); saveSettings(settings); } }))),
-      h('p', { class: 'meta' }, 'Nombre de mains et graine : appliqués à la prochaine partie. Une même graine redonne les mêmes cartes.'),
+      h('p', { class: 'meta' }, 'Nombre de mains, tapis et graine : appliqués à la prochaine partie. Une même graine redonne les mêmes cartes.'),
+      h('p', { class: 'meta' }, 'Tapis conservés : un joueur à zéro se recave de 100 BB à la main suivante. Les conseils supposent des tapis d\'environ 100 BB.'),
       h('p', { class: 'meta' }, 'Niveau des adversaires (pour l\'instant 2 ou 3 ; les niveaux 4 à 6 viendront ensuite). Appliqué à la prochaine partie.'),
       h('div', { class: 'settings' }, game.players.slice(1).map((p, k) => select(p.name, settings.botLevels[k],
         BOT_LEVELS.map((n) => [n, `Niveau ${n}`]), (v) => { settings.botLevels[k] = Number(v); saveSettings(settings); }))),

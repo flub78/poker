@@ -7,7 +7,7 @@ en bas et 5 bots qui appliquent les règles du cours. Plan et état d'avancement
 | Fichier | Rôle |
 | --- | --- |
 | `simulateur.js`, `simulateur.css` | L'écran : table, boutons (raccourcis F, C, R, I, Entrée), indice, journal, bilan, réglages |
-| `partie.js` | Suite de mains : bouton qui tourne, 100 BB à chaque main, gains cumulés, décisions jugées, mains rejouables (graine par main) |
+| `partie.js` | Suite de mains : bouton qui tourne, 100 BB à chaque main ou tapis conservés (recave à zéro), gains cumulés, décisions jugées, mains rejouables (graine par main) |
 | `bots.js` | `decider(main, siège, niveau)` → `{ action, raisons, facts }` : sert aux bots, à l'indice et au mentor |
 | `evaluation.js` | Évaluation de la partie : verdicts par joueur, coût des erreurs, VPIP, PFR, AF, profils (C5.4), commentaires |
 | `historique.js` | Parties terminées, gardées dans le navigateur ; page Profil |

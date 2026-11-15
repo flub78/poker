@@ -47,6 +47,10 @@ export function handLog(hand, names, human = 0, { showAll = false } = {}) {
     lines.push(holeLine(human));
     if (showAll && !hand.done) for (const seat of hand.order) if (seat !== human) lines.push(holeLine(seat));
   };
+  // Tapis conservés : recave des joueurs arrivés à zéro, avant la donne.
+  for (const seat of hand.rebuys || []) {
+    lines.push({ kind: 'action', seat, text: `${seat === human ? 'Vous vous recavez' : `${names[seat]} se recave`} de ${bbText(hand.seats[seat].start, hand.bb)}` });
+  }
   for (const e of hand.history) {
     if (e.type !== 'sb' && e.type !== 'bb') deal();
     if (e.street !== street) {

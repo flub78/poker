@@ -1,7 +1,7 @@
 // Partie (web/simulateur/partie.js) et journal (journal.js).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { newGame, startHand, playBot, play, humanToAct, HUMAN } from '../../web/simulateur/partie.js';
+import { newGame, startHand, replayHand, playBot, play, humanToAct, HUMAN } from '../../web/simulateur/partie.js';
 import { handLog } from '../../web/simulateur/journal.js';
 import { legalActions } from '../../web/simulateur/moteur/table.js';
 
@@ -80,4 +80,61 @@ test('journal pendant la main : cartes des bots cachées, sauf réglage « visib
   const names = g.players.map((p) => p.name);
   assert.equal(handLog(g.hand, names, HUMAN).filter((l) => l.kind === 'hand').length, 0);
   assert.equal(handLog(g.hand, names, HUMAN, { showAll: true }).filter((l) => l.kind === 'hand').length, 5);
+});
+
+// ---------- tapis conservés (réglage « Tapis », décision D9) ----------
+
+test('tapis conservés : chaque main repart des tapis de la précédente', () => {
+  const g = newGame({ seed: 3, keepStacks: true });
+  playHand(g);
+  for (let i = 0; i < 30; i++) {
+    const before = g.stacks.slice();
+    playHand(g);
+    g.hand.seats.forEach((s, k) => assert.equal(s.start, before[k] > 0 ? before[k] : 200));
+  }
+  assert.ok(g.stacks.some((x) => x !== 200), 'les tapis devraient avoir bougé en 31 mains');
+});
+
+test('tapis conservés : recave de 100 BB à zéro, comptée et écrite au journal', () => {
+  const g = newGame({ seed: 4, keepStacks: true });
+  g.stacks = [200, 0, 200, 200, 200, 400];              // Alix est à zéro
+  startHand(g);
+  assert.equal(g.hand.seats[1].start, 200);
+  assert.deepEqual(g.hand.rebuys, [1]);
+  assert.deepEqual(g.rebuys, [0, 1, 0, 0, 0, 0]);
+  assert.equal(g.hand.seats[5].start, 400);
+  const lines = handLog(g.hand, g.players.map((p) => p.name), HUMAN).map((l) => l.text);
+  assert.ok(lines.includes('Alix se recave de 100 BB'), lines.join('\n'));
+});
+
+test('tapis conservés : 300 mains sans erreur, jetons conservés aux recaves près', () => {
+  const g = newGame({ seed: 12, keepStacks: true, botLevels: [2, 3, 4, 3, 2] });
+  for (let i = 0; i < 300; i++) playHand(g);
+  const rebought = g.rebuys.reduce((a, b) => a + b, 0) * 200;
+  assert.equal(g.stacks.reduce((a, b) => a + b, 0), 6 * 200 + rebought);
+  assert.equal(g.totals.reduce((a, b) => a + b, 0), 0);
+  assert.ok(g.stacks.every((x) => x >= 0));
+});
+
+test('tapis conservés : une main rejouée repart des mêmes tapis et ne les change pas', () => {
+  const g = newGame({ seed: 6, keepStacks: true });
+  for (let i = 0; i < 5; i++) playHand(g);
+  const no = 3;
+  const starts = g.finished.find((f) => f.no === no).hand.seats.map((s) => s.start);
+  const after = g.stacks.slice();
+  replayHand(g, no);
+  assert.deepEqual(g.hand.seats.map((s) => s.start), starts);
+  while (!g.hand.done) {
+    if (humanToAct(g)) play(g, legalActions(g.hand).check ? { type: 'check' } : { type: 'call' });
+    else playBot(g);
+  }
+  assert.deepEqual(g.stacks, after);
+});
+
+test('par défaut, pas de recave et 100 BB à chaque main', () => {
+  const g = newGame({ seed: 4 });
+  g.stacks = [200, 0, 200, 200, 200, 400];
+  startHand(g);
+  assert.ok(g.hand.seats.every((s) => s.start === 200));
+  assert.deepEqual(g.hand.rebuys, []);
 });

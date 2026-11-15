@@ -22,7 +22,7 @@ Trois modes d'aide : **sans aide**, **Indice** (le coup que jouerait un bot de s
 | D6 | Évaluation | Porte sur les décisions : écarts aux règles, perte d'espérance estimée. Les jetons sont affichés, pas notés. |
 | D7 | Indice et mentor | Le même calcul : `decider(situation, niveau)` renvoie `{ action, montant, raisons[] }`. |
 | D8 | Règles | Une règle dont le bot a besoin et que le cours ne donne pas est d'abord écrite dans le cours (comme pour S-014), puis codée. |
-| D9 | Tapis | Chaque main commence à 100 grosses blinds pour tous (pas d'élimination) ; blinds 1/2. |
+| D9 | Tapis | Par défaut, chaque main commence à 100 grosses blinds pour tous (pas d'élimination) ; blinds 1/2. Réglage « Tapis conservés » : chacun garde son tapis d'une main à l'autre, un joueur à zéro se recave de 100 BB à la main suivante. |
 | D10 | Reproductibilité | Toute donne vient d'un générateur aléatoire à **graine** : une main se rejoue à l'identique. |
 
 ## Architecture
@@ -92,6 +92,7 @@ Le code renvoie au cours grâce au lien déjà en place (S-005).
       aide (Indice ou sans aide), vitesse, cartes des bots visibles ou non. Enregistrés dans le navigateur.
 - [x] Réglages restants : nombre de mains d'une partie et graine (faits avec la phase 4).
 - [x] Partie (`partie.js`) : bouton qui tourne, 100 BB à chaque main, gains cumulés.
+- [x] Réglage « Tapis » : 100 BB à chaque main ou tapis conservés avec recave à zéro (D9).
 - [x] Vue de la table : 6 sièges, cartes (`web/cartes/`), pot, mises, bouton dealer, joueur actif.
 - [x] Boutons de l'humain (raccourcis F, C, R, I, Entrée) : seules les actions légales sont actives ; montant de relance avec
       raccourcis (1/3, 1/2, 2/3 du pot, pot, tapis).
