@@ -13,7 +13,7 @@ import { MIN_HANDS, profile } from './lecture.js';
 import { summarize, saveParty } from './historique.js';
 import { decider, BOT_CHOICES, playLevel, isProfil, PROFILS, botLabel } from './bots.js';
 import { handLog } from './journal.js';
-import { judge, actionLabel, VERDICTS } from './mentor.js';
+import { judgeMove, actionLabel, VERDICTS } from './mentor.js';
 import { positions, bbText, potTotal } from './positions.js';
 
 const KEY = 'poker.simulateur.v1';
@@ -55,7 +55,7 @@ export function renderSimulateur(main) {
     const seed = /^\d+$/.test(String(settings.graine).trim()) ? Number(settings.graine) : null;
     game = newGame({ botLevels: settings.botLevels, humanLevel: settings.humanLevel, humanStep: humanStep(), maxHands: Number(settings.mains) || 0, keepStacks: settings.tapis === 'conserves', seed });
     view = 'table';
-    mentorStats = { conforme: 0, défendable: 0, erreur: 0, repris: 0 };
+    mentorStats = { conforme: 0, défendable: 0, erreur: 0, repris: 0, avance: 0 };
     nextHand();
   }
 
@@ -88,11 +88,10 @@ export function renderSimulateur(main) {
   function humanPlay(action) {
     if (!humanToAct(game) || root.querySelector('dialog[open]')) return;
     if (settings.aide === 'mentor') {
-      const legal = legalActions(game.hand);
-      const advice = decider(game.hand, HUMAN, settings.humanLevel, humanStep());
-      const j = judge(game.hand, action, advice, legal);
+      const { j, advice } = judgeMove(game.hand, action, settings.humanLevel, humanStep());
       if (j.verdict !== 'conforme') { mentorDialog(j, action, advice.action); return; }
       mentorStats.conforme++;
+      if (j.avance) mentorStats.avance++;
       mentorNote = j;
     }
     commit(action);
@@ -300,7 +299,8 @@ export function renderSimulateur(main) {
     if (!mentorNote || settings.aide !== 'mentor') return null;
     const n = mentorNote;
     const low = (t) => t.charAt(0).toLowerCase() + t.slice(1);       // « Suivre 1 BB » → « suivre 1 BB »
-    const text = n.verdict === 'conforme' ? `${n.human} : conforme aux règles du niveau ${n.level}.`
+    const text = n.avance ? `${n.human} : juste, en avance (règles du niveau ${n.avance.rules}). Aux règles du niveau ${n.level}, le mentor : ${low(n.advised)}.`
+      : n.verdict === 'conforme' ? `${n.human} : conforme aux règles du niveau ${n.level}.`
       : n.repris ? `Vous avez repris le coup du mentor : ${low(n.advised)}.`
         : `Vous avez confirmé « ${low(n.human)} » (${low(VERDICTS[n.verdict])} ; le mentor : ${low(n.advised)}).`;
     return h('p', { class: `sim-mentor-note ${n.verdict}`, 'aria-live': 'polite' }, h('strong', {}, 'Mentor : '), text);
@@ -346,7 +346,7 @@ export function renderSimulateur(main) {
       h('p', { class: 'meta' }, 'Sur quelques dizaines de mains, les jetons mesurent surtout la chance. Ce sont les décisions qu\'il faut juger.'),
       mentorStats && mentorStats.conforme + mentorStats.défendable + mentorStats.erreur > 0
         ? h('p', {}, h('strong', {}, 'Vos décisions jugées par le mentor : '),
-          `${mentorStats.conforme} conforme${mentorStats.conforme > 1 ? 's' : ''}, ${mentorStats.défendable} défendable${mentorStats.défendable > 1 ? 's' : ''}, ${mentorStats.erreur} erreur${mentorStats.erreur > 1 ? 's' : ''}`,
+          `${mentorStats.conforme} conforme${mentorStats.conforme > 1 ? 's' : ''}${mentorStats.avance ? ` (dont ${mentorStats.avance} en avance)` : ''}, ${mentorStats.défendable} défendable${mentorStats.défendable > 1 ? 's' : ''}, ${mentorStats.erreur} erreur${mentorStats.erreur > 1 ? 's' : ''}`,
           mentorStats.repris ? ` (coup du mentor repris ${mentorStats.repris} fois).` : '.')
         : null,
       h('table', {},

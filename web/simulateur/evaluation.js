@@ -3,7 +3,8 @@
 //
 // Qui est jugé avec quelles règles :
 //   le joueur humain : les règles de son niveau, comme le mentor (au niveau 2, celles de son
-//                      sous-niveau : étape de la grille, js/sous-niveaux.js) ;
+//                      sous-niveau : étape de la grille, js/sous-niveaux.js) ; un coup conforme à des
+//                      règles plus avancées compte conforme, « en avance » (mentor.js, judgeMove) ;
 //   les bots         : les règles du niveau de référence (le plus haut disponible), pour montrer
 //                      ce qu'un niveau de plus apporte.
 import { BOT_LEVELS, playLevel, isProfil, PROFILS } from './bots.js';
@@ -59,6 +60,7 @@ export function evaluateGame(game) {
     const mine = decisions.filter((d) => d.seat === seat);
     const counts = { conforme: 0, défendable: 0, erreur: 0 };
     for (const d of mine) counts[d.verdict]++;
+    const ahead = mine.filter((d) => d.avance).length;      // conformes à des règles plus avancées
     const byRule = new Map();
     for (const d of mine.filter((x) => x.verdict === 'erreur')) {
       for (const code of new Set(d.why.map((w) => w.code).filter(Boolean))) byRule.set(code, (byRule.get(code) || 0) + 1);
@@ -66,7 +68,7 @@ export function evaluateGame(game) {
     const stats = playerStats(hands, seat);
     return {
       seat, name: p.name, human: p.human, level: p.level, judgedAt: judgeLevel(p), judgedRules: judgeRules(p),
-      decisions: mine.length, counts,
+      decisions: mine.length, counts, ahead,
       score: mine.length ? (100 * counts.conforme) / mine.length : null,
       byRule: [...byRule.entries()].sort((a, b) => b[1] - a[1]).map(([code, count]) => ({ code, count })),
       stats, profile: profile(stats), gains: game.totals[seat],
@@ -88,10 +90,12 @@ function comments(human, players, game) {
     you.push('Aucune décision jouée pour l\'instant.');
   } else {
     const s = human.score;
-    you.push(`${pctText(s)} de vos décisions sont conformes aux règles du niveau ${human.judgedRules} (${human.counts.conforme} sur ${human.decisions}).`);
+    const early = human.ahead ? `, dont ${human.ahead} en avance, conformes aux règles d'un niveau plus avancé` : '';
+    you.push(`${pctText(s)} de vos décisions sont conformes aux règles du niveau ${human.judgedRules} (${human.counts.conforme} sur ${human.decisions}${early}).`);
     you.push(s >= 90 ? 'Très bon respect des règles : continuez ainsi.'
       : s >= 75 ? 'Bonne base ; quelques écarts à revoir ci-dessous.'
         : 'Revoyez les règles citées ci-dessous avant la prochaine partie.');
+    if (human.ahead >= 3) you.push('Vous jouez déjà une partie des règles suivantes : essayez le sous-niveau ou le niveau suivant.');
     if (human.byRule.length) {
       you.push(`Règles les plus souvent enfreintes : ${human.byRule.slice(0, 3).map((r) => `${r.code} (${r.count})`).join(', ')}.`);
     }

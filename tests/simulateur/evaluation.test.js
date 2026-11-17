@@ -105,3 +105,19 @@ test('coût : espérance perdue quand on jette un tirage qui a la cote (C3.6)', 
   assert.ok(Math.abs(c.ev - 2.05) < 0.01, String(c.ev));
   assert.equal(c.stake, 17);
 });
+
+test('en avance : au sous-niveau 2.0, jouer la grille complète ne fait aucune erreur', () => {
+  const full = (g) => decider(g.hand, HUMAN, 2).action;
+  const ev = evaluateGame(playGame(newGame({ seed: 7, humanLevel: 2, humanStep: 0 }), full, 40));
+  const you = ev.players[HUMAN];
+  assert.equal(you.judgedRules, '2.0');
+  assert.equal(you.counts.erreur, 0);
+  assert.ok(you.ahead > 0);
+  assert.match(ev.comments.you[0], /en avance/);
+});
+
+test('en avance : au niveau 3, jouer comme le niveau 6 ne fait aucune erreur', () => {
+  const six = (g) => decider(g.hand, HUMAN, 6).action;
+  const ev = evaluateGame(playGame(newGame({ seed: 11, humanLevel: 3 }), six, 40));
+  assert.equal(ev.players[HUMAN].counts.erreur, 0);
+});

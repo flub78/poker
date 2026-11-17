@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { newHand, act, legalActions } from '../../web/simulateur/moteur/table.js';
 import { decider } from '../../web/simulateur/bots.js';
-import { judge } from '../../web/simulateur/mentor.js';
+import { judge, judgeMove, higherRules } from '../../web/simulateur/mentor.js';
 import { rng } from '../../web/js/cards.js';
 import { cartes } from '../aide.js';
 
@@ -96,4 +96,35 @@ test('niveau 3 : équité proche de l\'équité requise, défendable', () => {
   const v = verdict(h, C, 3);
   assert.equal(v.verdict, 'défendable');
   assert.match(v.why[0].texte, /se valent/);
+});
+
+// ---------- en avance (judgeMove) ----------
+
+test('règles plus avancées : sous-niveaux suivants, puis niveaux suivants', () => {
+  assert.deepEqual(higherRules(2, 3), [{ level: 2, step: 4 }, { level: 2, step: null }, { level: 3, step: null },
+    { level: 4, step: null }, { level: 5, step: null }, { level: 6, step: null }]);
+  assert.deepEqual(higherRules(1, 0).slice(0, 2), [{ level: 2, step: 1 }, { level: 2, step: 2 }]);
+  assert.deepEqual(higherRules(2, null).map((r) => r.level), [3, 4, 5, 6]);
+  assert.deepEqual(higherRules(6), []);
+  assert.deepEqual(higherRules('maniaque'), []);
+});
+
+test('coup d\'un sous-niveau plus avancé : conforme, en avance ; le conseil reste celui du joueur', () => {
+  const h = play(table({ 0: '2S 2D' }), F, F, F);          // UTG, MP et CO se couchent : 22 au bouton
+  assert.equal(verdict(h, R(5)).verdict, 'conforme');      // la grille complète la relance…
+  assert.equal(judge(h, R(5), decider(h, h.toAct, 2, 0), legalActions(h)).verdict, 'erreur');  // …pas le 2.0
+  const { j, advice } = judgeMove(h, R(5), 2, 0);
+  assert.equal(advice.action.type, 'fold');
+  assert.equal(j.verdict, 'conforme');
+  assert.equal(j.avance.rules, '2.1');
+  assert.equal(j.advised, 'Se coucher');
+});
+
+test('coup conforme à son niveau : pas en avance ; coup faux partout : erreur', () => {
+  const h = play(table({ 0: '2S 2D' }), F, F, F);
+  assert.equal(judgeMove(h, F, 2, 0).j.avance, undefined);
+  assert.equal(judgeMove(h, F, 2, 0).j.verdict, 'conforme');
+  const limp = judgeMove(h, C, 2, 0).j;                    // le limp n'est juste à aucun niveau
+  assert.equal(limp.verdict, 'erreur');
+  assert.equal(limp.avance, undefined);
 });
