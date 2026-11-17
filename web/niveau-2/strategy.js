@@ -93,7 +93,9 @@ export function minPosition(code, step = FULL) {
 //   bb      { limpers }               des joueurs ont seulement suivi ; vous êtes en BB
 //   vsRaise { raiser, hero }          une relance avant vous
 //   vs3bet  { hero, threeBettor }     vous aviez relancé, un joueur sur-relance
-//   squeeze { raiser, threeBettor, hero }  une relance puis une sur-relance avant vous
+//   squeeze { raiser, threeBettor, hero, called? }  une relance puis une sur-relance avant vous
+//                                     (called : vous aviez suivi la relance, la sur-relance vient après vous)
+//   vs4bet  { hero, raiser? }         votre sur-relance ou votre 4-bet est relancé
 
 export const ACTIONS = {
   open: [['raise', 'Relancer'], ['call', 'Suivre (limp)'], ['fold', 'Se coucher']],
@@ -101,6 +103,7 @@ export const ACTIONS = {
   vsRaise: [['raise', 'Sur-relancer (3-bet)'], ['call', 'Suivre'], ['fold', 'Se coucher']],
   vs3bet: [['raise', 'Relancer encore (4-bet)'], ['call', 'Suivre'], ['fold', 'Se coucher']],
   squeeze: [['raise', 'Relancer encore (4-bet)'], ['call', 'Suivre'], ['fold', 'Se coucher']],
+  vs4bet: [['allin', 'Tapis'], ['call', 'Suivre'], ['fold', 'Se coucher']],
 };
 
 export const actionLabel = (sit, action) => ACTIONS[sit.type].find(([a]) => a === action)[1];
@@ -146,7 +149,11 @@ export function decide(sit, code, step = FULL) {
     }
     case 'squeeze': {
       if (has(RERAISE, code)) return { action: 'raise', why: `${hand} fait partie de QQ+, AK : on relance encore (4-bet).` };
-      return { action: 'fold', why: `Une relance puis une sur-relance : seuls QQ+ et AK continuent, JJ et AJ compris se couchent.` };
+      return { action: 'fold', why: `Une relance puis une sur-relance${sit.called ? ', même si vous aviez suivi' : ''} : seuls QQ+ et AK continuent, JJ et AJ compris se couchent.` };
+    }
+    case 'vs4bet': {
+      if (has(RERAISE, code)) return { action: 'allin', why: `${hand} fait partie de QQ+, AK : on continue, à tapis.` };
+      return { action: 'fold', why: `Votre sur-relance est relancée : seuls QQ+ et AK continuent, à tapis. ${hand} se couche.` };
     }
     default:
       throw new Error(`Situation inconnue : ${sit.type}`);
@@ -156,7 +163,7 @@ export function decide(sit, code, step = FULL) {
 // Gravité d'une erreur : 'grave' si la réponse s'écarte beaucoup de la grille complète.
 export function severity(sit, code, answer) {
   if (sit.type === 'open' && answer === 'call') return 'grave';          // le limp
-  const plays = answer === 'raise' || answer === 'call';
+  const plays = answer === 'raise' || answer === 'call' || answer === 'allin';
   if (sit.type === 'open' || sit.type === 'bb') {
     if (plays && !has(BTN, code)) return 'grave';
     if (!plays && has(UTG, code)) return 'grave';

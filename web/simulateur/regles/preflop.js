@@ -1,7 +1,6 @@
 // Décisions avant le flop : la grille du niveau 2 et ses tailles (C2.2),
 // les cotes implicites des petites paires au niveau 3 (C3.4).
-import { decide, RERAISE, FULL } from '../../niveau-2/strategy.js';
-import { has, shortCode } from '../../niveau-2/ranges.js';
+import { decide, FULL } from '../../niveau-2/strategy.js';
 import { positions, isBlind, bbText } from '../positions.js';
 
 const RANK_CHAR = { 10: 'T', 11: 'J', 12: 'Q', 13: 'K', 14: 'A' };
@@ -24,7 +23,7 @@ export function preflopSituation(hand, seat) {
   const hero = pos[seat];
   if (raises.length === 0) return hero === 'BB' ? { type: 'bb', limpers } : { type: 'open', pos: hero, limpers };
   if (mine.length === 0 && raises.length === 1) return { type: 'vsRaise', raiser: pos[raises[0].seat], hero };
-  if (mine.length === 0) return { type: 'squeeze', hero };
+  if (mine.length === 0) return { type: 'squeeze', hero, called: acts.some((e) => e.seat === seat && e.type === 'call') };
   const after = raises.slice(raises.indexOf(mine[mine.length - 1]) + 1).length;
   if (mine.length === 1 && raises.indexOf(mine[0]) === 0 && after === 1) return { type: 'vs3bet', hero };
   return { type: 'vs4bet', hero };       // vous aviez sur-relancé (ou relancé deux fois) et on relance encore
@@ -63,25 +62,16 @@ export function preflopDecision(hand, seat, level, legal, step = FULL) {
   const sit = preflopSituation(hand, seat);
   const raisons = [];
   const facts = { street: 'preflop', sit, code, step };    // pour le mentor (mentor.js)
-  let type;
-  if (sit.type === 'vs4bet') {
-    // C2.2 : si l'on relance encore votre sur-relance ou votre 4-bet, QQ+ et AK partent à tapis.
-    type = has(RERAISE, code) ? 'allin' : 'fold';
-    raisons.push(r('C2.2', has(RERAISE, code)
-      ? `${shortCode(code)} fait partie de QQ+, AK : on continue, à tapis.`
-      : `Face à une relance de plus, seules QQ+ et AK continuent : ${shortCode(code)} se couche.`));
-  } else {
-    const d = decide(sit, code, step);
-    type = d.action;
-    raisons.push(r('C2.2', d.why));
-    // Niveau 3 : une petite paire paie une relance si les tapis valent 15 fois le prix (C3.4).
-    if (level >= 3 && sit.type === 'vsRaise' && type === 'fold' && code.length === 2 && '23456'.includes(code[0])) {
-      const others = hand.seats.filter((o) => o !== s && o.dealt && !o.folded);
-      const effective = Math.min(s.stack, Math.max(...others.map((o) => o.stack + o.bet)) - s.bet);
-      if (effective >= 15 * legal.toCall) {
-        type = 'call';
-        raisons.push(r('C3.4', `Cotes implicites : ${code} touche le brelan environ 1 fois sur 8 ; les tapis (${bbText(effective, hand.bb)}) valent au moins 15 fois le prix du call (${bbText(legal.toCall, hand.bb)}) : on paie.`));
-      }
+  const d = decide(sit, code, step);       // vs4bet compris : QQ+ et AK à tapis (C2.2)
+  let type = d.action;
+  raisons.push(r('C2.2', d.why));
+  // Niveau 3 : une petite paire paie une relance si les tapis valent 15 fois le prix (C3.4).
+  if (level >= 3 && sit.type === 'vsRaise' && type === 'fold' && code.length === 2 && '23456'.includes(code[0])) {
+    const others = hand.seats.filter((o) => o !== s && o.dealt && !o.folded);
+    const effective = Math.min(s.stack, Math.max(...others.map((o) => o.stack + o.bet)) - s.bet);
+    if (effective >= 15 * legal.toCall) {
+      type = 'call';
+      raisons.push(r('C3.4', `Cotes implicites : ${code} touche le brelan environ 1 fois sur 8 ; les tapis (${bbText(effective, hand.bb)}) valent au moins 15 fois le prix du call (${bbText(legal.toCall, hand.bb)}) : on paie.`));
     }
   }
   if (type === 'allin') return { facts, action: { type: 'raise', to: legal.raise?.max }, raisons };
