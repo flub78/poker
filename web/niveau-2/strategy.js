@@ -36,6 +36,18 @@ export const STEPS = [
 ];
 export const FULL = 5;
 
+// ---------- correction « en avance » ----------
+// Les étapes simplifient la grille complète pour la mémoriser : elles ne rendent pas fausses les
+// réponses des étapes suivantes. Une réponse fausse au sous-niveau choisi mais juste à un sous-niveau
+// plus avancé est acceptée, « en avance », avec la réponse attendue au sous-niveau choisi.
+// isRight(s) : la réponse est-elle juste à l'étape s ? Renvoie { ok, ahead } : ahead est la première
+// étape supérieure où elle est juste (null : juste au sous-niveau choisi, ou fausse partout).
+export function grade(isRight, step = FULL) {
+  if (isRight(step)) return { ok: true, ahead: null };
+  for (let s = step + 1; s <= FULL; s++) if (isRight(s)) return { ok: true, ahead: s };
+  return { ok: false, ahead: null };
+}
+
 // Liste d'ouverture (personne n'a relancé) selon la position et l'étape.
 export function openRange(pos, step = FULL) {
   if (step === 0) return UTG;

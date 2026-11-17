@@ -4,10 +4,14 @@
 //   défendable : écart faible — main à la limite d'une liste, équité à moins de 5 points de
 //                l'équité requise, valeur manquée sans perte, taille de mise différente ;
 //   erreur     : une règle du cours enfreinte (limp, main hors liste, call sans raison…).
+// En avance : un coup non conforme aux règles du joueur mais conforme à celles d'un sous-niveau ou
+// d'un niveau plus avancé est conforme, avec la mention « en avance » (judgeMove).
 // JavaScript pur, testé sous Node (tests/simulateur/mentor.test.js).
 import { openRange, RERAISE, CALL_IP, CALL_OOP, CALL_3BET, FULL } from '../niveau-2/strategy.js';
 import { frontier, shortCode } from '../niveau-2/ranges.js';
 import { isBlind, bbText } from './positions.js';
+import { legalActions } from './moteur/table.js';
+import { decider, playLevel, isProfil, BOT_LEVELS } from './bots.js';
 
 export const VERDICTS = {
   conforme: 'Conforme',
@@ -159,4 +163,37 @@ function judge4(action, a, f, advice, out, r) {
   if (action.type === 'call' && a.type === 'raise') return out('défendable', why('Le cours relance ici. '));
   if (action.type === 'raise' && a.type === 'call') return out('défendable', why('Le cours se contente de suivre. '));
   return out('défendable', why(''));
+}
+
+// ---------- en avance ----------
+
+// Règles plus avancées que celles d'un joueur, de la plus proche à la plus lointaine :
+// les sous-niveaux 2.N suivants (step null : la grille complète), puis les niveaux suivants.
+export function higherRules(level, step = null) {
+  if (isProfil(level)) return [];
+  const lvl = playLevel(level);
+  const out = [];
+  if (lvl === 2 && step !== null && step < FULL) {
+    for (let s = step + 1; s <= FULL; s++) out.push({ level: 2, step: s === FULL ? null : s });
+  }
+  for (let l = lvl + 1; l <= Math.max(...BOT_LEVELS); l++) out.push({ level: l, step: null });
+  return out;
+}
+
+// Juge le coup du joueur qui a la parole, aux règles de son niveau (level, step : voir decider).
+// Coup non conforme mais conforme à des règles plus avancées : verdict « conforme », avec
+// avance = { rules, raisons } (le niveau de ces règles et leur raisonnement) ; advised et why
+// restent ceux du niveau du joueur. Renvoie { j, advice } (advice : le conseil à son niveau).
+export function judgeMove(hand, action, level, step = null) {
+  const legal = legalActions(hand);
+  const advice = decider(hand, hand.toAct, level, step);
+  const j = judge(hand, action, advice, legal);
+  if (j.verdict === 'conforme') return { j, advice };
+  for (const r of higherRules(level, step)) {
+    const next = decider(hand, hand.toAct, r.level, r.step);
+    if (judge(hand, action, next, legal).verdict === 'conforme') {
+      return { j: { ...j, verdict: 'conforme', avance: { rules: next.rules, raisons: next.raisons } }, advice };
+    }
+  }
+  return { j, advice };
 }

@@ -17,7 +17,7 @@ SPR) ; niveaux 5 et 6 : pour l'instant les règles du niveau 4.
 | `bots.js` | `decider(main, siège, niveau)` (niveau 2 à 4, ou un profil : `'rock'`, `'station'`, `'maniaque'`) → `{ action, raisons, facts }` : sert aux bots, à l'indice et au mentor |
 | `evaluation.js` | Évaluation de la partie : verdicts par joueur, coût des erreurs, VPIP, PFR, AF, profils (C5.4), commentaires |
 | `historique.js` | Parties terminées, gardées dans le navigateur ; page Profil |
-| `mentor.js` | `judge(main, coup, conseil, actions légales)` → verdict (conforme, défendable, erreur) et explications |
+| `mentor.js` | `judge(main, coup, conseil, actions légales)` → verdict (conforme, défendable, erreur) et explications ; `judgeMove(main, coup, niveau, étape)` : un coup conforme aux règles d'un sous-niveau ou d'un niveau plus avancé compte conforme, « en avance » |
 | `regles/preflop.js` | Grille du niveau 2 (C2.2), tailles (C2.2, C2.3), cotes implicites des petites paires (C3.4) |
 | `regles/postflop.js` | Après le flop : schéma du niveau 2 (C2.3), outs et cote du pot au niveau 3 (C3.2, C3.3) |
 | `regles/force.js` | Classe d'une main (forte, top paire, paire, rien) et outs |

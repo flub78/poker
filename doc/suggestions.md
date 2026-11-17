@@ -1,6 +1,6 @@
 # Suggestions d'amélioration
 
-Mis à jour le 2026-11-15 (ajout de S-027 ; avant : ajout de S-026 ; avant : ajout de S-025 ; avant : note sur S-015 ; avant : S-023 et S-024 faites ; avant : ajout de S-023 ; avant : S-022 faite ; avant : ajout de S-022 ; avant : ajout de S-017 ; avant : ajout de S-015 et S-016 ; avant : réalisation de S-001, S-003 à S-010, S-012 option A, S-013, S-014). Fiches classées par section ; index trié par rapport
+Mis à jour le 2026-11-17 (S-028 faite ; avant : ajout de S-027 ; avant : ajout de S-026 ; avant : ajout de S-025 ; avant : note sur S-015 ; avant : S-023 et S-024 faites ; avant : ajout de S-023 ; avant : S-022 faite ; avant : ajout de S-022 ; avant : ajout de S-017 ; avant : ajout de S-015 et S-016 ; avant : réalisation de S-001, S-003 à S-010, S-012 option A, S-013, S-014). Fiches classées par section ; index trié par rapport
 bénéfice/coût. Statuts : proposée · acceptée · en cours · faite · reportée · refusée.
 Règles de tenue et commandes : voir [`strategie_suggestions.md`](../strategie_suggestions.md).
 
@@ -23,6 +23,7 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 | S-013 | Par fonctionnalité | Quiz préflop du niveau 2 en 2 séries de 10 (règle des 10 questions par série) | moyen | S | élevé | faite |
 | S-010 | Tutoriel | Corriger l'écart de VPIP du test du niveau 2 (18–26 % ou 12–20 %) | moyen | S | élevé | faite |
 | S-024 | Par fonctionnalité | Sous-niveaux cumulatifs du niveau 2 (2.0 à 2.5) pour les exercices, les Réflexes et le simulateur | élevé | M | élevé | faite |
+| S-028 | Par fonctionnalité | Réponses « en avance » : juste à un sous-niveau ou un niveau plus avancé = juste, avec la réponse attendue au niveau de l'élève | élevé | S | élevé | faite |
 | S-027 | Par fonctionnalité | Réflexes : renvoyer au paragraphe précis de C2.2 (« Face à une relance »…) plutôt qu'à toute la section | moyen | S | élevé | proposée |
 | S-026 | Par fonctionnalité | Comprendre pourquoi le niveau 4 ne gagne pas plus que le 3 contre des profils faibles | moyen | S | élevé | proposée |
 | S-025 | Tutoriel | Étymologie à la première utilisation : la garder, ou s'appuyer sur les liens vers le glossaire | moyen | S | élevé | proposée |
@@ -306,6 +307,26 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 - **Rapport** : élevé.
 - **Premier pas** : ajouter la ligne dans le doc, puis `/publier-tutoriel`.
 - **Décision** :
+
+### S-028 · Réponses « en avance »
+- **Statut** : faite (commit « Réponses en avance : justes aux exercices et au mentor ») · **Date** : 2026-11-17 · **Origine** : question de l'utilisateur
+  (le niveau réel d'un élève ne recoupe pas forcément les niveaux de la formation)
+- **Constat** : « Quelle décision ? », « Position minimum », « Colorier la grille » et le mentor du
+  simulateur jugeaient strictement au sous-niveau choisi. La réponse de la grille complète, donnée
+  par un élève en 2.1, comptait comme une erreur et pouvait lui faire rater le 19 sur 20.
+- **Proposition** : une réponse fausse au sous-niveau mais juste à un sous-niveau ou un niveau plus
+  avancé compte juste, « en avance », avec la réponse attendue au niveau de l'élève ; le bilan les
+  compte à part et propose de monter de sous-niveau à partir de 3.
+- **Réalisation** : `grade` (`niveau-2/strategy.js`), `judgeMove` et `higherRules`
+  (`simulateur/mentor.js`), compteur `ahead` de l'évaluation ; tests dans
+  `tests/existants/avance.test.js`, `tests/simulateur/` ; une phrase dans C2.2 (« Pour retenir la grille »).
+- **Limite** : une réponse plus large que l'étape peut être juste par hasard ; la mention et le
+  décompte à part la rendent visible. Les Réflexes ne sont pas concernés : une seule bonne réponse
+  par question (non vérifié question par question).
+- **Bénéfices** : l'élève qui en sait plus n'est pas pénalisé ; il voit qu'il peut avancer.
+- **Coûts** : S.
+- **Rapport** : élevé.
+- **Décision** : acceptée le 2026-11-17, simulateur compris.
 
 ### S-027 · Réflexes : renvoyer au paragraphe précis d'une section
 - **Statut** : proposée · **Date** : 2026-11-15 · **Origine** : liens des Réflexes vers le cours

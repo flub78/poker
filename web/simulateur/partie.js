@@ -9,7 +9,7 @@
 // ni dans les gains, ni dans l'évaluation, ni dans la lecture des joueurs (game.reads).
 import { newHand, act, legalActions } from './moteur/table.js';
 import { decider } from './bots.js';
-import { judge } from './mentor.js';
+import { judgeMove } from './mentor.js';
 import { costOf, judgeLevel, judgeStep } from './evaluation.js';
 import { positions } from './positions.js';
 import { createReads } from './lecture.js';
@@ -99,12 +99,12 @@ function record(game, action, meta) {
   const hand = game.hand;
   const seat = hand.toAct;
   const legal = legalActions(hand);
-  const advice = decider(hand, seat, judgeLevel(game.players[seat]), judgeStep(game.players[seat]));
-  const j = judge(hand, action, advice, legal);
+  const { j, advice } = judgeMove(hand, action, judgeLevel(game.players[seat]), judgeStep(game.players[seat]));
   game.decisions.push({
     hand: hand.no, replay: hand.replay, seat, street: hand.street, pos: positions(hand)[seat],
     hole: hand.seats[seat].hole.slice(), board: hand.board.slice(),
     human: j.human, advised: j.advised, verdict: j.verdict, why: j.why, raisons: j.raisons, level: j.level,
+    avance: j.avance?.rules ?? null,
     ...costOf(hand, action, advice, legal), ...meta,
   });
 }

@@ -1,8 +1,9 @@
 // Exercice : colorier de mémoire la grille 13 × 13 d'une position, puis comparer.
 // La liste attendue est celle du sous-niveau choisi (settings.step) : à l'étape 0, UTG partout.
+// La liste exacte d'un sous-niveau plus avancé est acceptée « en avance » (grade, strategy.js).
 import { h } from '../../js/dom.js';
 import { handName } from '../ranges.js';
-import { FULL, openRange } from '../strategy.js';
+import { FULL, STEPS, openRange, grade } from '../strategy.js';
 import { paintableGrid, compare, correctionGrid, correctionLegend } from '../grid.js';
 
 export default {
@@ -20,7 +21,8 @@ export default {
   ],
 
   create(rand, settings, report) {
-    const target = openRange(settings.pos, settings.step ?? FULL);
+    const step = settings.step ?? FULL;
+    const target = openRange(settings.pos, step);
     let root;
 
     function start() {
@@ -35,9 +37,10 @@ export default {
     }
 
     function correct(selected) {
-      const c = compare(selected, target);
-      const ok = c.errors === 0;
+      const { ok, ahead } = grade((s) => compare(selected, openRange(settings.pos, s)).errors === 0, step);
       report(ok);
+      if (ahead !== null) { correctAhead(selected, ahead); return; }
+      const c = compare(selected, target);
       const names = (list) => list.map(handName).join(', ');
       const again = h('button', { type: 'button', class: 'btn', onclick: start }, 'Recommencer');
       setTimeout(() => again.focus(), 0);
@@ -47,6 +50,22 @@ export default {
           c.missing.length ? h('p', {}, `Oubliées : ${names(c.missing)}.`) : null,
           c.extra.length ? h('p', {}, `En trop : ${names(c.extra)}.`) : null,
           h('p', {}, `${target.name} : ${target.text}.`)),
+        correctionLegend(),
+        correctionGrid(selected, target),
+        h('div', { class: 'practice-actions' }, again)));
+    }
+
+    // Grille exacte d'un sous-niveau plus avancé : juste, en avance ; la correction montre l'écart
+    // avec la liste du sous-niveau choisi.
+    function correctAhead(selected, ahead) {
+      const r = openRange(settings.pos, ahead);
+      const again = h('button', { type: 'button', class: 'btn', onclick: start }, 'Recommencer');
+      setTimeout(() => again.focus(), 0);
+      root.replaceChildren(h('section', { class: 'block' },
+        h('div', { class: 'feedback ok' },
+          h('p', {}, h('strong', {}, '✓ Grille juste, en avance.')),
+          h('p', {}, `Vous avez colorié la ${r.name}, celle du sous-niveau ${STEPS[ahead].code} : ${r.text}.`),
+          h('p', { class: 'meta' }, `À votre sous-niveau (${STEPS[step].code}), la ${target.name} : ${target.text}.`)),
         correctionLegend(),
         correctionGrid(selected, target),
         h('div', { class: 'practice-actions' }, again)));
