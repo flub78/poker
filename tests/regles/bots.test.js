@@ -37,7 +37,7 @@ test('notation des mains', () => {
   assert.equal(handCode(cartes('7C 7D')), '77');
 });
 
-test('UTG : AJ relance à 2,5 BB, A9 se couche (C2.2, C2.3)', () => {
+test('UTG : AJ relance à 2,5 BB, A9 se couche (C2.2)', () => {
   let d = decider(table({ 3: 'AS JD' }), 3, 2);
   assert.deepEqual(d.action, R(5));
   assert.match(texte(d), /2,5 BB/);

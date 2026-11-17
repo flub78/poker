@@ -17,6 +17,31 @@ export const CALL_3BET = range('suivre une sur-relance', 'JJ-TT');
 const PAIRS_ACES_CO = range('paires et As du CO', '55+, AT+, A2s+');
 const STEP2_CO = union('liste UTG + paires et As du CO', '77+, AJ+, KQ, ATs+, KJs+ + 55+, AT+, A2s+', UTG, PAIRS_ACES_CO);
 
+// ---------- la grille par famille (C2.2) ----------
+// Une borne par famille et par colonne ; de gauche à droite, les bornes ne font que descendre.
+// Chaque case : le texte du cours et sa notation (vide : aucune main). Réunies, les cases d'une
+// colonne redonnent exactement la liste de la position (tests/existants/familles.test.js).
+export const FAMILY_COLUMNS = [
+  { title: 'UTG, MP', range: UTG },
+  { title: 'CO, SB', range: CO },
+  { title: 'BTN', range: BTN },
+];
+const cell = (text, notation = text) => ({ text, notation });
+export const FAMILIES = [
+  { name: 'Paires', cells: [cell('77+'), cell('55+'), cell('toutes (22+)', '22+')] },
+  { name: 'As assortis', cells: [cell('ATs+'), cell('tous (A2s+)', 'A2s+'), cell('tous', 'A2s+')] },
+  { name: 'As dépareillés', cells: [cell('AJ+'), cell('AT+'), cell('tous (A2+)', 'A2+')] },
+  { name: 'Rois', cells: [cell('KQ, KJs'), cell('KJ+, K9s+'), cell('KT+, K9s')] },
+  { name: 'Dames et Valets', cells: [cell('aucun', ''), cell('QJ, QTs, JTs'), cell('QT+, JT')] },
+  { name: 'Assorties connectées', cells: [cell('aucune', ''), cell('T9s'), cell('T9s, 98s, 87s, 76s')] },
+];
+
+// Les mains d'une colonne de la grille par famille (0 : UTG, 1 : CO, 2 : BTN).
+export function familyColumn(col) {
+  const parts = FAMILIES.map((f) => range(`${f.name}, ${FAMILY_COLUMNS[col].title}`, f.cells[col].notation));
+  return union(`colonne ${FAMILY_COLUMNS[col].title}`, FAMILY_COLUMNS[col].range.text, ...parts);
+}
+
 export const POSITIONS = ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB'];
 export const POSITION_NAME = {
   UTG: 'UTG', MP: 'en MP', CO: 'au CO', BTN: 'au bouton (BTN)', SB: 'en petite blind (SB)', BB: 'en grosse blind (BB)',

@@ -1,4 +1,4 @@
-// Décisions avant le flop : la grille du niveau 2 (C2.2), les tailles de C2.2 et C2.3,
+// Décisions avant le flop : la grille du niveau 2 et ses tailles (C2.2),
 // les cotes implicites des petites paires au niveau 3 (C3.4).
 import { decide, RERAISE, FULL } from '../../niveau-2/strategy.js';
 import { has, shortCode } from '../../niveau-2/ranges.js';
@@ -38,7 +38,7 @@ function raiseTo(hand, sit, legal, raisons) {
   let to;
   if (sit.type === 'open' || sit.type === 'bb') {
     to = Math.round((2.5 + sit.limpers) * bb);
-    raisons.push(r('C2.3', sit.limpers
+    raisons.push(r('C2.2', sit.limpers
       ? `Taille standard : 2,5 BB, plus 1 BB par joueur qui a suivi (${sit.limpers}), soit ${bbText(to, bb)}.`
       : 'Taille standard : 2,5 BB.'));
   } else {

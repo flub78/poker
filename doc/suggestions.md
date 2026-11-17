@@ -1,6 +1,6 @@
 # Suggestions d'amélioration
 
-Mis à jour le 2026-11-17 (S-028 faite ; avant : ajout de S-027 ; avant : ajout de S-026 ; avant : ajout de S-025 ; avant : note sur S-015 ; avant : S-023 et S-024 faites ; avant : ajout de S-023 ; avant : S-022 faite ; avant : ajout de S-022 ; avant : ajout de S-017 ; avant : ajout de S-015 et S-016 ; avant : réalisation de S-001, S-003 à S-010, S-012 option A, S-013, S-014). Fiches classées par section ; index trié par rapport
+Mis à jour le 2026-11-17 (ajout de S-030 ; avant : S-029 faite ; avant : ajout de S-029 ; avant : S-028 faite ; avant : ajout de S-027 ; avant : ajout de S-026 ; avant : ajout de S-025 ; avant : note sur S-015 ; avant : S-023 et S-024 faites ; avant : ajout de S-023 ; avant : S-022 faite ; avant : ajout de S-022 ; avant : ajout de S-017 ; avant : ajout de S-015 et S-016 ; avant : réalisation de S-001, S-003 à S-010, S-012 option A, S-013, S-014). Fiches classées par section ; index trié par rapport
 bénéfice/coût. Statuts : proposée · acceptée · en cours · faite · reportée · refusée.
 Règles de tenue et commandes : voir [`strategie_suggestions.md`](../strategie_suggestions.md).
 
@@ -15,6 +15,7 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 | S-018 | Système | Identifiant stable des questions dans le format d'échange de mentor (colonne `reference`) | moyen | S | élevé | faite |
 | S-019 | Par fonctionnalité | Réflexes : progression dans le code de transfert | moyen | S | élevé | proposée |
 | S-020 | Par fonctionnalité | Réflexes : chronomètre facultatif (10 s), comme mentor §7.7 | moyen | S | moyen | proposée |
+| S-030 | Transverses | Test de fumée : signaler un message « Impossible de charger » affiché, sans dépendre de la console | faible | S | moyen | proposée |
 | S-017 | Transverses | Réparer le contrôle « null / undefined / NaN affichés » du test de fumée, qui ne voyait rien | moyen | S | élevé | faite |
 | S-016 | Méthodes | Tests automatiques systématiques : `node --test` sur les modules purs, commande unique `bin/tester.sh` | élevé | S | élevé | faite |
 | S-015 | Par fonctionnalité | Simulateur de table à 6 : bots des niveaux 2 à 6, Indice, Mentor, évaluation des décisions | élevé | L | moyen | acceptée |
@@ -24,6 +25,7 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 | S-010 | Tutoriel | Corriger l'écart de VPIP du test du niveau 2 (18–26 % ou 12–20 %) | moyen | S | élevé | faite |
 | S-024 | Par fonctionnalité | Sous-niveaux cumulatifs du niveau 2 (2.0 à 2.5) pour les exercices, les Réflexes et le simulateur | élevé | M | élevé | faite |
 | S-028 | Par fonctionnalité | Réponses « en avance » : juste à un sous-niveau ou un niveau plus avancé = juste, avec la réponse attendue au niveau de l'élève | élevé | S | élevé | faite |
+| S-029 | Par fonctionnalité | Aide-mémoire du niveau 2 aligné sur le cours réécrit : grille par famille et tableau des relances, générés depuis `strategy.js` | moyen | S | élevé | faite |
 | S-027 | Par fonctionnalité | Réflexes : renvoyer au paragraphe précis de C2.2 (« Face à une relance »…) plutôt qu'à toute la section | moyen | S | élevé | proposée |
 | S-026 | Par fonctionnalité | Comprendre pourquoi le niveau 4 ne gagne pas plus que le 3 contre des profils faibles | moyen | S | élevé | proposée |
 | S-025 | Tutoriel | Étymologie à la première utilisation : la garder, ou s'appuyer sur les liens vers le glossaire | moyen | S | élevé | proposée |
@@ -260,6 +262,29 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
   `series: 2, pass: 18`. Au passage, les deux critères de table du niveau 2 (VPIP sur 500 mains,
   aucun limp) sont devenus des cases à cocher dans l'onglet Tests.
 
+### S-029 · Aide-mémoire du niveau 2 aligné sur le cours réécrit
+- **Statut** : faite · **Date** : 2026-11-17 · **Origine** : réécriture du niveau 2 (tableaux
+  par niveau de relance, demande d'un tableau « position × main → action »)
+- **Constat** : le niveau 2 du cours passe à une grille par famille (une borne par famille et par
+  colonne) et à un tableau des relances jusqu'au tapis. L'onglet Aide-mémoire (`web/niveau-2/aide.js`)
+  garde l'ancienne forme (une ligne par position, quatre situations sans le tapis) et recopie à la
+  main le tableau des étapes. Un tableau complet « ma main, ma position → l'action » (136 cases) a
+  été jugé trop lourd pour le cours : il fait double emploi et devrait être tenu à jour à la main.
+- **Proposition** : générer dans l'Aide-mémoire, depuis `strategy.js`, les mêmes tableaux que le
+  cours ; en option, une vue « ma main, ma position » calculée par `decide()` (choisir une main et
+  une position, voir l'action à chaque niveau de relance).
+- **Bénéfices** : cours, aide-mémoire et simulateur d'accord sans recopie ; le tableau B existe
+  sans rien maintenir.
+- **Coûts** : S pour aligner les tableaux ; M avec la vue interactive.
+- **Rapport** : élevé.
+- **Premier pas** : une fonction pure qui produit les lignes du tableau par famille depuis UTG, CO
+  et BTN, avec son test (doit redonner les cellules du cours).
+- **Décision** : 2026-11-17, acceptée et réalisée (sans la vue interactive). `FAMILIES` et
+  `familyColumn()` dans `strategy.js`, test `tests/existants/familles.test.js` (chaque colonne redonne
+  la liste de sa position). Aide-mémoire dans l'ordre des quatre règles : grille coloriée, grille
+  par famille, relances jusqu'au tapis, après le flop, sous-niveaux. Le tableau des étapes reste
+  recopié du cours (`STEP_ADDS`). Commit : à venir.
+
 ### 5.2 Contenu du tutoriel
 
 ### S-014 · Écrire dans le cours les règles que l'application a dû fixer
@@ -476,6 +501,20 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 - **Proposition** : dans mentor, une colonne facultative `ordre` (liste des propositions dans l'ordre d'affichage), utilisée quand `melange` vaut `non` ; poker la lit de même.
 - **Bénéfices** : listes stables, plus rapides à lire ; la position du bouton devient un repère (réflexe).
 - **Coûts** : S dans mentor (format et affichage QCM), S dans poker. **Rapport** : moyen.
+
+### S-030 · Test de fumée : signaler un message « Impossible de charger » affiché
+- **Statut** : proposée · **Date** : 2026-11-17 · **Origine** : une parenthèse de trop dans
+  `niveau-2/aide.js` empêchait tout le niveau 2 de se charger ; le test de fumée annonçait
+  « Aucun problème » (l'erreur était attrapée par `app.js` et affichée, sans trace en console).
+- **Déjà fait** : `app.js` écrit l'erreur en console (`console.error`) pour le cours, le simulateur
+  et les niveaux ; le test de fumée la signale (vérifié en remettant la faute).
+- **Proposition** : en plus, chercher dans chaque vue un `.form-message` qui commence par
+  « Impossible de charger », pour ne pas dépendre d'un `console.error` qu'on pourrait oublier
+  dans un futur `catch`.
+- **Bénéfices** : filet de plus, indépendant du code de l'application.
+- **Coûts** : S, quelques lignes dans `CHECK` de `tools/verifier_web.mjs`.
+- **Rapport** : moyen (le `console.error` couvre déjà les cas connus).
+- **Premier pas** : ajouter la recherche dans `CHECK`, vérifier avec une faute volontaire.
 
 ## 7. Idées pour d'autres projets
 

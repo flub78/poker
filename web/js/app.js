@@ -103,6 +103,7 @@ async function showSimulateur() {
     window.scrollTo(0, 0);
     renderSimulateur(main);
   } catch (err) {
+    console.error(err);   // visible du test de fumée (tools/verifier_web.mjs)
     clear(main).append(h('p', { class: 'form-message' }, `Impossible de charger le simulateur : ${err.message}`));
   }
 }
@@ -113,6 +114,7 @@ async function showCours() {
   try {
     await loadCours();
   } catch (err) {
+    console.error(err);   // visible du test de fumée (tools/verifier_web.mjs)
     renderHeader(null, 'Cours');
     clear(main).append(h('p', { class: 'form-message' }, `Impossible de charger le cours : ${err.message}`));
     return;
@@ -146,6 +148,7 @@ async function show() {
   try {
     if (!cache.has(level)) cache.set(level, (await import(`../niveau-${level}/niveau.js`)).default);
   } catch (err) {
+    console.error(err);   // visible du test de fumée (tools/verifier_web.mjs)
     clear(main).append(h('p', { class: 'form-message' }, `Impossible de charger le niveau ${level} : ${err.message}`));
     return;
   }

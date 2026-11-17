@@ -415,9 +415,9 @@ a.level-link.current:hover { background: var(--felt-ink); }
 
 .table-wrap { overflow-x: auto; margin: 12px 0 16px; max-width: calc(100vw - 32px); }
 .cours-body:has(.table-wrap) { max-width: none; }
-.summary, .cours-body table { border-collapse: collapse; font-size: 0.92rem; min-width: 100%; background: var(--surface); }
-.summary th, .summary td, .cours-body th, .cours-body td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
-.summary th, .cours-body th { background: var(--bg); font-weight: 700; }
+.summary, .cours-body table, table.data { border-collapse: collapse; font-size: 0.92rem; min-width: 100%; background: var(--surface); }
+.summary th, .summary td, .cours-body th, .cours-body td, table.data th, table.data td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+.summary th, .cours-body th, table.data th { background: var(--bg); font-weight: 700; }
 .cours-body td p { margin: 0; }
 .cours-body .chip { white-space: nowrap; }
 .grid-note { padding: 8px 12px; border-radius: 8px; background: var(--accent-soft); font-size: 0.92rem; }

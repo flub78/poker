@@ -61,7 +61,7 @@ export function judge(hand, action, advice, legal) {
     if (action.type !== 'raise') return out('conforme');
     const allIn = action.to === legal.raise.max && a.to === legal.raise.max;
     if (allIn || Math.abs(action.to - a.to) <= 0.3 * a.to) return out('conforme');
-    return out('défendable', r(advice.facts?.street === 'preflop' ? 'C2.3' : 'C4.4',
+    return out('défendable', r(advice.facts?.street === 'preflop' ? 'C2.2' : 'C4.4',
       `Bonne action, mais la taille s'écarte de celle du cours : ${low(advised)} plutôt que ${low(human)}.`));
   }
 
