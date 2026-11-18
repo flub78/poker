@@ -5,6 +5,8 @@
 - **Source** : le Claude Doc « Initiation au poker — programme progressif »
   (https://claude.ai/artifact/Gi1w58HDF6x5atzDWz5HuB). On le modifie avec les outils Claude Docs,
   jamais en éditant le PDF.
+- **Date du cours** : à chaque modification du doc, mettre la date (puce sous le titre) au jour
+  de la modification.
 - **Site et PDF** : le cours de l'application (`web/`, bouton « Cours ») est la version de
   référence ; `doc/initiation-poker-tutoriel.pdf` en est une impression. Après chaque modification
   du doc, lancer `/publier-tutoriel`, qui enchaîne :

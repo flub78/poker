@@ -27,7 +27,7 @@ export function renderAide(root) {
     h('section', { class: 'block' },
       h('h3', {}, '1. Personne n\'a relancé : la grille'),
       h('p', { class: 'hint' }, 'Chaque case est coloriée selon la première position où l\'on relance la main. Ce qu\'on joue UTG, on le joue aussi plus loin.'),
-      legend([['pos-UTG', `UTG et MP (${percent(UTG)})`], ['pos-CO', `+ CO et SB (${percent(CO)})`], ['pos-BTN', `+ BTN (${percent(BTN)})`], ['', 'Se coucher']]),
+      legend([['pos-UTG', `UTG et MP (${percent(UTG)})`], ['pos-CO', `+ CO, SB et BB (${percent(CO)})`], ['pos-BTN', `+ BTN (${percent(BTN)})`], ['', 'Se coucher']]),
       grid({ classFor: (code) => `pos-${minPosition(code)}`, label: 'Grille des mains relancées selon la position' })),
     h('section', { class: 'block' },
       h('h3', {}, 'La même grille, une borne par famille'),
@@ -35,7 +35,7 @@ export function renderAide(root) {
         ...FAMILIES.map((f) => [f.name, ...f.cells.map((c) => c.text)]),
         ['Part des mains jouées', ...FAMILY_COLUMNS.map((c) => `environ ${percent(c.range)}`)],
       ]),
-      h('p', { class: 'hint' }, 'De gauche à droite, les bornes ne font que descendre. La BB joue la colonne CO, mais checke au lieu de se coucher. Taille : 2,5 BB, plus 1 BB par joueur qui a seulement suivi. Jamais de limp.')),
+      h('p', { class: 'hint' }, 'De gauche à droite, les bornes ne font que descendre. La BB ne joue la colonne CO que si des joueurs ont seulement suivi ; sinon elle checke. Taille : 2,5 BB, plus 1 BB par joueur qui a seulement suivi. Jamais de limp.')),
     h('section', { class: 'block' },
       h('h3', {}, '2 et 3. Les relances'),
       table(['Situation', 'Relancer', 'Suivre', 'Se coucher'], [

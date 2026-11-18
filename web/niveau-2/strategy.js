@@ -23,7 +23,7 @@ const STEP2_CO = union('liste UTG + paires et As du CO', '77+, AJ+, KQ, ATs+, KJ
 // colonne redonnent exactement la liste de la position (tests/existants/familles.test.js).
 export const FAMILY_COLUMNS = [
   { title: 'UTG, MP', range: UTG },
-  { title: 'CO, SB', range: CO },
+  { title: 'CO, SB, BB', range: CO },     // BB : seulement si des joueurs ont suivi, sinon check
   { title: 'BTN', range: BTN },
 ];
 const cell = (text, notation = text) => ({ text, notation });

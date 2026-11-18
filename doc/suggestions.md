@@ -1,6 +1,6 @@
 # Suggestions d'amélioration
 
-Mis à jour le 2026-11-17 (ajout de S-030 ; avant : S-029 faite ; avant : ajout de S-029 ; avant : S-028 faite ; avant : ajout de S-027 ; avant : ajout de S-026 ; avant : ajout de S-025 ; avant : note sur S-015 ; avant : S-023 et S-024 faites ; avant : ajout de S-023 ; avant : S-022 faite ; avant : ajout de S-022 ; avant : ajout de S-017 ; avant : ajout de S-015 et S-016 ; avant : réalisation de S-001, S-003 à S-010, S-012 option A, S-013, S-014). Fiches classées par section ; index trié par rapport
+Mis à jour le 2026-11-18 (S-031 faite ; avant : ajout de S-031 ; avant : ajout de S-030 ; avant : S-029 faite ; avant : ajout de S-029 ; avant : S-028 faite ; avant : ajout de S-027 ; avant : ajout de S-026 ; avant : ajout de S-025 ; avant : note sur S-015 ; avant : S-023 et S-024 faites ; avant : ajout de S-023 ; avant : S-022 faite ; avant : ajout de S-022 ; avant : ajout de S-017 ; avant : ajout de S-015 et S-016 ; avant : réalisation de S-001, S-003 à S-010, S-012 option A, S-013, S-014). Fiches classées par section ; index trié par rapport
 bénéfice/coût. Statuts : proposée · acceptée · en cours · faite · reportée · refusée.
 Règles de tenue et commandes : voir [`strategie_suggestions.md`](../strategie_suggestions.md).
 
@@ -29,6 +29,7 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 | S-027 | Par fonctionnalité | Réflexes : renvoyer au paragraphe précis de C2.2 (« Face à une relance »…) plutôt qu'à toute la section | moyen | S | élevé | proposée |
 | S-026 | Par fonctionnalité | Comprendre pourquoi le niveau 4 ne gagne pas plus que le 3 contre des profils faibles | moyen | S | élevé | proposée |
 | S-025 | Tutoriel | Étymologie à la première utilisation : la garder, ou s'appuyer sur les liens vers le glossaire | moyen | S | élevé | proposée |
+| S-031 | Tutoriel | Expliquer les lettres des cartes (A, K, Q, J, T) au niveau 1, où elles servent dès C1.1 | moyen | S | élevé | faite |
 | S-023 | Tutoriel | Renvoyer vers l'annexe « Grille des mains à colorier » là où le cours demande de colorier la grille | faible | S | élevé | faite |
 | S-011 | Tutoriel | Ajouter C3.7 à la grille d'auto-évaluation | faible | S | élevé | proposée |
 | S-002 | Système | Remplacer le carnet PDF par la progression enregistrée dans l'application | élevé | M | moyen | proposée |
@@ -398,6 +399,22 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 - **Coûts** : S. A, 38 retouches du doc ; B, modifier le principe 1 de CLAUDE.md.
 - **Rapport** : élevé.
 - **Premier pas** : choisir A ou B.
+
+### S-031 · Expliquer les lettres des cartes dès le niveau 1
+- **Statut** : faite (2026-11-18, commit à venir) · **Date** : 2026-11-18 · **Origine** : déplacement de « Notation des mains » en tête du niveau 2
+- **Constat** : la notation courte (AKs, QQ+) est maintenant définie avant sa première utilisation,
+  en tête du niveau 2. Mais les lettres anglaises des cartes (A, K, Q, J) servent dès C1.1
+  (« A♠️ K♥️ ») et dans le tableau de C1.3 (« K K K K 4 »). Un jeu français marque R, D, V.
+- **Proposition** : une phrase en C1.1, à la première carte écrite : « A = As, K = Roi (King),
+  Q = Dame (Queen), J = Valet (Jack), T = 10 (Ten) ». La notation des mains du niveau 2 y renvoie.
+- **Bénéfices** : aucun terme utilisé avant d'être expliqué, comme le demandent les principes de
+  rédaction.
+- **Coûts** : S. Une phrase dans le doc, puis `/publier-tutoriel`.
+- **Rapport** : élevé.
+- **Premier pas** : ajouter la phrase sous la liste des étapes de C1.1.
+- **Décision** : acceptée le 2026-11-18. Paragraphe « Les cartes s'écrivent par leur initiale
+  anglaise » en C1.1, avec l'étymologie et les symboles de couleur ; la notation du niveau 2
+  renvoie à C1.1 ; ligne « Lettres des cartes » au glossaire.
 
 ### S-023 · Renvoyer vers la grille à colorier depuis le cours
 - **Statut** : faite (2026-11-15, commit à venir) · **Date** : 2026-11-15 · **Origine** : ajout de l'annexe « Grille des mains à colorier »
