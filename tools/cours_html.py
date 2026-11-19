@@ -8,7 +8,9 @@ de configuration JSON (par défaut tools/cours_config.json) :
     chemin_images   chemin des images vu depuis la page web
     images          id de blob du doc → fichier local (une image nouvelle doit y être ajoutée)
     pages           une entrée par titre de niveau 2, dans l'ordre :
-                    { titre (expression régulière), id, court?, annexe? }
+                    { titre (expression régulière), id, court?, annexe?, decouper? }
+                    decouper : une page par sous-titre h3 (id <id>-<sous-titre>), par exemple
+                    l'annexe Aide-mémoire, une page par niveau
     couverture      { page, credit } : la première image de cette page, et le paragraphe
                     en italique qui commence par `credit`, vont sur l'accueil
     escaliers       tableaux à dessiner en escalier : { titre, prefixe, legende }. Le tableau
@@ -331,6 +333,18 @@ def main(src, config_path):
             return f'<h3 id="{slug(text)}">{m.group(1)}</h3>'
         body = re.sub(r"<h3[^>]*>(.*?)</h3>", h3, body, flags=re.S)
 
+        if spec.get("decouper"):
+            # une page par sous-titre h3 : <id>-<sous-titre>, titre « <h2> — <h3> »
+            parts = re.split(r'(?=<h3 id=")', body)
+            if parts[0].strip():
+                sys.exit(f"Erreur : texte avant le premier sous-titre de « {h2} » (decouper).")
+            for part, sub in zip(parts[1:], subs):
+                part = re.sub(r"^<h3[^>]*>.*?</h3>\s*", "", part, flags=re.S)
+                pages.append({"id": f"{spec['id']}-{sub['id']}", "title": f"{h2} — {sub['title']}",
+                              "short": f"{spec.get('court') or h2}, {sub['title'][0].lower()}{sub['title'][1:]}",
+                              "subtitle": None, "annex": bool(spec.get("annexe")), "sections": [],
+                              "html": part})
+            continue
         pages.append({"id": spec["id"], "title": h2, "short": spec.get("court") or h2.split(" — ")[0],
                       "subtitle": h2.split(" — ")[1] if " — " in h2 else None,
                       "annex": bool(spec.get("annexe")), "sections": subs, "html": body})

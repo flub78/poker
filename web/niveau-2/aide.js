@@ -16,7 +16,7 @@ const table = (head, rows) => h('div', { class: 'table-wrap' }, h('table', { cla
 const STEP_ADDS = [
   'La colonne UTG à toutes les places. Face à une relance : QQ+ et AK seulement. Jamais de limp.',
   'Au BTN, sa colonne : « toute paire, tout As, deux cartes de 10 ou plus, et K9, T9, 98, 87, 76 assortis ».',
-  'Au CO et en SB, les lignes Paires et As de leur colonne : 55+, AT+, A2s+.',
+  'Au CO, en SB et en BB face à des limps, les lignes Paires et As de leur colonne : 55+, AT+, A2s+.',
   'Le reste de la colonne CO : KJ, QJ ; assortis : KT, K9, QT, JT, T9.',
   'La colonne « Suivre » du tableau des relances.',
   'Colorier la grille 13 × 13 sans modèle.',
@@ -50,7 +50,7 @@ export function renderAide(root) {
       h('h3', {}, '4. Après le flop : flop, turn et river'),
       table(['Votre main avec le tableau', 'Personne n\'a misé', 'Face à une mise', 'Face à une relance'], [
         ['Main forte : deux paires formées avec vos deux cartes, brelan ou mieux', 'Misez la moitié du pot', 'Relancez à 3 fois la mise', 'Relancez encore une fois, puis suivez jusqu\'au bout'],
-        ['Top paire, ou paire en main plus haute que le tableau', 'Misez la moitié du pot', 'Suivez', 'Couchez-vous'],
+        ['Top paire, ou paire servie plus haute que le tableau', 'Misez la moitié du pot', 'Suivez', 'Couchez-vous'],
         ['Moins bien', 'Checkez', 'Couchez-vous', 'Couchez-vous'],
       ]),
       h('p', { class: 'hint' }, 'Vos cartes doivent participer à la main : une paire ou un brelan formés par le tableau seul ne comptent pas.')),

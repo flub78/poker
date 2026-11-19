@@ -31,9 +31,9 @@ export function setPageLevel(n) {
   else delete document.body.dataset.niveau;
 }
 
-// Numéro du niveau d'une page du cours (« niveau-3 » → 3), sinon null.
+// Numéro du niveau d'une page du cours (« niveau-3 », « aide-memoire-niveau-3 » → 3), sinon null.
 export function pageLevel(pageId) {
-  const m = /^niveau-(\d+)$/.exec(pageId || '');
+  const m = /^(?:aide-memoire-)?niveau-(\d+)$/.exec(pageId || '');
   return m && levelOf(m[1]) ? Number(m[1]) : null;
 }
 

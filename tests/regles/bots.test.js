@@ -90,6 +90,16 @@ test('classe d\'une main après le flop', () => {
   assert.equal(handClass(cartes('AS KD'), cartes('9H 9D 4C')).cls, 'rien');   // la paire est au tableau
 });
 
+test('« Top paire ou pas ? » : les exemples de C2.3 et des Réflexes (N2-53 à N2-55, N2-91 à N2-93)', () => {
+  const cls = (main, tableau) => handClass(cartes(main), cartes(tableau)).cls;
+  assert.equal(cls('AS KD', 'KH 8C 3S'), 'top');     // le roi est la plus haute carte du tableau
+  assert.equal(cls('9S 9H', '7D 5C 2H'), 'top');     // paire servie au-dessus de tout le tableau
+  assert.equal(cls('8S 8D', 'AC JD 6H'), 'paire');   // l'As et le valet sont au-dessus des 8
+  assert.equal(cls('AH 6D', 'TC 6S 2H'), 'paire');   // paire du milieu
+  assert.equal(cls('AH QD', '7S 7C 2D'), 'rien');    // la paire de 7 est au tableau seul
+  assert.equal(cls('QS 4H', 'QD 9C 3S'), 'top');     // petit kicker : toujours une top paire
+});
+
 test('outs : les exemples du cours (C3.1, C3.2)', () => {
   assert.equal(outs(cartes('AH 8H'), cartes('KH 7H 2C')).n, 9);                // couleur
   assert.equal(outs(cartes('8S 7D'), cartes('6H 5C KD')).n, 8);                // quinte bilatérale

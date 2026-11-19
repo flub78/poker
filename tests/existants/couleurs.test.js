@@ -41,3 +41,13 @@ test('le cours présente le même code couleur que l\'application', () => {
     .map((c) => c[1].replace(/<[^>]+>/g, '').trim()));
   assert.deepEqual(rows.map((r) => [Number.parseInt(r[0], 10), r[1], r[2]]), LEVELS.map((l) => [l.n, l.color, l.rank]));
 });
+
+test('chaque page du cours d\'un niveau, aide-mémoire compris, porte la couleur de ce niveau', async () => {
+  const { pageLevel } = await import('../../web/js/niveau-couleur.js');
+  assert.equal(pageLevel('niveau-3'), 3);
+  assert.equal(pageLevel('aide-memoire-niveau-3'), 3);
+  assert.equal(pageLevel('glossaire'), null);
+  assert.equal(pageLevel('niveau-9'), null);
+  const memos = contenu.pages.filter((p) => p.id.startsWith('aide-memoire-'));
+  assert.deepEqual(memos.map((p) => pageLevel(p.id)), LEVELS.map((l) => l.n), 'une page d\'aide-mémoire par niveau, dans l\'ordre');
+});

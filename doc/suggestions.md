@@ -1,6 +1,6 @@
 # Suggestions d'amélioration
 
-Mis à jour le 2026-11-18 (S-031 faite ; avant : ajout de S-031 ; avant : ajout de S-030 ; avant : S-029 faite ; avant : ajout de S-029 ; avant : S-028 faite ; avant : ajout de S-027 ; avant : ajout de S-026 ; avant : ajout de S-025 ; avant : note sur S-015 ; avant : S-023 et S-024 faites ; avant : ajout de S-023 ; avant : S-022 faite ; avant : ajout de S-022 ; avant : ajout de S-017 ; avant : ajout de S-015 et S-016 ; avant : réalisation de S-001, S-003 à S-010, S-012 option A, S-013, S-014). Fiches classées par section ; index trié par rapport
+Mis à jour le 2026-11-19 (ajout de S-035 ; avant : S-032 faite, une page web par niveau ; ajout de S-033 et S-034 ; avant : S-031 faite ; avant : ajout de S-031 ; avant : ajout de S-030 ; avant : S-029 faite ; avant : ajout de S-029 ; avant : S-028 faite ; avant : ajout de S-027 ; avant : ajout de S-026 ; avant : ajout de S-025 ; avant : note sur S-015 ; avant : S-023 et S-024 faites ; avant : ajout de S-023 ; avant : S-022 faite ; avant : ajout de S-022 ; avant : ajout de S-017 ; avant : ajout de S-015 et S-016 ; avant : réalisation de S-001, S-003 à S-010, S-012 option A, S-013, S-014). Fiches classées par section ; index trié par rapport
 bénéfice/coût. Statuts : proposée · acceptée · en cours · faite · reportée · refusée.
 Règles de tenue et commandes : voir [`strategie_suggestions.md`](../strategie_suggestions.md).
 
@@ -29,6 +29,10 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 | S-027 | Par fonctionnalité | Réflexes : renvoyer au paragraphe précis de C2.2 (« Face à une relance »…) plutôt qu'à toute la section | moyen | S | élevé | proposée |
 | S-026 | Par fonctionnalité | Comprendre pourquoi le niveau 4 ne gagne pas plus que le 3 contre des profils faibles | moyen | S | élevé | proposée |
 | S-025 | Tutoriel | Étymologie à la première utilisation : la garder, ou s'appuyer sur les liens vers le glossaire | moyen | S | élevé | proposée |
+| S-032 | Tutoriel | Annexe « Aide-mémoire » : une page de règles sans explication par niveau | élevé | S | élevé | faite |
+| S-033 | Tutoriel | Renvoi vers l'aide-mémoire du niveau depuis « Règles du niveau N » | moyen | S | élevé | proposée |
+| S-034 | Transverses | Vérifier que l'annexe Aide-mémoire et l'onglet Aide-mémoire de l'application donnent les mêmes chiffres | moyen | M | moyen | proposée |
+| S-035 | Tutoriel | Top paire : exemples et contre-exemples en C2.3, terme unique pour la paire servie, Réflexes sur la paire servie sous la carte haute | moyen | S | élevé | faite |
 | S-031 | Tutoriel | Expliquer les lettres des cartes (A, K, Q, J, T) au niveau 1, où elles servent dès C1.1 | moyen | S | élevé | faite |
 | S-023 | Tutoriel | Renvoyer vers l'annexe « Grille des mains à colorier » là où le cours demande de colorier la grille | faible | S | élevé | faite |
 | S-011 | Tutoriel | Ajouter C3.7 à la grille d'auto-évaluation | faible | S | élevé | proposée |
@@ -475,6 +479,50 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
   `web/niveau-1/comparaison.js`, une question à la fois, correction immédiate.
 - **Bénéfices** : entraînement illimité avant le test ; aucune logique nouvelle.
 - **Coûts** : S (un fichier dans `practice/`, une ligne dans `niveau.js`).
+
+### S-032 · Annexe « Aide-mémoire », une page par niveau
+- **Statut** : faite (2026-11-19, commit à venir) · **Date** : 2026-11-19 · **Origine** : demande d'une fiche des règles du niveau 2
+- **Constat** : les règles d'un niveau sont dispersées entre « Règles du niveau N » et les sections.
+- **Proposition** : une annexe « Aide-mémoire » avec une page par niveau : tableaux et consignes, sans explication.
+- **Bénéfices** : une fiche à imprimer et garder à côté de l'écran.
+- **Coûts** : S. Six sections dans le doc, option `decouper` de `tools/cours_html.py` : une page du cours par niveau (`#cours/aide-memoire-niveau-N`), avec Précédent / Suivant et la couleur du niveau.
+- **Rapport** : élevé.
+- **Décision** : acceptée le 2026-11-19. Pages 37 à 42 du PDF.
+
+### S-033 · Renvoyer vers l'aide-mémoire depuis chaque niveau
+- **Statut** : proposée · **Date** : 2026-11-19 · **Origine** : S-032
+- **Constat** : rien dans le niveau ne signale que son résumé est en annexe.
+- **Proposition** : en fin de « Règles du niveau N », un lien « Résumé : Aide-mémoire, niveau N ».
+- **Bénéfices** : l'élève trouve la fiche au moment où il lit les règles.
+- **Coûts** : S. Six liens dans le doc, puis `/publier-tutoriel`.
+- **Rapport** : élevé.
+- **Premier pas** : le lien du niveau 2.
+
+### S-034 · Une seule source pour les chiffres de l'aide-mémoire
+- **Statut** : proposée · **Date** : 2026-11-19 · **Origine** : S-032
+- **Constat** : les grilles et seuils sont maintenant écrits trois fois : sections du cours, annexe
+  Aide-mémoire, onglet Aide-mémoire de l'application (généré depuis `strategy.js`, S-029). Un changement
+  de règle oublié dans l'annexe passera inaperçu.
+- **Proposition** : un test qui lit `web/cours/contenu.js` et compare les tableaux de l'annexe aux
+  valeurs de `strategy.js` (grille par position, tableau des relances, équités requises).
+- **Bénéfices** : cours, annexe et application restent d'accord, comme le demande CLAUDE.md.
+- **Coûts** : M. Analyse des tableaux HTML de l'annexe.
+- **Rapport** : moyen.
+- **Premier pas** : comparer la grille d'ouverture du niveau 2.
+
+### S-035 · Mieux expliquer la top paire
+- **Statut** : faite (2026-11-19, commit à venir) · **Date** : 2026-11-19 · **Origine** : question de l'utilisateur (88 sur A♣ 6♥ J♦)
+- **Constat** : la définition existe (C2.3 dans une case de tableau, C4.1, glossaire), mais sans
+  exemple dans le cours. Le cas « paire servie sous la carte haute » (88 sur A J 6) n'apparaît nulle
+  part. Le cours dit « paire en main », C3.2 et le simulateur « paire servie » ; le glossaire omet
+  la paire servie au-dessus du tableau. Réflexes : 3 questions (N2-53 à N2-55), explications d'un mot.
+- **Proposition** : paragraphe « Top paire ou pas ? » sous le tableau de C2.3 (4 exemples, dont
+  88 sur A J 6) ; « paire servie » partout ; glossaire complété ; 3 questions Réflexes de plus
+  (paire servie sous la carte haute, paire du tableau seul, deuxième paire) avec explication en une phrase.
+- **Bénéfices** : la notion qui décide de presque toutes les actions après le flop aux niveaux 2 à 5.
+- **Coûts** : S. Doc + `/publier-tutoriel`, lignes du CSV des Réflexes et leurs images.
+- **Rapport** : élevé.
+- **Premier pas** : le paragraphe d'exemples en C2.3.
 
 ## 6. Transverses
 
