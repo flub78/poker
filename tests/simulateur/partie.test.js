@@ -1,7 +1,7 @@
 // Partie (web/simulateur/partie.js) et journal (journal.js).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { newGame, startHand, replayHand, playBot, play, humanToAct, HUMAN } from '../../web/simulateur/partie.js';
+import { newGame, startHand, replayHand, playBot, play, humanToAct, HUMAN, carry, carriedStacks } from '../../web/simulateur/partie.js';
 import { handLog } from '../../web/simulateur/journal.js';
 import { legalActions } from '../../web/simulateur/moteur/table.js';
 
@@ -137,4 +137,41 @@ test('par défaut, pas de recave et 100 BB à chaque main', () => {
   startHand(g);
   assert.ok(g.hand.seats.every((s) => s.start === 200));
   assert.deepEqual(g.hand.rebuys, []);
+});
+
+// ---------- tapis conservés d'une partie à l'autre ----------
+
+test('entre les parties : la partie suivante repart des tapis et recaves de la précédente', () => {
+  const g = newGame({ seed: 21, keepStacks: true, botLevels: [2, 3, 2, 3, 2] });
+  for (let i = 0; i < 40; i++) playHand(g);
+  const saved = JSON.parse(JSON.stringify(carry(g)));     // passage par le stockage
+  const next = carriedStacks(saved, g.players.map((p) => p.level), 200);
+  const g2 = newGame({ seed: 22, keepStacks: true, botLevels: [2, 3, 2, 3, 2], ...next });
+  assert.deepEqual(g2.stacks, g.stacks);
+  assert.deepEqual(g2.rebuys, g.rebuys);
+  startHand(g2);
+  g2.hand.seats.forEach((s, k) => assert.equal(s.start, g.stacks[k] > 0 ? g.stacks[k] : 200));
+  assert.deepEqual(g2.totals, [0, 0, 0, 0, 0, 0], 'les gains se comptent par partie');
+});
+
+test('entre les parties : un bot changé de niveau repart à 100 BB, votre siège garde son tapis', () => {
+  const saved = { stacks: [350, 120, 0, 410, 200, 90], rebuys: [1, 0, 2, 0, 0, 3], levels: [2, 2, 3, 2, 3, 2] };
+  const { stacks, rebuys } = carriedStacks(saved, [4, 2, 3, 'rock', 3, 2], 200);
+  assert.deepEqual(stacks, [350, 120, 0, 200, 200, 90]);
+  assert.deepEqual(rebuys, [1, 0, 2, 0, 0, 3]);
+});
+
+test('entre les parties : rien d\'enregistré ou données abîmées → 100 BB pour tous', () => {
+  const fresh = { stacks: Array(6).fill(200), rebuys: Array(6).fill(0) };
+  const levels = [2, 2, 3, 2, 3, 2];
+  assert.deepEqual(carriedStacks(null, levels, 200), fresh);
+  assert.deepEqual(carriedStacks({ stacks: [1, 2] }, levels, 200), fresh);
+  const bad = carriedStacks({ stacks: [-5, 'x', 200, 200, 200, 200], rebuys: Array(6).fill(0), levels }, levels, 200);
+  assert.deepEqual(bad.stacks, [200, 200, 200, 200, 200, 200]);
+});
+
+test('sans keepStacks, les tapis fournis sont ignorés', () => {
+  const g = newGame({ seed: 4, stacks: [10, 20, 30, 40, 50, 60], rebuys: [1, 1, 1, 1, 1, 1] });
+  assert.deepEqual(g.stacks, Array(6).fill(200));
+  assert.deepEqual(g.rebuys, Array(6).fill(0));
 });

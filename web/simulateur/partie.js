@@ -1,6 +1,7 @@
 // Une partie : suite de mains à 6, le bouton tourne. Tapis (décision D9) : par défaut, chaque main
 // repart de 100 BB ; avec keepStacks, chacun garde son tapis d'une main à l'autre, et un joueur
-// à zéro se recave de 100 BB au début de la main suivante (personne n'est éliminé).
+// à zéro se recave de 100 BB au début de la main suivante (personne n'est éliminé). Pour garder
+// les tapis d'une partie à l'autre, newGame reçoit ceux de la partie précédente (carriedStacks).
 // Le siège 0 est l'humain (en bas de l'écran) ; les sièges suivent le sens du jeu.
 //
 // Chaque décision (humain et bots) est jugée au moment où elle est jouée et rangée dans
@@ -22,13 +23,15 @@ export const HUMAN = 0;
 // maxHands : nombre de mains de la partie (0 : sans limite).
 // humanStep : sous-niveau 2.N de l'humain (étape N de la grille) quand il joue au niveau 2 ; null sinon.
 // keepStacks : tapis conservés d'une main à l'autre, recave à zéro (false : 100 BB à chaque main).
-export function newGame({ botLevels = [2, 3, 2, 3, 2], humanLevel = 2, humanStep = null, seed = null, maxHands = 0, bb = 2, stackBB = 100, keepStacks = false } = {}) {
+// stacks, rebuys : tapis (en jetons) et recaves de départ, repris d'une partie précédente
+// (carriedStacks) ; seulement avec keepStacks.
+export function newGame({ botLevels = [2, 3, 2, 3, 2], humanLevel = 2, humanStep = null, seed = null, maxHands = 0, bb = 2, stackBB = 100, keepStacks = false, stacks = null, rebuys = null } = {}) {
   const s = seed ?? Math.floor(Math.random() * 2 ** 31);
   const rand = rng(s);
   return {
     seed: s, rand, bb, stack: stackBB * bb, humanLevel, maxHands, keepStacks,
-    stacks: Array(6).fill(stackBB * bb), // tapis en fin de dernière main jouée (keepStacks)
-    rebuys: Array(6).fill(0),             // nombre de recaves de chaque joueur
+    stacks: keepStacks && stacks ? stacks.slice() : Array(6).fill(stackBB * bb), // tapis en fin de dernière main jouée (keepStacks)
+    rebuys: keepStacks && rebuys ? rebuys.slice() : Array(6).fill(0),             // nombre de recaves de chaque joueur
     players: NAMES.map((name, i) => ({ name, human: i === HUMAN, level: i === HUMAN ? humanLevel : botLevels[i - 1], step: i === HUMAN ? humanStep : null })),
     button: int(0, 5, rand) - 1,          // le premier startHand avance le bouton d'un siège
     handNo: 0, hand: null, totals: Array(6).fill(0),
@@ -36,6 +39,26 @@ export function newGame({ botLevels = [2, 3, 2, 3, 2], humanLevel = 2, humanStep
     finished: [],                         // { no, replay, hand } des mains terminées
     decisions: [],
     reads: createReads(6),                // statistiques de chaque joueur au fil des mains (lecture.js)
+  };
+}
+
+// Tapis conservés d'une partie à l'autre. carry(game) : ce qu'on enregistre en fin de main
+// (tapis, recaves et niveau de chaque siège). carriedStacks(saved, levels, stackChips) : les tapis
+// et recaves de départ de la partie suivante ; levels : niveaux des 6 sièges (humain en 0). Un
+// siège dont le bot a changé de niveau accueille un nouveau joueur : 100 BB, aucune recave. Votre
+// siège garde son tapis même si vous changez de niveau. saved absent ou abîmé : tout le monde à 100 BB.
+export const carry = (game) => ({ stacks: game.stacks.slice(), rebuys: game.rebuys.slice(), levels: game.players.map((p) => p.level) });
+
+export function carriedStacks(saved, levels, stackChips) {
+  const ok = (a) => Array.isArray(a) && a.length === levels.length;
+  if (!saved || !ok(saved.stacks) || !ok(saved.rebuys) || !ok(saved.levels)) {
+    return { stacks: levels.map(() => stackChips), rebuys: levels.map(() => 0) };
+  }
+  const same = (i) => i === HUMAN || saved.levels[i] === levels[i];
+  const valid = (x) => Number.isFinite(x) && x >= 0;
+  return {
+    stacks: levels.map((_, i) => (same(i) && valid(saved.stacks[i]) ? saved.stacks[i] : stackChips)),
+    rebuys: levels.map((_, i) => (same(i) && valid(saved.rebuys[i]) ? saved.rebuys[i] : 0)),
   };
 }
 

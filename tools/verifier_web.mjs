@@ -139,6 +139,30 @@ try {
     if (mentor) await check(t('#simulateur mentor'));
     else report(t('#simulateur mentor'), 'la fenêtre du mentor ne s\'est pas ouverte');
 
+    // Tapis conservés entre les parties : enregistrés en fin de main, repris par la partie suivante,
+    // remis à 100 BB par le bouton.
+    await page.eval(`localStorage.removeItem('poker.simulateur.tapis.v1'); localStorage.setItem('poker.simulateur.v1', JSON.stringify({ vitesse: 'rapide', aide: 'sans', tapis: 'parties' }))`);
+    await open('#simulateur');
+    for (let i = 0; i < 300; i++) {
+      const done = await page.eval(`(() => { const n = document.getElementById('sim-next');
+        if (n) return true;
+        [...document.querySelectorAll('.sim-buttons .btn')].find((b) => b.textContent.startsWith('Se coucher'))?.click(); return false; })()`);
+      if (done) break;
+      await wait(100);
+    }
+    const saved = await page.eval(`localStorage.getItem('poker.simulateur.tapis.v1')`);
+    if (!saved) report(t('#simulateur tapis entre parties'), 'tapis non enregistrés en fin de main');
+    else {
+      await open('#simulateur');
+      const start = await page.eval(`JSON.stringify(document.querySelector('.sim-totals') ? [...document.querySelectorAll('.sim-totals tbody tr td:nth-child(4)')].map((x) => x.textContent) : null)`);
+      const expected = JSON.stringify(JSON.parse(saved).stacks.map((x) => `${String(Math.round(((x || 200) / 2) * 10) / 10).replace('.', ',')} BB`));
+      if (start !== expected) report(t('#simulateur tapis entre parties'), `tapis repris ${start}, attendu ${expected}`);
+      const reset = await page.eval(`(() => { const b = [...document.querySelectorAll('button')].find((x) => x.textContent === 'Remettre les tapis à 100 BB'); b?.click(); return !!b; })()`);
+      await wait(200);
+      if (!reset) report(t('#simulateur tapis entre parties'), 'bouton « Remettre les tapis à 100 BB » absent');
+      else await check(t('#simulateur tapis entre parties'));
+    }
+
     for (const lvl of LEVELS.filter((l) => l.ready)) {
       const base = `#niveau-${lvl.n}`;
       await open(base);
