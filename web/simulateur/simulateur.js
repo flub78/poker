@@ -303,7 +303,12 @@ export function renderSimulateur(main) {
       : n.verdict === 'conforme' ? `${n.human} : conforme aux règles du niveau ${n.level}.`
       : n.repris ? `Vous avez repris le coup du mentor : ${low(n.advised)}.`
         : `Vous avez confirmé « ${low(n.human)} » (${low(VERDICTS[n.verdict])} ; le mentor : ${low(n.advised)}).`;
-    return h('p', { class: `sim-mentor-note ${n.verdict}`, 'aria-live': 'polite' }, h('strong', {}, 'Mentor : '), text);
+    // Coup juste : le mentor rappelle quand même la règle appliquée (un bon coup peut être de la
+    // chance ; le rappel ancre la règle). En avance : les raisons des règles plus avancées.
+    const rappel = n.avance ? n.avance.raisons : n.verdict === 'conforme' && !n.repris ? n.raisons : [];
+    return h('div', { class: `sim-mentor-note ${n.verdict}`, 'aria-live': 'polite' },
+      h('p', {}, h('strong', {}, 'Mentor : '), text),
+      rappel?.length ? h('div', {}, h('p', { class: 'sim-mentor-rule' }, 'La règle :'), reasonList(rappel)) : null);
   }
 
   function hintPanel() {
