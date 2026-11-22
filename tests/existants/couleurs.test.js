@@ -51,3 +51,20 @@ test('chaque page du cours d\'un niveau, aide-mémoire compris, porte la couleur
   const memos = contenu.pages.filter((p) => p.id.startsWith('aide-memoire-'));
   assert.deepEqual(memos.map((p) => pageLevel(p.id)), LEVELS.map((l) => l.n), 'une page d\'aide-mémoire par niveau, dans l\'ordre');
 });
+
+test('le chapeau de l\'accueil présente les six niveaux, dans l\'ordre, sans la ligne de date', () => {
+  const niveaux = [...contenu.intro.matchAll(/<strong>Niveau (\d)\b/g)].map((m) => Number(m[1]));
+  assert.deepEqual(niveaux, LEVELS.map((l) => l.n));
+  assert.doesNotMatch(contenu.intro, /<time|data-atom|<h[12]/);
+});
+
+test('les encadrés « Pour aller plus loin » du doc deviennent des encadrés repliables', () => {
+  const html = contenu.pages.map((p) => p.html).join('\n');
+  assert.doesNotMatch(html, /<blockquote>\s*<p[^>]*><strong>Pour aller plus loin/, 'citation non convertie');
+  const boxes = [...html.matchAll(/<details class="approfondir"[^>]*><summary>(.*?)<\/summary>\s*<div class="approfondir-body">(.*?)<\/div><\/details>/gs)];
+  assert.ok(boxes.length >= 5, `${boxes.length} encadrés`);
+  for (const [, summary, body] of boxes) {
+    assert.match(summary, /^<span class="approfondir-label">Pour aller plus loin<\/span> — \S/);
+    assert.ok(body.trim(), `encadré vide : ${summary}`);
+  }
+});

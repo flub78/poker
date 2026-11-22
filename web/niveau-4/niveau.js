@@ -1,4 +1,4 @@
-// Définition du niveau 4 : jouer après le flop (C4.1 à C4.6).
+// Définition du niveau 4 : jouer après le flop (C4.1 à C4.7).
 // Chargée par js/app.js quand l'adresse est index.html#niveau-4.
 //
 // Test de passage du cours :
