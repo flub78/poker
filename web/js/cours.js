@@ -168,12 +168,18 @@ function tocView() {
     h('p', { class: 'meta' }, content.byline),
     content.cover ? cover : null,
     h('p', { class: 'cours-print-link' }, h('a', { class: 'btn secondary', href: '#cours/imprimer' }, 'Tout le cours sur une page (impression, PDF)')),
-    h('p', {}, 'Le programme d\'apprentissage complet, de l\'apprentissage des règles jusqu\'au travail avec un solveur. ',
-      'Chaque niveau a ses compétences (C1.1 à C6.5) et des tests d\'évaluation.'),
+    introBlock(),
     h('h2', {}, 'Table des matières'),
     h('ol', { class: 'toc' }, content.pages.filter(levelPart).map(entry)),
     h('h3', { class: 'toc-annex-title' }, 'Annexes'),
     h('ol', { class: 'toc annexes' }, content.pages.filter((p) => p.annex).map(entry)));
+}
+
+// Chapeau du doc (les six niveaux en bref), affiché avant la table des matières.
+function introBlock() {
+  const div = h('div', { class: 'cours-intro cours-body' });
+  div.innerHTML = content.intro || '';
+  return content.intro ? div : null;
 }
 
 // Lien vers l'application d'entraînement du niveau, quand elle existe.
@@ -234,6 +240,8 @@ async function fillGrid(body) {
 function show(target) {
   document.querySelectorAll('tr.cible').forEach((r) => r.classList.remove('cible'));
   if (target.tagName === 'TR') target.classList.add('cible');
+  // Cible dans un encadré « Pour aller plus loin » replié : on l'ouvre d'abord.
+  for (let d = target.closest('details'); d; d = d.parentElement?.closest('details')) d.open = true;
   target.scrollIntoView();
 }
 
@@ -269,6 +277,7 @@ export function renderPrint(main) {
     content.cover ? cover : null,
     h('p', { class: 'no-print' }, h('a', { class: 'btn secondary', href: '#cours' }, '← Retour au sommaire'),
       ' ', h('button', { type: 'button', class: 'btn', onclick: () => window.print() }, 'Imprimer ou enregistrer en PDF')),
+    introBlock(),
     h('section', { class: 'print-toc' },
       h('h2', {}, 'Table des matières'),
       h('ol', { class: 'toc' }, content.pages.map(tocEntry))),
@@ -281,6 +290,8 @@ export function renderPrint(main) {
     const target = document.getElementById(a.getAttribute('href').slice(1));
     if (target) { e.preventDefault(); show(target); }
   };
+  // Version imprimée : les encadrés « Pour aller plus loin » sont toujours ouverts.
+  main.querySelectorAll('details.approfondir').forEach((d) => { d.open = true; });
   window.coursNumeros = (map) => {
     for (const el of main.querySelectorAll('.toc-pageno')) el.textContent = map[el.dataset.for] ?? '';
   };

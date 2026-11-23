@@ -37,7 +37,7 @@ test('notation des mains', () => {
   assert.equal(handCode(cartes('7C 7D')), '77');
 });
 
-test('UTG : AJ relance à 2,5 BB, A9 se couche (C2.2, C2.3)', () => {
+test('UTG : AJ relance à 2,5 BB, A9 se couche (C2.2)', () => {
   let d = decider(table({ 3: 'AS JD' }), 3, 2);
   assert.deepEqual(d.action, R(5));
   assert.match(texte(d), /2,5 BB/);
@@ -88,6 +88,16 @@ test('classe d\'une main après le flop', () => {
   assert.equal(handClass(cartes('2S 2D'), b).cls, 'forte');
   assert.equal(handClass(cartes('AS QD'), b).cls, 'rien');
   assert.equal(handClass(cartes('AS KD'), cartes('9H 9D 4C')).cls, 'rien');   // la paire est au tableau
+});
+
+test('« Top paire ou pas ? » : les exemples de C2.3 et des Réflexes (N2-53 à N2-55, N2-91 à N2-93)', () => {
+  const cls = (main, tableau) => handClass(cartes(main), cartes(tableau)).cls;
+  assert.equal(cls('AS KD', 'KH 8C 3S'), 'top');     // le roi est la plus haute carte du tableau
+  assert.equal(cls('9S 9H', '7D 5C 2H'), 'top');     // paire servie au-dessus de tout le tableau
+  assert.equal(cls('8S 8D', 'AC JD 6H'), 'paire');   // l'As et le valet sont au-dessus des 8
+  assert.equal(cls('AH 6D', 'TC 6S 2H'), 'paire');   // paire du milieu
+  assert.equal(cls('AH QD', '7S 7C 2D'), 'rien');    // la paire de 7 est au tableau seul
+  assert.equal(cls('QS 4H', 'QD 9C 3S'), 'top');     // petit kicker : toujours une top paire
 });
 
 test('outs : les exemples du cours (C3.1, C3.2)', () => {

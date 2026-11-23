@@ -188,12 +188,12 @@ image à lire, une décision. Pas de liste à réciter.
 | N2-35 | QCM | SB · Main `AS 5S` | Vos deux cartes : A♠ 5♠ ; bandeau : « SB ». | Personne n'a relancé ; vous êtes en petite blind (SB) avec cette main. Que faites-vous ? [Relancer · Suivre · Se coucher] | Relancer | SB = liste du CO ; elle ne suit jamais. | C2.2 | 2.2 |
 | N2-36 | QCM | BB, personne n'a relancé · Main `KD 7C` | Vos deux cartes : K♦ 7♣ ; bandeau : « BB, personne n'a relancé ». | Personne n'a relancé ; vous êtes en grosse blind (BB) avec cette main. Que faites-vous ? [Relancer · Checker · Se coucher] | Checker | Gratuit : on ne jette pas. | C2.2 | 2.3 |
 | N2-37 | VF | | | Avant le flop, il est parfois bon d'entrer dans le pot en suivant simplement la grosse blind (limp). | Faux | Toujours en relançant. | C2.3 | 2.0 |
-| N2-38 | NUM | | | Personne n'est encore entré dans le pot : à combien de BB ouvrez-vous ? | 2,5 | | C2.3 | 2.0 |
-| N2-39 | NUM | | | Un joueur a déjà suivi (limp) : à combien de BB ouvrez-vous ? | 3,5 | 2,5 + 1 par suiveur. | C2.3 | 2.0 |
+| N2-38 | NUM | | | Personne n'est encore entré dans le pot : à combien de BB ouvrez-vous ? | 2,5 | | C2.2 | 2.0 |
+| N2-39 | NUM | | | Un joueur a déjà suivi (limp) : à combien de BB ouvrez-vous ? | 3,5 | 2,5 + 1 par suiveur. | C2.2 | 2.0 |
 | N2-40 | QCM | | | Au bouton, quelle part environ des mains de départ ouvrez-vous ? [9 % · 17 % · 29 %] | 29 % | UTG 9 %, CO 17 %. | C2.2 | 2.3 |
 | N2-81 | QCM | UTG · Main `AS TS` | Vos deux cartes : A♠ 10♠ ; bandeau : « UTG ». | Personne n'a relancé ; vous êtes UTG (premier à parler) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | ATs+. | C2.2 | 2.0 |
 | N2-82 | QCM | UTG · Main `8S 8D` | Vos deux cartes : 8♠ 8♦ ; bandeau : « UTG ». | Personne n'a relancé ; vous êtes UTG (premier à parler) avec cette main. Que faites-vous ? [Relancer · Se coucher] | Relancer | 77+. | C2.2 | 2.0 |
-| N2-83 | NUM | | | Deux joueurs ont seulement suivi (limp) : à combien de BB ouvrez-vous ? | 4,5 | 2,5 + 1 par suiveur. | C2.3 | 2.0 |
+| N2-83 | NUM | | | Deux joueurs ont seulement suivi (limp) : à combien de BB ouvrez-vous ? | 4,5 | 2,5 + 1 par suiveur. | C2.2 | 2.0 |
 
 ### Face à une relance (C2.2)
 
@@ -211,14 +211,22 @@ image à lire, une décision. Pas de liste à réciter.
 | N2-50 | QCM | Relance puis sur-relance avant vous · Main `JS JD` | Vos deux cartes : J♠ J♦ ; bandeau : « Relance puis sur-relance avant vous ». | Avant vous, un joueur a relancé et un autre a sur-relancé. Que faites-vous avec cette main ? [4-bet · Suivre · Se coucher] | Se coucher | Seuls QQ+ et AK continuent. | C2.2 | 2.4 |
 | N2-51 | NUM | | | Un joueur relance à 3 BB ; vous parlerez après lui (en position). À combien de BB sur-relancez-vous ? | 9 | 3 fois la relance. | C2.2 | 2.0 |
 | N2-52 | NUM | | | Un joueur relance à 3 BB ; vous êtes en grosse blind (hors position). À combien de BB sur-relancez-vous ? | 12 | 4 fois hors position. | C2.2 | 2.0 |
+| N2-86 | VF | | | Avant le flop, QQ+ et AK ne se couchent jamais. | Vrai | Ils continuent à chaque relance, jusqu'au tapis. | C2.2 | 2.0 |
+| N2-87 | QCM | Votre sur-relance est relancée · Main `KS KD` | Vos deux cartes : K♠ K♦ ; bandeau : « Votre sur-relance est relancée ». | Vous aviez sur-relancé (3-bet) ; un joueur relance encore (4-bet). Que faites-vous avec cette main ? [Tapis · Suivre · Se coucher] | Tapis | QQ+ et AK : tapis. | C2.2 | 2.0 |
+| N2-88 | QCM | Vous aviez suivi ; sur-relance · Main `9S 9D` | Vos deux cartes : 9♠ 9♦ ; bandeau : « Vous aviez suivi ; sur-relance ». | UTG a relancé, vous avez suivi au bouton ; la BB sur-relance. Que faites-vous avec cette main ? [4-bet · Suivre · Se coucher] | Se coucher | Relance puis sur-relance : seuls QQ+ et AK continuent. | C2.2 | 2.4 |
+| N2-89 | QCM | | | Personne n'a relancé ; vous êtes au CO. Quelle est la plus petite paire que vous relancez ? [77 · 55 · 22] | 55 | Paires : 77+ en UTG, 55+ au CO, toutes au BTN. | C2.2 | 2.2 |
+| N2-90 | QCM | | | Dans la grille par famille, que font les bornes quand on passe d'UTG au CO puis au bouton ? [Elles descendent · Elles montent · Cela dépend de la famille] | Elles descendent | Chaque colonne garde les mains de la précédente et en ajoute. | C2.2 | 2.2 |
 
 ### Après le flop, schéma simple (C2.3)
 
 | ID | Type | Cartes | Image | Question | Réponse | Pourquoi | Section | Sous-niveau |
 |---|---|---|---|---|---|---|---|---|
-| N2-53 | VF | Main `AS KD` · Tableau `KH 8C 3S` | Vos deux cartes : A♠ K♦ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠. | Avec cette main et ce flop, vous avez une top paire. | Vrai | Paire avec la plus haute carte du tableau. | C2.3 | 2.0 |
-| N2-54 | VF | Main `AH 6D` · Tableau `TC 6S 2H` | Vos deux cartes : A♥ 6♦ ; tableau de 3 cartes (flop) : 10♣ 6♠ 2♥. | Avec cette main et ce flop, vous avez une top paire. | Faux | Paire du milieu. | C2.3 | 2.0 |
-| N2-55 | VF | Main `9S 9H` · Tableau `7D 5C 2H` | Vos deux cartes : 9♠ 9♥ ; tableau de 3 cartes (flop) : 7♦ 5♣ 2♥. | Avec cette main et ce flop, vous avez une top paire. | Vrai | Paire en main plus haute que le tableau. | C2.3 | 2.0 |
+| N2-53 | VF | Main `AS KD` · Tableau `KH 8C 3S` | Vos deux cartes : A♠ K♦ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠. | Avec cette main et ce flop, vous avez une top paire. | Vrai | Le roi est la plus haute carte du tableau, et vous en avez un. | C2.3 | 2.0 |
+| N2-54 | VF | Main `AH 6D` · Tableau `TC 6S 2H` | Vos deux cartes : A♥ 6♦ ; tableau de 3 cartes (flop) : 10♣ 6♠ 2♥. | Avec cette main et ce flop, vous avez une top paire. | Faux | Votre 6 fait la paire du milieu : le 10 est au-dessus. | C2.3 | 2.0 |
+| N2-55 | VF | Main `9S 9H` · Tableau `7D 5C 2H` | Vos deux cartes : 9♠ 9♥ ; tableau de 3 cartes (flop) : 7♦ 5♣ 2♥. | Avec cette main et ce flop, vous avez une top paire. | Vrai | Paire servie plus haute que tout le tableau : elle compte comme une top paire. | C2.3 | 2.0 |
+| N2-91 | VF | Main `8S 8D` · Tableau `AC JD 6H` | Vos deux cartes : 8♠ 8♦ ; tableau de 3 cartes (flop) : A♣ J♦ 6♥. | Avec cette main et ce flop, vous avez une top paire. | Faux | L'As et le valet sont au-dessus de vos 8 : une paire, pas une top paire. | C2.3 | 2.0 |
+| N2-92 | VF | Main `AH QD` · Tableau `7S 7C 2D` | Vos deux cartes : A♥ Q♦ ; tableau de 3 cartes (flop) : 7♠ 7♣ 2♦. | Avec cette main et ce flop, vous avez une top paire. | Faux | La paire de 7 est au tableau seul : vos cartes n'y participent pas. | C2.3 | 2.0 |
+| N2-93 | VF | Main `QS 4H` · Tableau `QD 9C 3S` | Vos deux cartes : Q♠ 4♥ ; tableau de 3 cartes (flop) : Q♦ 9♣ 3♠. | Avec cette main et ce flop, vous avez une top paire. | Vrai | La dame est la plus haute carte du tableau ; un petit kicker ne change rien. | C2.3 | 2.0 |
 | N2-56 | QCM | Personne n'a misé · Main `AS KD` · Tableau `KH 8C 3S` | Vos deux cartes : A♠ K♦ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠ ; bandeau : « Personne n'a misé ». | Au flop, personne n'a misé. Que faites-vous ? [Miser ½ pot · Checker] | Miser ½ pot | Top paire ou mieux. | C2.3 | 2.0 |
 | N2-57 | QCM | Personne n'a misé · Main `QS JS` · Tableau `KH 8C 3S` | Vos deux cartes : Q♠ J♠ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠ ; bandeau : « Personne n'a misé ». | Au flop, personne n'a misé. Que faites-vous ? [Miser ½ pot · Checker] | Checker | Pas de top paire. | C2.3 | 2.0 |
 | N2-58 | QCM | Face à une mise · Main `KS 8S` · Tableau `KH 8C 3S` | Vos deux cartes : K♠ 8♠ ; tableau de 3 cartes (flop) : K♥ 8♣ 3♠ ; bandeau : « Face à une mise ». | Au flop, l'adversaire mise. Que faites-vous ? [Relancer ×3 · Suivre · Se coucher] | Relancer ×3 | Deux paires avec vos deux cartes. | C2.3 | 2.0 |

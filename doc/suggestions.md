@@ -1,6 +1,6 @@
 # Suggestions d'amélioration
 
-Mis à jour le 2026-11-17 (S-028 faite ; avant : ajout de S-027 ; avant : ajout de S-026 ; avant : ajout de S-025 ; avant : note sur S-015 ; avant : S-023 et S-024 faites ; avant : ajout de S-023 ; avant : S-022 faite ; avant : ajout de S-022 ; avant : ajout de S-017 ; avant : ajout de S-015 et S-016 ; avant : réalisation de S-001, S-003 à S-010, S-012 option A, S-013, S-014). Fiches classées par section ; index trié par rapport
+Mis à jour le 2026-11-19 (ajout de S-035 ; avant : S-032 faite, une page web par niveau ; ajout de S-033 et S-034 ; avant : S-031 faite ; avant : ajout de S-031 ; avant : ajout de S-030 ; avant : S-029 faite ; avant : ajout de S-029 ; avant : S-028 faite ; avant : ajout de S-027 ; avant : ajout de S-026 ; avant : ajout de S-025 ; avant : note sur S-015 ; avant : S-023 et S-024 faites ; avant : ajout de S-023 ; avant : S-022 faite ; avant : ajout de S-022 ; avant : ajout de S-017 ; avant : ajout de S-015 et S-016 ; avant : réalisation de S-001, S-003 à S-010, S-012 option A, S-013, S-014). Fiches classées par section ; index trié par rapport
 bénéfice/coût. Statuts : proposée · acceptée · en cours · faite · reportée · refusée.
 Règles de tenue et commandes : voir [`strategie_suggestions.md`](../strategie_suggestions.md).
 
@@ -15,6 +15,7 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 | S-018 | Système | Identifiant stable des questions dans le format d'échange de mentor (colonne `reference`) | moyen | S | élevé | faite |
 | S-019 | Par fonctionnalité | Réflexes : progression dans le code de transfert | moyen | S | élevé | proposée |
 | S-020 | Par fonctionnalité | Réflexes : chronomètre facultatif (10 s), comme mentor §7.7 | moyen | S | moyen | proposée |
+| S-030 | Transverses | Test de fumée : signaler un message « Impossible de charger » affiché, sans dépendre de la console | faible | S | moyen | proposée |
 | S-017 | Transverses | Réparer le contrôle « null / undefined / NaN affichés » du test de fumée, qui ne voyait rien | moyen | S | élevé | faite |
 | S-016 | Méthodes | Tests automatiques systématiques : `node --test` sur les modules purs, commande unique `bin/tester.sh` | élevé | S | élevé | faite |
 | S-015 | Par fonctionnalité | Simulateur de table à 6 : bots des niveaux 2 à 6, Indice, Mentor, évaluation des décisions | élevé | L | moyen | acceptée |
@@ -24,9 +25,15 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 | S-010 | Tutoriel | Corriger l'écart de VPIP du test du niveau 2 (18–26 % ou 12–20 %) | moyen | S | élevé | faite |
 | S-024 | Par fonctionnalité | Sous-niveaux cumulatifs du niveau 2 (2.0 à 2.5) pour les exercices, les Réflexes et le simulateur | élevé | M | élevé | faite |
 | S-028 | Par fonctionnalité | Réponses « en avance » : juste à un sous-niveau ou un niveau plus avancé = juste, avec la réponse attendue au niveau de l'élève | élevé | S | élevé | faite |
+| S-029 | Par fonctionnalité | Aide-mémoire du niveau 2 aligné sur le cours réécrit : grille par famille et tableau des relances, générés depuis `strategy.js` | moyen | S | élevé | faite |
 | S-027 | Par fonctionnalité | Réflexes : renvoyer au paragraphe précis de C2.2 (« Face à une relance »…) plutôt qu'à toute la section | moyen | S | élevé | proposée |
 | S-026 | Par fonctionnalité | Comprendre pourquoi le niveau 4 ne gagne pas plus que le 3 contre des profils faibles | moyen | S | élevé | proposée |
 | S-025 | Tutoriel | Étymologie à la première utilisation : la garder, ou s'appuyer sur les liens vers le glossaire | moyen | S | élevé | proposée |
+| S-032 | Tutoriel | Annexe « Aide-mémoire » : une page de règles sans explication par niveau | élevé | S | élevé | faite |
+| S-033 | Tutoriel | Renvoi vers l'aide-mémoire du niveau depuis « Règles du niveau N » | moyen | S | élevé | proposée |
+| S-034 | Transverses | Vérifier que l'annexe Aide-mémoire et l'onglet Aide-mémoire de l'application donnent les mêmes chiffres | moyen | M | moyen | proposée |
+| S-035 | Tutoriel | Top paire : exemples et contre-exemples en C2.3, terme unique pour la paire servie, Réflexes sur la paire servie sous la carte haute | moyen | S | élevé | faite |
+| S-031 | Tutoriel | Expliquer les lettres des cartes (A, K, Q, J, T) au niveau 1, où elles servent dès C1.1 | moyen | S | élevé | faite |
 | S-023 | Tutoriel | Renvoyer vers l'annexe « Grille des mains à colorier » là où le cours demande de colorier la grille | faible | S | élevé | faite |
 | S-011 | Tutoriel | Ajouter C3.7 à la grille d'auto-évaluation | faible | S | élevé | proposée |
 | S-002 | Système | Remplacer le carnet PDF par la progression enregistrée dans l'application | élevé | M | moyen | proposée |
@@ -260,6 +267,29 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
   `series: 2, pass: 18`. Au passage, les deux critères de table du niveau 2 (VPIP sur 500 mains,
   aucun limp) sont devenus des cases à cocher dans l'onglet Tests.
 
+### S-029 · Aide-mémoire du niveau 2 aligné sur le cours réécrit
+- **Statut** : faite · **Date** : 2026-11-17 · **Origine** : réécriture du niveau 2 (tableaux
+  par niveau de relance, demande d'un tableau « position × main → action »)
+- **Constat** : le niveau 2 du cours passe à une grille par famille (une borne par famille et par
+  colonne) et à un tableau des relances jusqu'au tapis. L'onglet Aide-mémoire (`web/niveau-2/aide.js`)
+  garde l'ancienne forme (une ligne par position, quatre situations sans le tapis) et recopie à la
+  main le tableau des étapes. Un tableau complet « ma main, ma position → l'action » (136 cases) a
+  été jugé trop lourd pour le cours : il fait double emploi et devrait être tenu à jour à la main.
+- **Proposition** : générer dans l'Aide-mémoire, depuis `strategy.js`, les mêmes tableaux que le
+  cours ; en option, une vue « ma main, ma position » calculée par `decide()` (choisir une main et
+  une position, voir l'action à chaque niveau de relance).
+- **Bénéfices** : cours, aide-mémoire et simulateur d'accord sans recopie ; le tableau B existe
+  sans rien maintenir.
+- **Coûts** : S pour aligner les tableaux ; M avec la vue interactive.
+- **Rapport** : élevé.
+- **Premier pas** : une fonction pure qui produit les lignes du tableau par famille depuis UTG, CO
+  et BTN, avec son test (doit redonner les cellules du cours).
+- **Décision** : 2026-11-17, acceptée et réalisée (sans la vue interactive). `FAMILIES` et
+  `familyColumn()` dans `strategy.js`, test `tests/existants/familles.test.js` (chaque colonne redonne
+  la liste de sa position). Aide-mémoire dans l'ordre des quatre règles : grille coloriée, grille
+  par famille, relances jusqu'au tapis, après le flop, sous-niveaux. Le tableau des étapes reste
+  recopié du cours (`STEP_ADDS`). Commit : à venir.
+
 ### 5.2 Contenu du tutoriel
 
 ### S-014 · Écrire dans le cours les règles que l'application a dû fixer
@@ -374,6 +404,22 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 - **Rapport** : élevé.
 - **Premier pas** : choisir A ou B.
 
+### S-031 · Expliquer les lettres des cartes dès le niveau 1
+- **Statut** : faite (2026-11-18, commit à venir) · **Date** : 2026-11-18 · **Origine** : déplacement de « Notation des mains » en tête du niveau 2
+- **Constat** : la notation courte (AKs, QQ+) est maintenant définie avant sa première utilisation,
+  en tête du niveau 2. Mais les lettres anglaises des cartes (A, K, Q, J) servent dès C1.1
+  (« A♠️ K♥️ ») et dans le tableau de C1.3 (« K K K K 4 »). Un jeu français marque R, D, V.
+- **Proposition** : une phrase en C1.1, à la première carte écrite : « A = As, K = Roi (King),
+  Q = Dame (Queen), J = Valet (Jack), T = 10 (Ten) ». La notation des mains du niveau 2 y renvoie.
+- **Bénéfices** : aucun terme utilisé avant d'être expliqué, comme le demandent les principes de
+  rédaction.
+- **Coûts** : S. Une phrase dans le doc, puis `/publier-tutoriel`.
+- **Rapport** : élevé.
+- **Premier pas** : ajouter la phrase sous la liste des étapes de C1.1.
+- **Décision** : acceptée le 2026-11-18. Paragraphe « Les cartes s'écrivent par leur initiale
+  anglaise » en C1.1, avec l'étymologie et les symboles de couleur ; la notation du niveau 2
+  renvoie à C1.1 ; ligne « Lettres des cartes » au glossaire.
+
 ### S-023 · Renvoyer vers la grille à colorier depuis le cours
 - **Statut** : faite (2026-11-15, commit à venir) · **Date** : 2026-11-15 · **Origine** : ajout de l'annexe « Grille des mains à colorier »
 - **Constat** : le niveau 2 demande trois fois de colorier la grille 13 × 13 (« Pour retenir la
@@ -434,6 +480,50 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 - **Bénéfices** : entraînement illimité avant le test ; aucune logique nouvelle.
 - **Coûts** : S (un fichier dans `practice/`, une ligne dans `niveau.js`).
 
+### S-032 · Annexe « Aide-mémoire », une page par niveau
+- **Statut** : faite (2026-11-19, commit à venir) · **Date** : 2026-11-19 · **Origine** : demande d'une fiche des règles du niveau 2
+- **Constat** : les règles d'un niveau sont dispersées entre « Règles du niveau N » et les sections.
+- **Proposition** : une annexe « Aide-mémoire » avec une page par niveau : tableaux et consignes, sans explication.
+- **Bénéfices** : une fiche à imprimer et garder à côté de l'écran.
+- **Coûts** : S. Six sections dans le doc, option `decouper` de `tools/cours_html.py` : une page du cours par niveau (`#cours/aide-memoire-niveau-N`), avec Précédent / Suivant et la couleur du niveau.
+- **Rapport** : élevé.
+- **Décision** : acceptée le 2026-11-19. Pages 37 à 42 du PDF.
+
+### S-033 · Renvoyer vers l'aide-mémoire depuis chaque niveau
+- **Statut** : proposée · **Date** : 2026-11-19 · **Origine** : S-032
+- **Constat** : rien dans le niveau ne signale que son résumé est en annexe.
+- **Proposition** : en fin de « Règles du niveau N », un lien « Résumé : Aide-mémoire, niveau N ».
+- **Bénéfices** : l'élève trouve la fiche au moment où il lit les règles.
+- **Coûts** : S. Six liens dans le doc, puis `/publier-tutoriel`.
+- **Rapport** : élevé.
+- **Premier pas** : le lien du niveau 2.
+
+### S-034 · Une seule source pour les chiffres de l'aide-mémoire
+- **Statut** : proposée · **Date** : 2026-11-19 · **Origine** : S-032
+- **Constat** : les grilles et seuils sont maintenant écrits trois fois : sections du cours, annexe
+  Aide-mémoire, onglet Aide-mémoire de l'application (généré depuis `strategy.js`, S-029). Un changement
+  de règle oublié dans l'annexe passera inaperçu.
+- **Proposition** : un test qui lit `web/cours/contenu.js` et compare les tableaux de l'annexe aux
+  valeurs de `strategy.js` (grille par position, tableau des relances, équités requises).
+- **Bénéfices** : cours, annexe et application restent d'accord, comme le demande CLAUDE.md.
+- **Coûts** : M. Analyse des tableaux HTML de l'annexe.
+- **Rapport** : moyen.
+- **Premier pas** : comparer la grille d'ouverture du niveau 2.
+
+### S-035 · Mieux expliquer la top paire
+- **Statut** : faite (2026-11-19, commit à venir) · **Date** : 2026-11-19 · **Origine** : question de l'utilisateur (88 sur A♣ 6♥ J♦)
+- **Constat** : la définition existe (C2.3 dans une case de tableau, C4.1, glossaire), mais sans
+  exemple dans le cours. Le cas « paire servie sous la carte haute » (88 sur A J 6) n'apparaît nulle
+  part. Le cours dit « paire en main », C3.2 et le simulateur « paire servie » ; le glossaire omet
+  la paire servie au-dessus du tableau. Réflexes : 3 questions (N2-53 à N2-55), explications d'un mot.
+- **Proposition** : paragraphe « Top paire ou pas ? » sous le tableau de C2.3 (4 exemples, dont
+  88 sur A J 6) ; « paire servie » partout ; glossaire complété ; 3 questions Réflexes de plus
+  (paire servie sous la carte haute, paire du tableau seul, deuxième paire) avec explication en une phrase.
+- **Bénéfices** : la notion qui décide de presque toutes les actions après le flop aux niveaux 2 à 5.
+- **Coûts** : S. Doc + `/publier-tutoriel`, lignes du CSV des Réflexes et leurs images.
+- **Rapport** : élevé.
+- **Premier pas** : le paragraphe d'exemples en C2.3.
+
 ## 6. Transverses
 
 ### S-017 · Réparer le contrôle « null / undefined / NaN affichés » du test de fumée
@@ -476,6 +566,20 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 - **Proposition** : dans mentor, une colonne facultative `ordre` (liste des propositions dans l'ordre d'affichage), utilisée quand `melange` vaut `non` ; poker la lit de même.
 - **Bénéfices** : listes stables, plus rapides à lire ; la position du bouton devient un repère (réflexe).
 - **Coûts** : S dans mentor (format et affichage QCM), S dans poker. **Rapport** : moyen.
+
+### S-030 · Test de fumée : signaler un message « Impossible de charger » affiché
+- **Statut** : proposée · **Date** : 2026-11-17 · **Origine** : une parenthèse de trop dans
+  `niveau-2/aide.js` empêchait tout le niveau 2 de se charger ; le test de fumée annonçait
+  « Aucun problème » (l'erreur était attrapée par `app.js` et affichée, sans trace en console).
+- **Déjà fait** : `app.js` écrit l'erreur en console (`console.error`) pour le cours, le simulateur
+  et les niveaux ; le test de fumée la signale (vérifié en remettant la faute).
+- **Proposition** : en plus, chercher dans chaque vue un `.form-message` qui commence par
+  « Impossible de charger », pour ne pas dépendre d'un `console.error` qu'on pourrait oublier
+  dans un futur `catch`.
+- **Bénéfices** : filet de plus, indépendant du code de l'application.
+- **Coûts** : S, quelques lignes dans `CHECK` de `tools/verifier_web.mjs`.
+- **Rapport** : moyen (le `console.error` couvre déjà les cas connus).
+- **Premier pas** : ajouter la recherche dans `CHECK`, vérifier avec une faute volontaire.
 
 ## 7. Idées pour d'autres projets
 

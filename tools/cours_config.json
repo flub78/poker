@@ -65,6 +65,12 @@
       "court": "Grille à colorier"
     },
     {
+      "titre": "Aide-mémoire",
+      "id": "aide-memoire",
+      "annexe": true,
+      "decouper": true
+    },
+    {
       "titre": "Glossaire",
       "id": "glossaire",
       "annexe": true
@@ -253,6 +259,9 @@
       "Main faite": [
         "mains faites",
         "made hands"
+      ],
+      "Main moyenne": [
+        "mains moyennes"
       ],
       "Maniaque": [
         "large-agressif"

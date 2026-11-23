@@ -54,7 +54,7 @@ function preflop(hand, seat, legal) {
   d.facts.ajustement = 'vol';
   d.raisons = [
     r('C5.4', `La ${pos[rockBlind.seat]} est serré-passive (rock) : au CO, on relance la liste du BTN pour lui voler les blinds ; ${shortCode(code)} en fait partie.`),
-    r('C2.3', 'Taille standard : 2,5 BB.'),
+    r('C2.2', 'Taille standard : 2,5 BB.'),
   ];
   d.action = { type: 'raise', to };
   return d;

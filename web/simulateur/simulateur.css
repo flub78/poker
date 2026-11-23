@@ -182,6 +182,9 @@
 .sim-verdict.erreur, .sim-mentor-note.erreur { color: var(--bad); background: var(--bad-soft); }
 .sim-mentor-note { margin: 0 0 12px; padding: 8px 12px; border-radius: 8px; flex: none; }
 .sim-mentor-note strong { color: inherit; }
+.sim-mentor-note p { margin: 0; }
+.sim-mentor-note .sim-mentor-rule { margin-top: 6px; font-weight: 700; }
+.sim-mentor-note .sim-reasons a { color: inherit; }
 
 /* ---------- évaluation de la partie ---------- */
 

@@ -1,4 +1,4 @@
-// Définition du niveau 3 : les probabilités (C3.1 à C3.6).
+// Définition du niveau 3 : les probabilités (C3.1 à C3.7).
 // Chargée par js/app.js quand l'adresse est index.html#niveau-3.
 //
 // Chaque série pose 10 questions au plus. Les nombres du cours restent les objectifs : un test de

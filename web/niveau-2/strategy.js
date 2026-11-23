@@ -17,6 +17,31 @@ export const CALL_3BET = range('suivre une sur-relance', 'JJ-TT');
 const PAIRS_ACES_CO = range('paires et As du CO', '55+, AT+, A2s+');
 const STEP2_CO = union('liste UTG + paires et As du CO', '77+, AJ+, KQ, ATs+, KJs+ + 55+, AT+, A2s+', UTG, PAIRS_ACES_CO);
 
+// ---------- la grille par famille (C2.2) ----------
+// Une borne par famille et par colonne ; de gauche à droite, les bornes ne font que descendre.
+// Chaque case : le texte du cours et sa notation (vide : aucune main). Réunies, les cases d'une
+// colonne redonnent exactement la liste de la position (tests/existants/familles.test.js).
+export const FAMILY_COLUMNS = [
+  { title: 'UTG, MP', range: UTG },
+  { title: 'CO, SB, BB', range: CO },     // BB : seulement si des joueurs ont suivi, sinon check
+  { title: 'BTN', range: BTN },
+];
+const cell = (text, notation = text) => ({ text, notation });
+export const FAMILIES = [
+  { name: 'Paires', cells: [cell('77+'), cell('55+'), cell('toutes (22+)', '22+')] },
+  { name: 'As assortis', cells: [cell('ATs+'), cell('tous (A2s+)', 'A2s+'), cell('tous', 'A2s+')] },
+  { name: 'As dépareillés', cells: [cell('AJ+'), cell('AT+'), cell('tous (A2+)', 'A2+')] },
+  { name: 'Rois', cells: [cell('KQ, KJs'), cell('KJ+, K9s+'), cell('KT+, K9s')] },
+  { name: 'Dames et Valets', cells: [cell('aucun', ''), cell('QJ, QTs, JTs'), cell('QT+, JT')] },
+  { name: 'Assorties connectées', cells: [cell('aucune', ''), cell('T9s'), cell('T9s, 98s, 87s, 76s')] },
+];
+
+// Les mains d'une colonne de la grille par famille (0 : UTG, 1 : CO, 2 : BTN).
+export function familyColumn(col) {
+  const parts = FAMILIES.map((f) => range(`${f.name}, ${FAMILY_COLUMNS[col].title}`, f.cells[col].notation));
+  return union(`colonne ${FAMILY_COLUMNS[col].title}`, FAMILY_COLUMNS[col].range.text, ...parts);
+}
+
 export const POSITIONS = ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB'];
 export const POSITION_NAME = {
   UTG: 'UTG', MP: 'en MP', CO: 'au CO', BTN: 'au bouton (BTN)', SB: 'en petite blind (SB)', BB: 'en grosse blind (BB)',
@@ -68,7 +93,9 @@ export function minPosition(code, step = FULL) {
 //   bb      { limpers }               des joueurs ont seulement suivi ; vous êtes en BB
 //   vsRaise { raiser, hero }          une relance avant vous
 //   vs3bet  { hero, threeBettor }     vous aviez relancé, un joueur sur-relance
-//   squeeze { raiser, threeBettor, hero }  une relance puis une sur-relance avant vous
+//   squeeze { raiser, threeBettor, hero, called? }  une relance puis une sur-relance avant vous
+//                                     (called : vous aviez suivi la relance, la sur-relance vient après vous)
+//   vs4bet  { hero, raiser? }         votre sur-relance ou votre 4-bet est relancé
 
 export const ACTIONS = {
   open: [['raise', 'Relancer'], ['call', 'Suivre (limp)'], ['fold', 'Se coucher']],
@@ -76,6 +103,7 @@ export const ACTIONS = {
   vsRaise: [['raise', 'Sur-relancer (3-bet)'], ['call', 'Suivre'], ['fold', 'Se coucher']],
   vs3bet: [['raise', 'Relancer encore (4-bet)'], ['call', 'Suivre'], ['fold', 'Se coucher']],
   squeeze: [['raise', 'Relancer encore (4-bet)'], ['call', 'Suivre'], ['fold', 'Se coucher']],
+  vs4bet: [['allin', 'Tapis'], ['call', 'Suivre'], ['fold', 'Se coucher']],
 };
 
 export const actionLabel = (sit, action) => ACTIONS[sit.type].find(([a]) => a === action)[1];
@@ -121,7 +149,11 @@ export function decide(sit, code, step = FULL) {
     }
     case 'squeeze': {
       if (has(RERAISE, code)) return { action: 'raise', why: `${hand} fait partie de QQ+, AK : on relance encore (4-bet).` };
-      return { action: 'fold', why: `Une relance puis une sur-relance : seuls QQ+ et AK continuent, JJ et AJ compris se couchent.` };
+      return { action: 'fold', why: `Une relance puis une sur-relance${sit.called ? ', même si vous aviez suivi' : ''} : seuls QQ+ et AK continuent, JJ et AJ compris se couchent.` };
+    }
+    case 'vs4bet': {
+      if (has(RERAISE, code)) return { action: 'allin', why: `${hand} fait partie de QQ+, AK : on continue, à tapis.` };
+      return { action: 'fold', why: `Votre sur-relance est relancée : seuls QQ+ et AK continuent, à tapis. ${hand} se couche.` };
     }
     default:
       throw new Error(`Situation inconnue : ${sit.type}`);
@@ -131,7 +163,7 @@ export function decide(sit, code, step = FULL) {
 // Gravité d'une erreur : 'grave' si la réponse s'écarte beaucoup de la grille complète.
 export function severity(sit, code, answer) {
   if (sit.type === 'open' && answer === 'call') return 'grave';          // le limp
-  const plays = answer === 'raise' || answer === 'call';
+  const plays = answer === 'raise' || answer === 'call' || answer === 'allin';
   if (sit.type === 'open' || sit.type === 'bb') {
     if (plays && !has(BTN, code)) return 'grave';
     if (!plays && has(UTG, code)) return 'grave';

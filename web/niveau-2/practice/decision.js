@@ -10,16 +10,16 @@ import { makeSituation, handFor } from '../situations.js';
 import { situationView, actionButtons } from '../hand.js';
 
 const TYPES = {
-  all: ['open', 'open', 'open', 'open', 'bb', 'vsRaise', 'vsRaise', 'vsRaise', 'vs3bet', 'squeeze'],
+  all: ['open', 'open', 'open', 'open', 'bb', 'vsRaise', 'vsRaise', 'vsRaise', 'vs3bet', 'squeeze', 'vs4bet'],
   open: ['open', 'open', 'open', 'bb'],
-  raise: ['vsRaise', 'vsRaise', 'vsRaise', 'vs3bet', 'squeeze'],
+  raise: ['vsRaise', 'vsRaise', 'vsRaise', 'vs3bet', 'squeeze', 'squeeze', 'vs4bet'],
 };
 
 export default {
   id: 'decision',
   title: 'Quelle décision ?',
   competences: 'C2.1 à C2.3',
-  summary: 'Une position, deux cartes : relancer, suivre, checker ou se coucher, selon la stratégie de votre sous-niveau. Passez au suivant après 19 sur 20.',
+  summary: 'Une position, deux cartes : relancer, suivre, checker, tapis ou se coucher, selon la stratégie de votre sous-niveau. Passez au suivant après 19 sur 20.',
   settings: [
     { id: 'kind', label: 'Situations', default: 'all',
       options: [
@@ -48,7 +48,7 @@ export default {
 
     function next() {
       if (length && n >= length) { end(); return; }
-      sit = makeSituation(pick(TYPES[settings.kind], rand), rand);
+      sit = makeSituation(pick(TYPES[settings.kind], rand), rand, step);
       code = handFor(sit, rand, step);
       cards = cardsFor(code, rand);
       result = null;

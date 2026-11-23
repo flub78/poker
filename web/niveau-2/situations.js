@@ -13,7 +13,9 @@ export const KINDS = {
   vsRaise: 'Face à une relance',
 };
 
-export function makeSituation(type, rand) {
+// step : sous-niveau de l'élève ; on ne suit une relance qu'à partir de 2.4, d'où la variante
+// « vous aviez suivi, puis sur-relance » réservée à ces sous-niveaux.
+export function makeSituation(type, rand, step) {
   switch (type) {
     case 'open': {
       const pos = pick(OPENERS, rand);
@@ -35,10 +37,19 @@ export function makeSituation(type, rand) {
       return { type, hero, threeBettor: pick(after(hero), rand) };
     }
     case 'squeeze': {
+      if ((step === undefined || step >= 4) && rand() < 0.3) {
+        const hero = pick(['CO', 'BTN'], rand);
+        const raiser = pick(before(hero), rand);
+        return { type, raiser, threeBettor: pick(after(hero), rand), hero, called: true };
+      }
       const hero = pick(['CO', 'BTN', 'SB', 'BB'], rand);
       const raiser = pick(before(hero).filter((p) => !isBlind(p) && before(hero).indexOf(p) < before(hero).length - 1), rand);
       const threeBettor = pick(POSITIONS.slice(POSITIONS.indexOf(raiser) + 1, POSITIONS.indexOf(hero)), rand);
       return { type, raiser, threeBettor, hero };
+    }
+    case 'vs4bet': {
+      const hero = pick(['MP', 'CO', 'BTN', 'SB', 'BB'], rand);
+      return { type, raiser: pick(before(hero).filter((p) => p !== 'SB'), rand), hero };
     }
     default:
       throw new Error(`Type inconnu : ${type}`);
@@ -60,7 +71,12 @@ export function describe(sit) {
     case 'vs3bet':
       return `Vous avez relancé depuis ${{ BTN: 'le bouton', CO: 'le CO' }[sit.hero] || sit.hero}. ${sit.threeBettor} sur-relance à 8 BB, les autres se couchent.`;
     case 'squeeze':
+      if (sit.called) return `${sit.raiser} relance à 2,5 BB, vous suivez ${POSITION_NAME[sit.hero]}. ${sit.threeBettor} sur-relance à 10 BB, les autres se couchent.`;
       return `${sit.raiser} relance à 2,5 BB, ${sit.threeBettor} sur-relance à 8 BB. Vous êtes ${POSITION_NAME[sit.hero]}.`;
+    case 'vs4bet': {
+      const oop = isBlind(sit.hero);
+      return `${sit.raiser} relance à 2,5 BB. Vous sur-relancez ${POSITION_NAME[sit.hero]} à ${oop ? '10' : '7,5'} BB. ${sit.raiser} relance encore à ${oop ? '30' : '22,5'} BB (4-bet).`;
+    }
     default:
       return '';
   }
@@ -73,6 +89,7 @@ function relevant(sit) {
     case 'bb': return openRange('BB');
     case 'vsRaise': return union('', '', RERAISE, isBlind(sit.hero) ? CALL_OOP : CALL_IP);
     case 'vs3bet': return union('', '', RERAISE, CALL_3BET);
+    case 'squeeze': return sit.called ? CALL_IP : RERAISE;
     default: return RERAISE;
   }
 }
@@ -80,6 +97,8 @@ function relevant(sit) {
 // Main tirée pour une situation : souvent près d'une frontière de la grille,
 // sinon au hasard comme dans une vraie donne.
 export function handFor(sit, rand, step) {
+  // Vous aviez suivi : votre main est une de celles qui suivent une relance en position.
+  if (sit.type === 'squeeze' && sit.called) return pick([...CALL_IP.set], rand);
   if (rand() < 0.35) return randomHand(rand);
   const sets = [relevant(sit).set];
   if (step !== undefined && sit.type === 'open') sets.push(openRange(sit.pos, step).set);

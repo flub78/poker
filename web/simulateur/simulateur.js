@@ -7,7 +7,7 @@ import { levelBadge, levelClass, levelLabel } from '../js/niveau-couleur.js';
 import { subLevelsOf, currentSubLevel, setSubLevel, subLevelLabel } from '../js/sous-niveaux.js';
 import { evaluate, describe } from '../niveau-1/evaluator.js';
 import { legalActions } from './moteur/table.js';
-import { newGame, startHand, replayHand, playBot, play, humanToAct, botToAct, gameOver, HUMAN } from './partie.js';
+import { newGame, startHand, replayHand, playBot, play, humanToAct, botToAct, gameOver, HUMAN, carry, carriedStacks } from './partie.js';
 import { evaluateGame, afText, pctText } from './evaluation.js';
 import { MIN_HANDS, profile } from './lecture.js';
 import { summarize, saveParty } from './historique.js';
@@ -17,6 +17,8 @@ import { judgeMove, actionLabel, VERDICTS } from './mentor.js';
 import { positions, bbText, potTotal } from './positions.js';
 
 const KEY = 'poker.simulateur.v1';
+const STACKS_KEY = 'poker.simulateur.tapis.v1';   // tapis conservés entre les parties (partie.js, carry)
+const BB = 2;                                     // la big blind, en jetons
 const SPEEDS = { lente: 1500, normale: 800, rapide: 250 };
 const STREET_LABEL = { preflop: 'Préflop', flop: 'Flop', turn: 'Turn', river: 'River', showdown: 'Abattage' };
 
@@ -32,6 +34,16 @@ function loadSettings() {
 
 function saveSettings(settings) {
   try { localStorage.setItem(KEY, JSON.stringify(settings)); } catch { /* stockage bloqué */ }
+}
+
+function loadStacks() {
+  try { return JSON.parse(localStorage.getItem(STACKS_KEY) || 'null'); } catch { return null; }
+}
+function saveStacks(saved) {
+  try { localStorage.setItem(STACKS_KEY, JSON.stringify(saved)); } catch { /* stockage bloqué */ }
+}
+function clearStacks() {
+  try { localStorage.removeItem(STACKS_KEY); } catch { /* stockage bloqué */ }
 }
 
 export function renderSimulateur(main) {
@@ -53,7 +65,12 @@ export function renderSimulateur(main) {
 
   function newGameFromSettings() {
     const seed = /^\d+$/.test(String(settings.graine).trim()) ? Number(settings.graine) : null;
-    game = newGame({ botLevels: settings.botLevels, humanLevel: settings.humanLevel, humanStep: humanStep(), maxHands: Number(settings.mains) || 0, keepStacks: settings.tapis === 'conserves', seed });
+    // Tapis : « fixes » (100 BB à chaque main), « conserves » (d'une main à l'autre), « parties »
+    // (d'une partie à l'autre : la partie reprend les tapis enregistrés en fin de main).
+    const parties = settings.tapis === 'parties';
+    const carried = parties ? carriedStacks(loadStacks(), [settings.humanLevel, ...settings.botLevels], 100 * BB) : {};
+    game = newGame({ botLevels: settings.botLevels, humanLevel: settings.humanLevel, humanStep: humanStep(), maxHands: Number(settings.mains) || 0, keepStacks: settings.tapis !== 'fixes', seed, bb: BB, ...carried });
+    game.carryOver = parties;
     view = 'table';
     mentorStats = { conforme: 0, défendable: 0, erreur: 0, repris: 0, avance: 0 };
     nextHand();
@@ -69,8 +86,18 @@ export function renderSimulateur(main) {
     update();
   }
 
+  // Remet tout le monde à 100 BB (et les recaves à zéro), puis lance une nouvelle partie.
+  function resetStacks() {
+    clearTimeout(timer);
+    clearStacks();
+    newGameFromSettings();
+  }
+  const resetButton = () => (settings.tapis === 'parties'
+    ? h('button', { class: 'btn secondary', onclick: resetStacks }, 'Remettre les tapis à 100 BB') : null);
+
   // Redessine, puis fait jouer le bot suivant après un délai.
   function update() {
+    if (game.carryOver && game.hand?.done && !game.hand.replay) saveStacks(carry(game));
     render();
     clearTimeout(timer);
     if (botToAct(game)) {
@@ -303,7 +330,12 @@ export function renderSimulateur(main) {
       : n.verdict === 'conforme' ? `${n.human} : conforme aux règles du niveau ${n.level}.`
       : n.repris ? `Vous avez repris le coup du mentor : ${low(n.advised)}.`
         : `Vous avez confirmé « ${low(n.human)} » (${low(VERDICTS[n.verdict])} ; le mentor : ${low(n.advised)}).`;
-    return h('p', { class: `sim-mentor-note ${n.verdict}`, 'aria-live': 'polite' }, h('strong', {}, 'Mentor : '), text);
+    // Coup juste : le mentor rappelle quand même la règle appliquée (un bon coup peut être de la
+    // chance ; le rappel ancre la règle). En avance : les raisons des règles plus avancées.
+    const rappel = n.avance ? n.avance.raisons : n.verdict === 'conforme' && !n.repris ? n.raisons : [];
+    return h('div', { class: `sim-mentor-note ${n.verdict}`, 'aria-live': 'polite' },
+      h('p', {}, h('strong', {}, 'Mentor : '), text),
+      rappel?.length ? h('div', {}, h('p', { class: 'sim-mentor-rule' }, 'La règle :'), reasonList(rappel)) : null);
   }
 
   function hintPanel() {
@@ -351,11 +383,12 @@ export function renderSimulateur(main) {
         : null,
       h('table', {},
         h('thead', {}, h('tr', {}, h('th', {}, 'Joueur'), h('th', {}, 'Niveau'), h('th', {}, 'Gains'),
-          game.keepStacks ? h('th', {}, 'Recaves') : null)),
+          game.keepStacks ? [h('th', {}, 'Tapis'), h('th', {}, 'Recaves')] : null)),
         h('tbody', {}, game.players.map((p, i) => h('tr', {},
           h('td', {}, p.name), h('td', {}, p.human ? `${p.level} (vous)` : isProfil(p.level) ? PROFILS[p.level].nom : String(p.level)),
           h('td', {}, `${game.totals[i] > 0 ? '+' : game.totals[i] < 0 ? '−' : ''}${bbText(Math.abs(game.totals[i]), game.bb)}`),
-          game.keepStacks ? h('td', {}, String(game.rebuys[i])) : null)))));
+          game.keepStacks ? [h('td', {}, bbText(game.hand?.seats[i].start ?? game.stacks[i], game.bb)), h('td', {}, String(game.rebuys[i]))] : null)))),
+      game.carryOver ? h('p', { class: 'meta' }, 'Gains : depuis le début de cette partie. Tapis : en début de main. Recaves : depuis la dernière remise à 100 BB.') : null);
   }
 
   // ---------- évaluation de la partie ----------
@@ -426,6 +459,7 @@ export function renderSimulateur(main) {
         h('ul', {}, ev.comments.bots.map((t) => h('li', {}, t))),
         h('div', { class: 'practice-actions' },
           over ? null : h('button', { class: 'btn secondary', onclick: () => { view = 'table'; update(); } }, 'Retour à la table'),
+          resetButton(),
           h('button', { class: 'btn', onclick: () => { clearTimeout(timer); newGameFromSettings(); } }, 'Nouvelle partie'))));
   }
 
@@ -444,16 +478,18 @@ export function renderSimulateur(main) {
         select('Vitesse des adversaires', settings.vitesse, [['lente', 'Lente'], ['normale', 'Normale'], ['rapide', 'Rapide']], (v) => { settings.vitesse = v; saveSettings(settings); }),
         select('Cartes des adversaires', settings.voirCartes ? 'oui' : 'non', [['non', 'Cachées'], ['oui', 'Visibles (entraînement)']], (v) => { settings.voirCartes = v === 'oui'; saveSettings(settings); render(); }),
         select('Mains par partie', settings.mains, [[10, '10'], [20, '20'], [30, '30'], [50, '50'], [100, '100'], [0, 'Sans limite']], (v) => { settings.mains = Number(v); saveSettings(settings); }),
-        select('Tapis', settings.tapis, [['fixes', '100 BB à chaque main'], ['conserves', 'Conservés (recave à zéro)']], (v) => { settings.tapis = v; saveSettings(settings); }),
+        select('Tapis', settings.tapis, [['fixes', '100 BB à chaque main'], ['conserves', 'Conservés entre les mains'], ['parties', 'Conservés entre les parties']], (v) => { settings.tapis = v; saveSettings(settings); render(); }),
         h('label', { class: 'setting' }, 'Graine (facultatif)',
           h('input', { type: 'text', inputmode: 'numeric', value: settings.graine, placeholder: 'au hasard', size: 12,
             onchange: (e) => { settings.graine = e.target.value.trim(); saveSettings(settings); } }))),
       h('p', { class: 'meta' }, 'Nombre de mains, tapis et graine : appliqués à la prochaine partie. Une même graine redonne les mêmes cartes.'),
-      h('p', { class: 'meta' }, 'Tapis conservés : un joueur à zéro se recave de 100 BB à la main suivante. Les conseils supposent des tapis d\'environ 100 BB.'),
+      h('p', { class: 'meta' }, 'Tapis conservés : un joueur à zéro se recave de 100 BB à la main suivante. Entre les parties : chaque partie reprend les tapis où la précédente s\'est arrêtée ; un adversaire dont vous changez le niveau arrive avec 100 BB. Le bouton « Remettre les tapis à 100 BB » repart de zéro. Les conseils supposent des tapis d\'environ 100 BB.'),
       h('p', { class: 'meta' }, 'Adversaires : un niveau du cours (2 à 6), ou un profil de C5.4 à exploiter (rock, calling station, maniaque). Appliqué à la prochaine partie.'),
       h('div', { class: 'settings' }, game.players.slice(1).map((p, k) => select(p.name, settings.botLevels[k],
         BOT_CHOICES.map((n) => [n, botLabel(n)]), (v) => { settings.botLevels[k] = /^\d+$/.test(v) ? Number(v) : v; saveSettings(settings); }))),
-      h('button', { class: 'btn secondary', onclick: () => { clearTimeout(timer); newGameFromSettings(); } }, 'Nouvelle partie'));
+      h('div', { class: 'practice-actions' },
+        h('button', { class: 'btn secondary', onclick: () => { clearTimeout(timer); newGameFromSettings(); } }, 'Nouvelle partie'),
+        resetButton()));
   }
 
   // Raccourcis clavier ; js/app.js remet document.onkeydown à zéro en changeant de page.

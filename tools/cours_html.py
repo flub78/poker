@@ -8,7 +8,11 @@ de configuration JSON (par défaut tools/cours_config.json) :
     chemin_images   chemin des images vu depuis la page web
     images          id de blob du doc → fichier local (une image nouvelle doit y être ajoutée)
     pages           une entrée par titre de niveau 2, dans l'ordre :
-                    { titre (expression régulière), id, court?, annexe? }
+                    { titre (expression régulière), id, court?, annexe?, decouper? }
+                    decouper : une page par sous-titre h3 (id <id>-<sous-titre>), par exemple
+                    l'annexe Aide-mémoire, une page par niveau
+    (chapeau)       le texte entre la ligne de date et la première grande partie (h2) va sur
+                    l'accueil et la version imprimée, avant la table des matières
     couverture      { page, credit } : la première image de cette page, et le paragraphe
                     en italique qui commence par `credit`, vont sur l'accueil
     escaliers       tableaux à dessiner en escalier : { titre, prefixe, legende }. Le tableau
@@ -34,6 +38,9 @@ Le script remplace aussi ce que l'export ne sait pas rendre hors de Claude Docs 
   relance » (C2.2) le titre entre guillemets mène au paragraphe de C2.2 qui commence par ce titre
   en gras (id <section>--<titre>) ;
 - la mention de l'auteur, les listes déroulantes (statut de la grille), la date.
+Une citation du doc (bloc en retrait) dont le premier paragraphe commence par « Pour aller plus
+loin — <sujet>. » (en gras) devient un encadré repliable : <details class="approfondir">, titre
+« Pour aller plus loin — <sujet> », le reste du bloc à l'intérieur. Le lecteur pressé le saute.
 Les symboles ♥ ♦ sont colorés en rouge, ♠ ♣ en noir, toujours affichés en texte (jamais en émoji).
 
 Usage : python3 tools/cours_html.py export.html [config.json]
@@ -59,6 +66,24 @@ def slug(text):
 
 def plain(fragment):
     return html.unescape(re.sub(r"<[^>]+>", "", fragment)).strip()
+
+
+FURTHER = "Pour aller plus loin"
+
+
+def further_reading(fragment):
+    """Citations « Pour aller plus loin — <sujet>. » → encadrés repliables (<details>)."""
+    def box(m):
+        inner = m.group(1).replace("</strong><strong>", "")
+        head = re.match(r"\s*<p([^>]*)><strong>\s*" + FURTHER + r"\s*[—–-]\s*(.*?)</strong>\s*(.*?)</p>", inner, re.S)
+        if not head:
+            return m.group(0)
+        attrs, title, rest = head.groups()
+        title = re.sub(r"</?a\b[^>]*>", "", title).strip().rstrip(".").strip()
+        body = (f"<p>{rest.strip()}</p>" if rest.strip() else "") + inner[head.end():]
+        return (f'<details class="approfondir"{attrs}><summary><span class="approfondir-label">{FURTHER}</span>'
+                f" — {title}</summary>\n<div class=\"approfondir-body\">{body.strip()}</div></details>")
+    return re.sub(r"<blockquote>(.*?)</blockquote>", box, fragment, flags=re.S)
 
 
 def color_suits(fragment):
@@ -308,8 +333,12 @@ def main(src, config_path):
     updated = date(int(m.group(1)), int(m.group(2)), int(m.group(3))) if m else None
     byline = author + (f" · mis à jour le {updated.day} {MONTHS[updated.month - 1]} {updated.year}" if updated else "")
 
-    # --- découpage par h2 ---
-    sections = re.split(r"(?=<h2[ >])", doc)[1:]
+    # --- découpage par h2 ; ce qui précède (après la ligne de date) est le chapeau de l'accueil ---
+    sections = re.split(r"(?=<h2[ >])", doc)
+    head = re.sub(r"^.*?</h1>\s*", "", sections[0], flags=re.S)
+    head = re.sub(r"^<p>(?:(?!</p>).)*<time.*?</p>\s*", "", head, flags=re.S)
+    intro = color_suits(head).strip()
+    sections = sections[1:]
     specs = cfg["pages"]
     if len(sections) != len(specs):
         found = ", ".join(plain(re.match(r"<h2[^>]*>(.*?)</h2>", s, re.S).group(1)) for s in sections)
@@ -331,6 +360,18 @@ def main(src, config_path):
             return f'<h3 id="{slug(text)}">{m.group(1)}</h3>'
         body = re.sub(r"<h3[^>]*>(.*?)</h3>", h3, body, flags=re.S)
 
+        if spec.get("decouper"):
+            # une page par sous-titre h3 : <id>-<sous-titre>, titre « <h2> — <h3> »
+            parts = re.split(r'(?=<h3 id=")', body)
+            if parts[0].strip():
+                sys.exit(f"Erreur : texte avant le premier sous-titre de « {h2} » (decouper).")
+            for part, sub in zip(parts[1:], subs):
+                part = re.sub(r"^<h3[^>]*>.*?</h3>\s*", "", part, flags=re.S)
+                pages.append({"id": f"{spec['id']}-{sub['id']}", "title": f"{h2} — {sub['title']}",
+                              "short": f"{spec.get('court') or h2}, {sub['title'][0].lower()}{sub['title'][1:]}",
+                              "subtitle": None, "annex": bool(spec.get("annexe")), "sections": [],
+                              "html": part})
+            continue
         pages.append({"id": spec["id"], "title": h2, "short": spec.get("court") or h2.split(" — ")[0],
                       "subtitle": h2.split(" — ")[1] if " — " in h2 else None,
                       "annex": bool(spec.get("annexe")), "sections": subs, "html": body})
@@ -402,7 +443,7 @@ def main(src, config_path):
             body = link_glossary(body, terms, gspec["page"], gspec, glossary=True)
         elif terms and p["id"] not in gspec.get("pages_sans_liens", []):
             body = link_glossary(body, terms, gspec["page"], gspec)
-        p["html"] = color_suits(body).strip()
+        p["html"] = color_suits(further_reading(body)).strip()
 
     for spec in cfg.get("escaliers", []):
         if spec["titre"] not in stairs_done:
@@ -431,7 +472,7 @@ def main(src, config_path):
     for b in used_blobs:
         shutil.copy2(ROOT / blobs[b], img_dir / Path(blobs[b]).name)
 
-    data = {"title": title, "byline": byline, "cover": cover, "pages": pages}
+    data = {"title": title, "byline": byline, "intro": intro, "cover": cover, "pages": pages}
     js = (f"// Fichier généré par tools/cours_html.py ({Path(config_path).name}) "
           "à partir de l'export HTML du Claude Doc.\n"
           "// Ne pas modifier à la main : modifier le doc, réexporter, relancer le script.\n"

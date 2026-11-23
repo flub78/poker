@@ -398,6 +398,12 @@ a.level-link.current:hover { background: var(--felt-ink); }
 .cours-body a.gl { color: inherit; text-decoration: underline dotted var(--quiet); text-underline-offset: 3px; }
 .cours-body a.gl:hover { color: var(--accent); text-decoration-color: var(--accent); }
 .cours-body tr[id] { scroll-margin-top: 16px; }
+/* Encadrés « Pour aller plus loin » : repliés sur le site, ouverts à l'impression. */
+.cours-body details.approfondir { margin: 0 0 14px; border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 0 6px 6px 0; }
+.cours-body details.approfondir > summary { cursor: pointer; padding: 8px 12px; font-weight: 600; scroll-margin-top: 16px; }
+.cours-body details.approfondir > summary .approfondir-label { color: var(--accent); }
+.cours-body details.approfondir[open] > summary { padding-bottom: 4px; }
+.cours-body .approfondir-body { padding: 0 12px 6px 14px; }
 .cours-body tr.cible td { background: var(--accent-soft); }
 .cours-body ul:has(input[type="checkbox"]) { list-style: none; padding-left: 0.2em; }
 .cours-body li:has(> input[type="checkbox"]) { display: flex; gap: 8px; align-items: baseline; }
@@ -415,9 +421,9 @@ a.level-link.current:hover { background: var(--felt-ink); }
 
 .table-wrap { overflow-x: auto; margin: 12px 0 16px; max-width: calc(100vw - 32px); }
 .cours-body:has(.table-wrap) { max-width: none; }
-.summary, .cours-body table { border-collapse: collapse; font-size: 0.92rem; min-width: 100%; background: var(--surface); }
-.summary th, .summary td, .cours-body th, .cours-body td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
-.summary th, .cours-body th { background: var(--bg); font-weight: 700; }
+.summary, .cours-body table, table.data { border-collapse: collapse; font-size: 0.92rem; min-width: 100%; background: var(--surface); }
+.summary th, .summary td, .cours-body th, .cours-body td, table.data th, table.data td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+.summary th, .cours-body th, table.data th { background: var(--bg); font-weight: 700; }
 .cours-body td p { margin: 0; }
 .cours-body .chip { white-space: nowrap; }
 .grid-note { padding: 8px 12px; border-radius: 8px; background: var(--accent-soft); font-size: 0.92rem; }
@@ -487,8 +493,13 @@ a.level-link.current:hover { background: var(--felt-ink); }
   .wrap { max-width: none; padding: 0; }
   .print-only { display: block; }
   .print-title { font-size: 22pt; font-weight: 700; margin: 0 0 6px; }
-  .cours-cover img { max-height: 110mm; }
+  .cours-cover img { max-height: 80mm; }
+  .cours-print .cours-intro { break-inside: avoid; font-size: 10.5pt; }
+  .cours-print .cours-intro li { margin: 2px 0; }
   .print-toc { break-before: page; }
+  .cours-body details.approfondir { break-inside: avoid; }
+  .cours-body details.approfondir > summary { list-style: none; cursor: auto; break-after: avoid; }
+  .cours-body details.approfondir > summary::-webkit-details-marker { display: none; }
   .print-toc .toc > li { padding: 4px 0; break-inside: avoid; }
   .print-toc .toc-page { font-size: 11pt; }
   .print-toc .toc-sections { font-size: 9.5pt; margin-top: 2px; }
