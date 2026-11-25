@@ -6,11 +6,16 @@
 //     dernière boîte, seule la boîte 1 est posée. La charge reste régulière d'une séance à l'autre ;
 //   - réponse juste : la question monte d'une boîte ; juste dans la dernière : maîtrisée ;
 //   - réponse fausse : elle recule d'une boîte ; second échec de suite : retour en boîte 1 ;
-//   - seule la première réponse d'une séance compte ; une question échouée est reposée en fin
-//     de séance jusqu'à être réussie (reprise), sans changer sa boîte ;
+//   - seule la première réponse d'une séance compte ; une question échouée est reposée une fois
+//     en fin de séance (reprise), sans changer sa boîte ;
 //   - nouvelles questions : si la boîte 1 en compte moins que le minimum, on en introduit,
 //     par difficulté croissante (sans difficulté = moyenne), au hasard dans un même niveau.
 // Le rythme se compte en séances, pas en jours.
+// Écarts propres à poker (mentor reprend une erreur jusqu'à la réussir, dans un ordre au hasard) :
+//   - une seule reprise par question et par séance, et jamais tout de suite : si plus aucune autre
+//     question ne reste, l'erreur n'est pas reposée (elle revient à une prochaine séance) ;
+//   - deux questions de même énoncé (même texte, image différente) ne se suivent pas quand
+//     l'ordre de la séance peut l'éviter (spread).
 //
 // État d'une suite (enregistré tel quel) :
 //   { version: 1, session: dernier numéro de séance, sessions: [dates ISO],
@@ -56,6 +61,46 @@ const difficultyRank = (d) => {
   return { 1: 1, facile: 1, 3: 3, difficile: 3 }[s] || 2;
 };
 
+// Réordonne une liste mélangée pour que deux éléments de même clé ne se suivent pas, quand c'est
+// possible ; sinon les répétitions restantes sont aussi peu nombreuses que possible. On garde
+// l'ordre du mélange autant que possible : à chaque place, le premier élément de clé différente
+// de la précédente qui laisse le reste arrangeable ; à défaut, un de la clé la plus nombreuse.
+export function spread(list, keyOf) {
+  const rest = list.slice();
+  const counts = new Map();
+  for (const x of rest) counts.set(keyOf(x), (counts.get(keyOf(x)) || 0) + 1);
+  // Reste de n éléments arrangeable sans répétition après la clé prev ?
+  const fits = (n, prev) => [...counts].every(([k, c]) => c <= (k === prev ? Math.floor(n / 2) : Math.ceil(n / 2)));
+  const out = [];
+  let prev;
+  while (rest.length) {
+    let pick = -1;
+    for (let i = 0; i < rest.length && pick < 0; i++) {
+      const k = keyOf(rest[i]);
+      if (k === prev) continue;
+      counts.set(k, counts.get(k) - 1);
+      if (fits(rest.length - 1, k)) pick = i;
+      counts.set(k, counts.get(k) + 1);
+    }
+    if (pick < 0) {                            // impossible d'éviter toute répétition
+      let best = -1;
+      rest.forEach((x, i) => {
+        const k = keyOf(x);
+        if (k !== prev && (best < 0 || counts.get(k) > counts.get(keyOf(rest[best])))) best = i;
+      });
+      pick = best < 0 ? 0 : best;
+    }
+    const [x] = rest.splice(pick, 1);
+    prev = keyOf(x);
+    counts.set(prev, counts.get(prev) - 1);
+    out.push(x);
+  }
+  return out;
+}
+
+// Clé de ressemblance de deux questions : leur énoncé (identifiant à défaut).
+const statementOf = (q) => (q.enonce ?? q.id).trim().toLowerCase().replace(/\s+/g, ' ');
+
 // Questions de la banque encore jamais posées, dans l'ordre d'introduction.
 export function newQuestions(suite, questions, rand = Math.random) {
   const fresh = questions.filter((q) => !suite.items[q.id]);
@@ -70,7 +115,8 @@ export function planSession(suite, questions, { boxCount = DEFAULTS.boxCount, mi
   const introduced = newQuestions(suite, questions, rand).slice(0, Math.max(0, minBoxOne - inBoxOne)).map((q) => q.id);
   const due = boxesDue(number, boxCount);
   const selected = known.filter((q) => !suite.items[q.id].mastered && due.includes(suite.items[q.id].box)).map((q) => q.id);
-  return { number, introduced, queue: shuffle([...selected, ...introduced], rand) };
+  const key = new Map(questions.map((q) => [q.id, statementOf(q)]));
+  return { number, introduced, queue: spread(shuffle([...selected, ...introduced], rand), (id) => key.get(id)) };
 }
 
 // Ouvre la séance planifiée : numéro avancé, questions introduites en boîte 1.
@@ -105,7 +151,7 @@ export function createRun(queue, saved = null) {
       const id = todo.shift();
       const first = !answered.has(id);
       if (first) { answered.add(id); if (ok) good++; } else retries++;
-      if (!ok) todo.push(id);               // reposée en fin de séance
+      if (!ok && first && todo.length) todo.push(id);   // reposée une fois, en fin de séance
       return { counts: first };
     },
     stats: () => ({ asked: answered.size, good, retries, left: todo.length, total }),

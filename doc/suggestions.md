@@ -1,6 +1,6 @@
 # Suggestions d'amélioration
 
-Mis à jour le 2026-11-19 (ajout de S-035 ; avant : S-032 faite, une page web par niveau ; ajout de S-033 et S-034 ; avant : S-031 faite ; avant : ajout de S-031 ; avant : ajout de S-030 ; avant : S-029 faite ; avant : ajout de S-029 ; avant : S-028 faite ; avant : ajout de S-027 ; avant : ajout de S-026 ; avant : ajout de S-025 ; avant : note sur S-015 ; avant : S-023 et S-024 faites ; avant : ajout de S-023 ; avant : S-022 faite ; avant : ajout de S-022 ; avant : ajout de S-017 ; avant : ajout de S-015 et S-016 ; avant : réalisation de S-001, S-003 à S-010, S-012 option A, S-013, S-014). Fiches classées par section ; index trié par rapport
+Mis à jour le 2026-11-25 (ajout de S-036 et S-037, S-037 faite ; avant : ajout de S-035 ; avant : S-032 faite, une page web par niveau ; ajout de S-033 et S-034 ; avant : S-031 faite ; avant : ajout de S-031 ; avant : ajout de S-030 ; avant : S-029 faite ; avant : ajout de S-029 ; avant : S-028 faite ; avant : ajout de S-027 ; avant : ajout de S-026 ; avant : ajout de S-025 ; avant : note sur S-015 ; avant : S-023 et S-024 faites ; avant : ajout de S-023 ; avant : S-022 faite ; avant : ajout de S-022 ; avant : ajout de S-017 ; avant : ajout de S-015 et S-016 ; avant : réalisation de S-001, S-003 à S-010, S-012 option A, S-013, S-014). Fiches classées par section ; index trié par rapport
 bénéfice/coût. Statuts : proposée · acceptée · en cours · faite · reportée · refusée.
 Règles de tenue et commandes : voir [`strategie_suggestions.md`](../strategie_suggestions.md).
 
@@ -15,6 +15,8 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 | S-018 | Système | Identifiant stable des questions dans le format d'échange de mentor (colonne `reference`) | moyen | S | élevé | faite |
 | S-019 | Par fonctionnalité | Réflexes : progression dans le code de transfert | moyen | S | élevé | proposée |
 | S-020 | Par fonctionnalité | Réflexes : chronomètre facultatif (10 s), comme mentor §7.7 | moyen | S | moyen | proposée |
+| S-036 | Système | Réflexes : énoncés distincts dans la banque mentor (« … avec A♠ 9♦ ») plutôt que 14 fois le même texte | moyen | M | moyen | proposée |
+| S-037 | Par fonctionnalité | Réflexes : énoncés identiques espacés dans la séance, une seule reprise par erreur, jamais à la suite | moyen | S | élevé | faite |
 | S-030 | Transverses | Test de fumée : signaler un message « Impossible de charger » affiché, sans dépendre de la console | faible | S | moyen | proposée |
 | S-017 | Transverses | Réparer le contrôle « null / undefined / NaN affichés » du test de fumée, qui ne voyait rien | moyen | S | élevé | faite |
 | S-016 | Méthodes | Tests automatiques systématiques : `node --test` sur les modules purs, commande unique `bin/tester.sh` | élevé | S | élevé | faite |
@@ -559,6 +561,18 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 - **Constat** : le but est la réponse immédiate, mais rien ne mesure le temps.
 - **Proposition** : chronomètre facultatif de 10 s par question (règles de mentor §7.7 : sans réponse à temps, la question est fausse).
 - **Bénéfices** : entraîne vraiment le réflexe. **Coûts** : S. **Rapport** : moyen.
+
+### S-036 · Réflexes : énoncés distincts dans la banque
+- **Statut** : proposée · **Date** : 2026-11-25 · **Origine** : « trois fois la même question à la suite » dans les Réflexes
+- **Constat** : beaucoup de questions partagent mot pour mot leur énoncé et ne diffèrent que par l'image (14 « vous êtes au CO… que faites-vous ? », 11 au bouton, 10 « quelle combinaison… »). L'élève les prend pour une seule question répétée.
+- **Proposition** : dans mentor, préciser l'énoncé (la main, la position ou le tableau en texte), pour qu'on reconnaisse chaque question sans l'image.
+- **Bénéfices** : séries moins monotones ; questions lisibles aussi sans image. **Coûts** : M (côté mentor, ~120 questions). **Rapport** : moyen.
+
+### S-037 · Réflexes : pas de répétition dans une séance
+- **Statut** : faite (commit à venir) · **Date** : 2026-11-25 · **Origine** : même signalement
+- **Constat** : la séance était mélangée au hasard (3 énoncés identiques de suite dans 33 à 63 % des parcours de 8 séances) ; une erreur était reposée jusqu'à être réussie, aussitôt si c'était la dernière question.
+- **Proposition** : `spread` dans `leitner.js` (énoncés identiques jamais côte à côte quand c'est possible) ; une seule reprise par erreur, jamais à la suite. Écart assumé avec mentor, noté en tête du module.
+- **Bénéfices** : plus de « même question trois fois ». **Coûts** : S. **Rapport** : élevé.
 
 ### S-021 · Ordre des propositions d'un QCM dans le format d'échange de mentor
 - **Statut** : faite (mentor : PRD banques 0.3, lot B1.1 ; poker : commit à venir) · **Date** : 2026-11-11 · **Origine** : question « Quelle est cette combinaison ? » des Réflexes

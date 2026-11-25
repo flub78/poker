@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  boxesDue, move, planSession, startSession, recordAnswer, createRun, resumable, summary, newQuestions, emptySuite, mergeSuites, renameItems,
+  boxesDue, move, planSession, startSession, recordAnswer, createRun, resumable, summary, newQuestions, spread, emptySuite, mergeSuites, renameItems,
 } from '../../web/reflexes/leitner.js';
 
 const fixed = () => 0;               // tirage « au hasard » reproductible
@@ -68,7 +68,7 @@ test('séance : seules les boîtes échues sont posées ; maîtrisées jamais', 
   assert.deepEqual([...plan4.queue].sort(), ['q1', 'q3']);  // séance 6 : boîtes 1 et 3
 });
 
-test('reprise des erreurs : reposée en fin de séance, seule la première réponse compte', () => {
+test('reprise des erreurs : reposée une fois en fin de séance, seule la première réponse compte', () => {
   const run = createRun(['a', 'b']);
   assert.equal(run.current(), 'a');
   assert.deepEqual(run.answer(false), { counts: true });
@@ -76,9 +76,45 @@ test('reprise des erreurs : reposée en fin de séance, seule la première répo
   assert.deepEqual(run.answer(true), { counts: true });
   assert.equal(run.current(), 'a');                 // reprise
   assert.deepEqual(run.answer(false), { counts: false });
-  assert.deepEqual(run.answer(true), { counts: false });
-  assert.equal(run.current(), null);
-  assert.deepEqual(run.stats(), { asked: 2, good: 1, retries: 2, left: 0, total: 2 });
+  assert.equal(run.current(), null);                // reprise ratée : pas reposée une troisième fois
+  assert.deepEqual(run.stats(), { asked: 2, good: 1, retries: 1, left: 0, total: 2 });
+});
+
+test('reprise des erreurs : jamais deux fois de suite la même question', () => {
+  const run = createRun(['a', 'b']);
+  run.answer(true);
+  assert.deepEqual(run.answer(false), { counts: true });   // b, dernière question, ratée
+  assert.equal(run.current(), null);                       // pas reposée aussitôt
+  // Quelles que soient les réponses, une question n'est jamais posée deux fois à la suite.
+  for (let t = 0; t < 200; t++) {
+    const r = createRun(['a', 'b', 'c', 'd']);
+    const seen = [];
+    while (r.current() !== null) { seen.push(r.current()); r.answer(Math.random() < 0.3); }
+    assert.ok(seen.every((id, i) => i === 0 || id !== seen[i - 1]), seen.join(' '));
+    assert.ok(seen.length <= 8);
+  }
+});
+
+test('ordre de séance : deux questions de même énoncé ne se suivent pas quand c\'est possible', () => {
+  const key = (x) => x[0];
+  const adjacent = (l) => l.filter((x, i) => i > 0 && key(x) === key(l[i - 1])).length;
+  assert.deepEqual(spread(['a1', 'a2', 'a3', 'b1', 'b2', 'c1'], key), ['a1', 'b1', 'a2', 'b2', 'a3', 'c1']);
+  assert.deepEqual(spread(['b1', 'c1', 'a1'], key), ['b1', 'c1', 'a1']);   // déjà bon : ordre gardé
+  assert.deepEqual(spread(['a1', 'a2', 'a3', 'b1'], key), ['a1', 'b1', 'a2', 'a3']);   // impossible : une seule répétition
+  assert.deepEqual(spread([], key), []);
+  for (let t = 0; t < 300; t++) {               // au hasard : jamais de répétition évitable
+    const list = Array.from({ length: 2 + Math.floor(Math.random() * 30) }, (_, i) => `${'abcd'[Math.floor(Math.random() ** 2 * 4)]}${i}`);
+    const out = spread(list, key);
+    assert.deepEqual([...out].sort(), [...list].sort());
+    const max = Math.max(...'abcd'.split('').map((k) => list.filter((x) => key(x) === k).length));
+    assert.equal(adjacent(out), Math.max(0, max - (list.length - max) - 1), list.join(' '));
+  }
+  // planSession : les énoncés identiques (images différentes) sont espacés.
+  const questions = [...bank(6, { enonce: 'Que faites-vous ?' }), ...bank(6).map((q) => ({ ...q, id: `x${q.id}`, enonce: q.id }))];
+  for (let t = 0; t < 50; t++) {
+    const { queue } = planSession(emptySuite(), questions, { minBoxOne: 12 });
+    assert.ok(queue.every((id, i) => i === 0 || !(id.startsWith('q') && queue[i - 1].startsWith('q'))), queue.join(' '));
+  }
 });
 
 // Introduite à la séance 1 et toujours juste : boîte 2 après la séance 1, 3 après la 3, 4 après la 6,
