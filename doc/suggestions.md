@@ -569,7 +569,7 @@ Coût : S = moins d'une session ; M = quelques sessions ; L = un chantier.
 - **Bénéfices** : séries moins monotones ; questions lisibles aussi sans image. **Coûts** : M (côté mentor, ~120 questions). **Rapport** : moyen.
 
 ### S-037 · Réflexes : pas de répétition dans une séance
-- **Statut** : faite (commit à venir) · **Date** : 2026-11-25 · **Origine** : même signalement
+- **Statut** : faite (commit b10921e) · **Date** : 2026-11-25 · **Origine** : même signalement
 - **Constat** : la séance était mélangée au hasard (3 énoncés identiques de suite dans 33 à 63 % des parcours de 8 séances) ; une erreur était reposée jusqu'à être réussie, aussitôt si c'était la dernière question.
 - **Proposition** : `spread` dans `leitner.js` (énoncés identiques jamais côte à côte quand c'est possible) ; une seule reprise par erreur, jamais à la suite. Écart assumé avec mentor, noté en tête du module.
 - **Bénéfices** : plus de « même question trois fois ». **Coûts** : S. **Rapport** : élevé.
